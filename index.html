@@ -1,0 +1,1758 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>サロン情報管理システム</title>
+<style>
+:root {
+  --navy:      #1a2b4c;
+  --navy2:     #0f1a2e;
+  --navy3:     #2d4a7a;
+  --accent:    #4a90d9;
+  --white:     #ffffff;
+  --bg:        #f0f2f7;
+  --card:      #ffffff;
+  --border:    #e2e7f0;
+  --text:      #1e2d40;
+  --muted:     #7a8fa6;
+  --success:   #2ecc71;
+  --warn:      #f39c12;
+  --danger:    #e74c3c;
+  --sidebar:   240px;
+  --topbar:    52px;
+  --radius:    10px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Hiragino Sans', 'Hiragino Kaku Gothic Pro', 'Meiryo', 'Yu Gothic UI', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.6;
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ===================== サイドバー ===================== */
+.sb {
+  width: var(--sidebar);
+  background: var(--navy);
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  display: flex;
+  flex-direction: column;
+  z-index: 200;
+  transition: transform .25s ease;
+}
+
+.sb-logo {
+  padding: 16px 18px;
+  background: var(--navy2);
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+.sb-logo .en  { font-size: 9px; letter-spacing: 2px; opacity: .45; text-transform: uppercase; color: #fff; margin-bottom: 3px; }
+.sb-logo .ja  { font-size: 13px; font-weight: 700; color: #fff; line-height: 1.4; }
+
+.sb-nav { padding: 8px 0; flex: 1; overflow-y: auto; }
+
+.sb-sec {
+  padding: 12px 16px 4px;
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.3);
+}
+
+.sb-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 18px;
+  color: rgba(255,255,255,.7);
+  font-size: 13px;
+  cursor: pointer;
+  border-left: 3px solid transparent;
+  transition: all .15s;
+}
+.sb-item:hover  { background: rgba(255,255,255,.07); color: #fff; }
+.sb-item.on     { background: rgba(255,255,255,.12); color: #fff; border-left-color: var(--accent); }
+.sb-item .ico   { width: 18px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.sb-item .badge {
+  margin-left: auto;
+  background: var(--accent);
+  color: #fff;
+  font-size: 10px;
+  padding: 1px 7px;
+  border-radius: 10px;
+  font-weight: 700;
+}
+
+/* ===================== メインエリア ===================== */
+.main { margin-left: var(--sidebar); flex: 1; display: flex; flex-direction: column; min-width: 0; }
+
+.topbar {
+  height: var(--topbar);
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 22px;
+  gap: 12px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.topbar-title { font-size: 15px; font-weight: 700; color: var(--navy); flex: 1; }
+.topbar-actions { display: flex; align-items: center; gap: 8px; }
+
+/* パンくず */
+.bc { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); margin-bottom: 16px; flex-wrap: wrap; }
+.bc a { color: var(--accent); cursor: pointer; }
+.bc a:hover { text-decoration: underline; }
+.bc .sep { opacity: .4; }
+
+/* ===================== コンテンツ ===================== */
+.content { padding: 22px; flex: 1; }
+
+/* ===================== カード ===================== */
+.card {
+  background: var(--card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  margin-bottom: 16px;
+}
+.card-head {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.card-title { font-size: 13px; font-weight: 700; color: var(--navy); display: flex; align-items: center; gap: 8px; }
+.card-body  { padding: 18px; }
+
+/* ===================== ボタン ===================== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 14px;
+  border: none;
+  border-radius: 7px;
+  font-size: 12px;
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity .15s, transform .1s;
+  white-space: nowrap;
+  line-height: 1;
+}
+.btn:hover   { opacity: .82; }
+.btn:active  { transform: scale(.97); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.btn-primary { background: var(--navy);    color: #fff; }
+.btn-accent  { background: var(--accent);  color: #fff; }
+.btn-success { background: var(--success); color: #fff; }
+.btn-danger  { background: var(--danger);  color: #fff; }
+.btn-warn    { background: var(--warn);    color: #fff; }
+.btn-ghost   { background: transparent; border: 1px solid var(--border); color: var(--text); }
+.btn-sm      { padding: 5px 10px; font-size: 11px; }
+.btn-xs      { padding: 3px 8px; font-size: 11px; border-radius: 5px; }
+
+/* ===================== フォーム ===================== */
+.fg    { margin-bottom: 14px; }
+.flabel {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  margin-bottom: 5px;
+  letter-spacing: .3px;
+}
+.flabel.req::after { content: ' *'; color: var(--danger); }
+.finput {
+  width: 100%;
+  padding: 8px 11px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--text);
+  background: var(--white);
+  transition: border-color .2s, box-shadow .2s;
+}
+.finput:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(74,144,217,.14);
+}
+textarea.finput { resize: vertical; min-height: 85px; }
+select.finput {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7'%3E%3Cpath d='M1 1l4.5 4.5L10 1' stroke='%237a8fa6' fill='none' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 30px;
+  cursor: pointer;
+}
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+
+/* タグ */
+.tags-wrap { display: flex; flex-wrap: wrap; gap: 7px; }
+.tcb { display: none; }
+.tlbl {
+  padding: 4px 12px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  font-size: 11px;
+  cursor: pointer;
+  color: var(--muted);
+  transition: all .15s;
+  user-select: none;
+}
+.tcb:checked + .tlbl { background: var(--navy); color: #fff; border-color: var(--navy); }
+
+/* ラジオ */
+.rgroup { display: flex; gap: 18px; flex-wrap: wrap; }
+.rgroup label { display: flex; align-items: flex-start; gap: 7px; cursor: pointer; font-size: 13px; }
+.rgroup input[type="radio"] { margin-top: 3px; cursor: pointer; }
+
+/* ===================== テーブル ===================== */
+.tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
+.tbl th {
+  padding: 9px 14px;
+  text-align: left;
+  background: var(--bg);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+.tbl td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.tbl tbody tr:last-child td { border-bottom: none; }
+.tbl tbody tr:hover td { background: rgba(74,144,217,.04); }
+.tbl .acts { display: flex; gap: 5px; flex-wrap: wrap; }
+
+/* ===================== 案件カード ===================== */
+.project-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+}
+.pcard {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  cursor: pointer;
+  transition: all .18s;
+  position: relative;
+  border-left: 4px solid var(--accent);
+}
+.pcard:hover { box-shadow: 0 4px 20px rgba(26,43,76,.1); transform: translateY(-2px); }
+.pcard-year  { font-size: 10px; color: var(--muted); margin-bottom: 3px; }
+.pcard-name  { font-size: 14px; font-weight: 700; color: var(--navy); margin-bottom: 10px; }
+.pcard-meta  { display: flex; align-items: center; gap: 8px; }
+.pcard-count { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 4px; }
+.pcard-warn  { color: var(--warn); display: flex; align-items: center; }
+.pcard-acts  {
+  position: absolute;
+  top: 10px; right: 10px;
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity .15s;
+}
+.pcard:hover .pcard-acts { opacity: 1; }
+
+/* ===================== サロンカード ===================== */
+.salon-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+.scard {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+  transition: all .18s;
+  position: relative;
+  border-top: 3px solid var(--accent);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.scard:hover { box-shadow: 0 6px 20px rgba(26,43,76,.1); transform: translateY(-1px); }
+.scard-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.scard-head > div { flex: 1; min-width: 0; }
+.scard-name { font-size: 15px; font-weight: 700; color: var(--navy); word-break: break-word; overflow-wrap: anywhere; line-height: 1.4; }
+.scard-co   { font-size: 11px; color: var(--muted); margin-top: 3px; word-break: break-word; overflow-wrap: anywhere; }
+.scard-ly   { font-size: 10px; background: var(--bg); border: 1px solid var(--border); padding: 3px 9px; border-radius: 5px; white-space: nowrap; color: var(--muted); flex-shrink: 0; }
+.scard-info { font-size: 12px; color: var(--muted); line-height: 1.8; display: flex; flex-direction: column; gap: 2px; }
+.scard-info-row { display: flex; align-items: flex-start; gap: 6px; word-break: break-word; }
+.scard-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+.stag { background: var(--bg); color: var(--muted); padding: 2px 9px; border-radius: 10px; font-size: 10px; border: 1px solid var(--border); }
+.scard-acts { display: flex; gap: 5px; flex-wrap: wrap; padding-top: 4px; border-top: 1px solid var(--border); margin-top: auto; }
+.scard-warn { position: absolute; top: 12px; right: 48px; color: var(--warn); display: flex; align-items: center; }
+
+/* ===================== テンプレートカード ===================== */
+.tmpl-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 14px;
+}
+.tcard {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  border-left: 4px solid var(--success);
+  transition: all .18s;
+}
+.tcard:hover { box-shadow: 0 4px 16px rgba(26,43,76,.08); }
+.tcard-name  { font-size: 13px; font-weight: 700; color: var(--navy); margin-bottom: 6px; }
+.tcard-sub   { font-size: 11px; color: var(--muted); margin-bottom: 12px; line-height: 1.6; }
+.tcard-acts  { display: flex; gap: 5px; }
+
+/* ===================== バッジ ===================== */
+.badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; }
+.b-navy    { background: var(--navy);    color: #fff; }
+.b-success { background: var(--success); color: #fff; }
+.b-warn    { background: var(--warn);    color: #fff; }
+.b-danger  { background: var(--danger);  color: #fff; }
+.b-muted   { background: var(--bg); color: var(--muted); border: 1px solid var(--border); }
+
+/* ===================== アラート ===================== */
+.alert { padding: 11px 15px; border-radius: 8px; font-size: 12px; margin-bottom: 14px; line-height: 1.6; display: flex; align-items: flex-start; gap: 8px; }
+.a-warn    { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; }
+.a-success { background: #ecfdf5; border: 1px solid #6ee7b7; color: #065f46; }
+.a-danger  { background: #fef2f2; border: 1px solid #fca5a5; color: #991b1b; }
+.a-info    { background: #eff6ff; border: 1px solid #93c5fd; color: #1e40af; }
+
+/* ===================== ローディング ===================== */
+.loading { display: flex; align-items: center; justify-content: center; padding: 60px 20px; color: var(--muted); gap: 12px; }
+.spin { width: 20px; height: 20px; border: 2.5px solid var(--border); border-top-color: var(--navy); border-radius: 50%; animation: spin .7s linear infinite; flex-shrink: 0; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ===================== 空状態 ===================== */
+.empty { text-align: center; padding: 50px 20px; color: var(--muted); }
+.empty-ico { margin-bottom: 12px; display: flex; justify-content: center; opacity: .4; }
+.empty p   { font-size: 13px; line-height: 1.8; }
+
+/* ===================== モーダル ===================== */
+.moverlay {
+  position: fixed; inset: 0;
+  background: rgba(10,20,40,.55);
+  z-index: 300;
+  display: flex; align-items: center; justify-content: center;
+  padding: 16px;
+  backdrop-filter: blur(2px);
+}
+.mbox {
+  background: var(--white);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 520px;
+  max-height: 92vh;
+  overflow-y: auto;
+  box-shadow: 0 24px 64px rgba(0,0,0,.25);
+}
+.mbox.wide { max-width: 700px; }
+.mhd { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.mhd h3   { font-size: 14px; font-weight: 700; color: var(--navy); }
+.mclose   { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--muted); line-height: 1; padding: 2px; }
+.mbody    { padding: 20px; }
+.mfoot    { padding: 14px 20px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px; }
+
+/* ===================== プレビュー ===================== */
+.prev-bg { background: #6b7280; padding: 20px; border-radius: 8px; }
+.prev-page {
+  width: 210mm;
+  min-height: 120mm;
+  background: #fff;
+  margin: 0 auto 14px;
+  padding: 12mm 10mm;
+  display: grid;
+  gap: 6mm;
+  box-shadow: 0 4px 24px rgba(0,0,0,.2);
+}
+.prev-page.ly2 { grid-template-columns: 1fr 1fr; }
+.prev-page.ly3 { grid-template-columns: 1fr 1fr 1fr; }
+.pv-card { border: 1px solid #ccc; padding: 8px; overflow: hidden; font-size: 8px; }
+.pv-name { font-size: 12px; font-weight: 800; color: var(--navy); border-bottom: 2px solid var(--navy); padding-bottom: 3px; margin-bottom: 5px; }
+.pv-co   { font-size: 8px; color: var(--muted); margin-bottom: 3px; }
+.pv-catch { font-size: 9px; color: var(--navy3); font-style: italic; margin-bottom: 5px; }
+.pv-info { display: grid; grid-template-columns: auto 1fr; gap: 2px 7px; font-size: 7.5px; }
+.pv-lbl  { color: var(--muted); }
+.pv-body { margin-top: 5px; font-size: 7.5px; line-height: 1.6; }
+.pv-tags { display: flex; flex-wrap: wrap; gap: 2px; margin-top: 5px; }
+.pv-tag  { background: var(--navy); color: #fff; padding: 1px 5px; border-radius: 7px; font-size: 7px; }
+.pv-empty { border: 2px dashed #ddd; display: flex; align-items: center; justify-content: center; min-height: 80px; color: #ccc; font-size: 10px; }
+
+/* ===================== トースト ===================== */
+#toast {
+  position: fixed; bottom: 22px; right: 22px;
+  z-index: 400; padding: 11px 18px; border-radius: 8px;
+  font-size: 13px; font-weight: 600;
+  box-shadow: 0 6px 24px rgba(0,0,0,.18);
+  transition: opacity .3s, transform .3s;
+  pointer-events: none;
+}
+
+/* ===================== モバイル ===================== */
+.menu-btn { display: none; background: none; border: none; cursor: pointer; color: var(--navy); flex-shrink: 0; padding: 2px; }
+
+@media (max-width: 820px) {
+  .sb         { transform: translateX(-100%); }
+  .sb.open    { transform: translateX(0); box-shadow: 4px 0 30px rgba(0,0,0,.3); }
+  .main       { margin-left: 0; }
+  .menu-btn   { display: block; }
+  .grid2, .grid3 { grid-template-columns: 1fr; }
+  .prev-page  { width: 100%; padding: 8px; min-height: unset; }
+  .prev-bg    { padding: 8px; }
+  .project-grid, .salon-grid, .tmpl-grid { grid-template-columns: 1fr; }
+}
+
+@media print {
+  .sb, .topbar, .no-print { display: none !important; }
+  .main    { margin-left: 0; }
+  .content { padding: 0; }
+  .prev-bg { background: none; padding: 0; }
+  .prev-page { box-shadow: none; margin: 0; page-break-after: always; }
+}
+
+/* ===================== ユーティリティ ===================== */
+.flex       { display: flex; }
+.items-c    { align-items: center; }
+.between    { justify-content: space-between; }
+.gap6  { gap: 6px;  }
+.gap8  { gap: 8px;  }
+.gap12 { gap: 12px; }
+.gap16 { gap: 16px; }
+.mb8   { margin-bottom: 8px; }
+.mb12  { margin-bottom: 12px; }
+.mb16  { margin-bottom: 16px; }
+.mt12  { margin-top: 12px; }
+.mt16  { margin-top: 16px; }
+.fw7   { font-weight: 700; }
+.fs11  { font-size: 11px; }
+.fs12  { font-size: 12px; }
+.c-muted  { color: var(--muted); }
+.c-navy   { color: var(--navy); }
+.c-warn   { color: var(--warn); }
+.c-danger { color: var(--danger); }
+.w-full   { width: 100%; }
+.divider  { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+.wrap     { flex-wrap: wrap; }
+
+/* ===================== アップロードゾーン ===================== */
+.uz-zone {
+  border: 2px dashed var(--border);
+  border-radius: 8px;
+  padding: 18px 12px;
+  text-align: center;
+  cursor: pointer;
+  transition: all .2s;
+  background: var(--bg);
+  position: relative;
+}
+.uz-zone:hover, .uz-zone.drag {
+  border-color: var(--accent);
+  background: rgba(74,144,217,.06);
+}
+.uz-zone input[type="file"] { display: none; }
+.uz-ico  { display: flex; justify-content: center; margin-bottom: 6px; color: var(--muted); opacity: .6; }
+.uz-txt  { font-size: 11px; color: var(--muted); margin-bottom: 8px; }
+.uz-prev {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+}
+.uz-prev img {
+  width: 52px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 5px;
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.uz-prev-info { flex: 1; min-width: 0; }
+.uz-prev-name { font-size: 11px; font-weight: 600; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.uz-prev-sub  { font-size: 10px; color: var(--muted); }
+.uz-uploading { font-size: 11px; color: var(--accent); display: flex; align-items: center; gap: 6px; margin-top: 8px; }
+
+/* ===================== SVGアイコン共通 ===================== */
+.ico-svg { vertical-align: middle; flex-shrink: 0; }
+</style>
+</head>
+<body>
+
+<!-- SVGスプライト定義（非表示） -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+  <symbol id="ico-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+    <polyline points="9 22 9 12 15 12 15 22"/>
+  </symbol>
+  <symbol id="ico-folder" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+  </symbol>
+  <symbol id="ico-clipboard" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="9" y="2" width="6" height="4" rx="1"/>
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+    <line x1="9" y1="12" x2="15" y2="12"/>
+    <line x1="9" y1="16" x2="12" y2="16"/>
+  </symbol>
+  <symbol id="ico-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+    <circle cx="12" cy="12" r="3"/>
+  </symbol>
+  <symbol id="ico-file" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+    <polyline points="14 2 14 8 20 8"/>
+  </symbol>
+  <symbol id="ico-building" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="4" y="2" width="16" height="20" rx="2"/>
+    <line x1="9" y1="2" x2="9" y2="22"/>
+    <line x1="15" y1="2" x2="15" y2="22"/>
+    <line x1="4" y1="8" x2="20" y2="8"/>
+    <line x1="4" y1="14" x2="20" y2="14"/>
+  </symbol>
+  <symbol id="ico-mappin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+    <circle cx="12" cy="10" r="3"/>
+  </symbol>
+  <symbol id="ico-edit3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+  </symbol>
+  <symbol id="ico-image" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="3" y="3" width="18" height="18" rx="2"/>
+    <circle cx="8.5" cy="8.5" r="1.5"/>
+    <polyline points="21 15 16 10 5 21"/>
+  </symbol>
+  <symbol id="ico-save" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+    <polyline points="17 21 17 13 7 13 7 21"/>
+    <polyline points="7 3 7 8 15 8"/>
+  </symbol>
+  <symbol id="ico-printer" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="6 9 6 2 18 2 18 9"/>
+    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+    <rect x="6" y="14" width="12" height="8"/>
+  </symbol>
+  <symbol id="ico-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="8 17 12 21 16 17"/>
+    <line x1="12" y1="12" x2="12" y2="21"/>
+    <path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"/>
+  </symbol>
+  <symbol id="ico-phone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+  </symbol>
+  <symbol id="ico-scissors" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="6" cy="6" r="3"/>
+    <circle cx="6" cy="18" r="3"/>
+    <line x1="20" y1="4" x2="8.12" y2="15.88"/>
+    <line x1="14.47" y1="14.48" x2="20" y2="20"/>
+    <line x1="8.12" y1="8.12" x2="12" y2="12"/>
+  </symbol>
+  <symbol id="ico-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+    <line x1="12" y1="9" x2="12" y2="13"/>
+    <line x1="12" y1="17" x2="12.01" y2="17"/>
+  </symbol>
+  <symbol id="ico-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="20 6 9 17 4 12"/>
+  </symbol>
+  <symbol id="ico-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="3" y1="12" x2="21" y2="12"/>
+    <line x1="3" y1="6" x2="21" y2="6"/>
+    <line x1="3" y1="18" x2="21" y2="18"/>
+  </symbol>
+</svg>
+
+<!-- オーバーレイ（モバイル） -->
+<div id="sbOv" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:190;" onclick="closeSb()"></div>
+
+<!-- ===== サイドバー ===== -->
+<aside class="sb" id="sb">
+  <div class="sb-logo" onclick="go('dash')" style="cursor:pointer" title="ホームへ戻る">
+    <div class="en">Salon Management</div>
+    <div class="ja">サロン情報<br>管理システム</div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-sec">メイン</div>
+    <div class="sb-item on" id="ni-dash" onclick="go('dash')">
+      <span class="ico"><svg class="ico-svg" width="17" height="17"><use href="#ico-home"/></svg></span> ダッシュボード
+    </div>
+    <div class="sb-sec">管理</div>
+    <div class="sb-item" id="ni-projects" onclick="go('projects')">
+      <span class="ico"><svg class="ico-svg" width="17" height="17"><use href="#ico-folder"/></svg></span> 案件一覧
+    </div>
+    <div class="sb-item" id="ni-salons" onclick="go('salons')">
+      <span class="ico"><svg class="ico-svg" width="17" height="17"><use href="#ico-scissors"/></svg></span> サロン一覧
+    </div>
+    <div class="sb-item" id="ni-templates" onclick="go('templates')">
+      <span class="ico"><svg class="ico-svg" width="17" height="17"><use href="#ico-clipboard"/></svg></span> テンプレート
+    </div>
+    <div class="sb-sec">出力</div>
+    <div class="sb-item" id="ni-preview" onclick="go('preview')">
+      <span class="ico"><svg class="ico-svg" width="17" height="17"><use href="#ico-eye"/></svg></span> プレビュー
+    </div>
+    <div class="sb-item" id="ni-csv" onclick="go('csv')">
+      <span class="ico"><svg class="ico-svg" width="17" height="17"><use href="#ico-file"/></svg></span> CSV出力
+    </div>
+  </nav>
+</aside>
+
+<!-- ===== メイン ===== -->
+<div class="main">
+  <header class="topbar">
+    <button class="menu-btn" onclick="toggleSb()"><svg class="ico-svg" width="22" height="22"><use href="#ico-menu"/></svg></button>
+    <div class="topbar-title" id="pageTitle">ダッシュボード</div>
+    <div class="topbar-actions" id="topActs"></div>
+  </header>
+  <div class="content" id="content">
+    <div class="loading"><div class="spin"></div>読み込み中...</div>
+  </div>
+</div>
+
+<!-- モーダル -->
+<div id="mwrap"></div>
+
+<!-- トースト -->
+<div id="toast" style="display:none;"></div>
+
+<script>
+// =====================================================
+// SVGアイコンヘルパー（useタグで参照）
+// =====================================================
+function ico(name, sz) {
+  sz = sz || 16;
+  return '<svg class="ico-svg" width="' + sz + '" height="' + sz + '"><use href="#ico-' + name + '"/></svg>';
+}
+
+// =====================================================
+// 定数
+// =====================================================
+var TAGS = [
+  'ヘアカラー','カット','パーマ','トリートメント',
+  'ネイル','アイラッシュ','エステ','メイク',
+  'ブライダル','メンズ','キッズ','オーガニック',
+  'ハイセンス','アットホーム','駅近','駐車場あり'
+];
+var REQUIRED_FIELDS = ['companyName','salonName','address','tel'];
+
+// =====================================================
+// 状態管理
+// =====================================================
+var ST = {
+  view:        'dash',
+  projectId:   null,
+  projects:    [],
+  prevPid:     null,
+  prevLayout:  '1/2'
+};
+
+// =====================================================
+// GAS通信
+// =====================================================
+function gas(fn) {
+  var args = [].slice.call(arguments, 1);
+  return new Promise(function(ok, ng) {
+    var r = google.script.run.withSuccessHandler(ok).withFailureHandler(ng);
+    r[fn].apply(r, args);
+  });
+}
+
+// =====================================================
+// UI ヘルパー
+// =====================================================
+function e(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+function loading(msg) {
+  document.getElementById('content').innerHTML =
+    '<div class="loading"><div class="spin"></div>' + e(msg || '読み込み中...') + '</div>';
+}
+
+function showToast(msg, ok) {
+  var el = document.getElementById('toast');
+  el.textContent = msg;
+  el.style.background = ok === false ? '#e74c3c' : '#27ae60';
+  el.style.color = '#fff';
+  el.style.display = 'block';
+  el.style.opacity = '1';
+  el.style.transform = 'translateY(0)';
+  setTimeout(function() {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(8px)';
+    setTimeout(function() { el.style.display = 'none'; }, 300);
+  }, 3200);
+}
+
+function openModal(html) { document.getElementById('mwrap').innerHTML = html; }
+function closeModal()    { document.getElementById('mwrap').innerHTML = ''; }
+
+function toggleSb() {
+  document.getElementById('sb').classList.toggle('open');
+  var ov = document.getElementById('sbOv');
+  ov.style.display = ov.style.display === 'none' ? 'block' : 'none';
+}
+function closeSb() {
+  document.getElementById('sb').classList.remove('open');
+  document.getElementById('sbOv').style.display = 'none';
+}
+
+function setNav(v) {
+  document.querySelectorAll('.sb-item').forEach(function(el){ el.classList.remove('on'); });
+  var k = v.split('-')[0];
+  var el = document.getElementById('ni-' + k);
+  if (el) el.classList.add('on');
+}
+
+function bc(parts) {
+  var html = parts.map(function(p, i) {
+    if (i < parts.length - 1) return '<a onclick="' + p.fn + '">' + e(p.label) + '</a><span class="sep">›</span>';
+    return '<span>' + e(p.label) + '</span>';
+  }).join('');
+  return '<div class="bc">' + html + '</div>';
+}
+
+// =====================================================
+// ナビゲーション
+// =====================================================
+function saveState(view, params) {
+  try { localStorage.setItem('_appState', JSON.stringify({ v: view, p: params || {} })); } catch(e) {}
+}
+
+function go(view, params) {
+  params = params || {};
+  ST.view = view;
+  closeSb();
+  setNav(view);
+  saveState(view, params);
+
+  var titles = {
+    dash: 'ダッシュボード',
+    projects: '案件一覧',
+    salons: 'サロン一覧',
+    'project-detail': '案件詳細',
+    'salon-form': 'サロン情報入力',
+    templates: 'テンプレート一覧',
+    preview: 'プレビュー・PDF出力',
+    csv: 'CSV出力'
+  };
+  document.getElementById('pageTitle').textContent = titles[view] || '';
+  document.getElementById('topActs').innerHTML = '';
+
+  if (view === 'dash')           renderDash();
+  else if (view === 'projects')  renderProjects();
+  else if (view === 'salons')    renderAllSalons();
+  else if (view === 'project-detail') renderProjectDetail(params.pid);
+  else if (view === 'salon-form') renderSalonForm(params.sid, params.pid);
+  else if (view === 'templates') renderTemplates();
+  else if (view === 'preview')   renderPreview(params.pid);
+  else if (view === 'csv')       renderCSV(params.pid);
+}
+
+// =====================================================
+// ダッシュボード
+// =====================================================
+function renderDash() {
+  loading();
+  gas('getDashboard').then(function(data) {
+    ST.projects = data.map(function(d){ return d.project; });
+
+    var totalS = data.reduce(function(s,d){ return s + d.count; }, 0);
+    var totalW = data.reduce(function(s,d){ return s + d.warnings; }, 0);
+
+    var grouped = {};
+    data.forEach(function(d) {
+      var y = d.project.year;
+      if (!grouped[y]) grouped[y] = [];
+      grouped[y].push(d);
+    });
+
+    var rows = '';
+    Object.keys(grouped).sort().reverse().forEach(function(year) {
+      rows += '<tr><td colspan="5" style="background:var(--navy);color:#fff;padding:8px 16px;font-size:12px;font-weight:700">' + e(year) + '</td></tr>';
+      grouped[year].forEach(function(d) {
+        var w = d.warnings > 0
+          ? '<span class="badge b-warn">' + ico('alert',10) + ' ' + d.warnings + '件</span>'
+          : '<span class="badge b-success">' + ico('check',10) + '</span>';
+        rows += '<tr><td style="padding-left:28px">' + e(d.project.month) + '</td>' +
+          '<td class="fw7">' + e(d.project.name) + '</td>' +
+          '<td><span class="badge b-navy">' + d.count + '</span></td>' +
+          '<td>' + w + '</td>' +
+          '<td><div class="acts">' +
+            '<button class="btn btn-ghost btn-xs" onclick="go(\'project-detail\',{pid:\'' + d.project.id + '\'})">開く →</button>' +
+          '</div></td></tr>';
+      });
+    });
+
+    var warnAlert = totalW > 0
+      ? '<div class="alert a-warn mb16">' + ico('alert',14) + '<strong>' + totalW + '件</strong>のサロンで未入力項目があります。</div>'
+      : '';
+
+    document.getElementById('content').innerHTML =
+      '<div class="flex gap12 mb16 wrap">' +
+        stat('総案件数',  data.length + ' 件') +
+        stat('総サロン数', totalS + ' 件') +
+        stat('未入力警告', totalW + ' 件', totalW > 0 ? 'color:var(--warn)' : 'color:var(--success)') +
+      '</div>' +
+      warnAlert +
+      '<div class="card">' +
+        '<div class="card-head"><div class="card-title">' + ico('clipboard',14) + ' 案件一覧</div>' +
+          '<button class="btn btn-primary btn-sm" onclick="go(\'projects\')">案件を管理 →</button>' +
+        '</div>' +
+        (data.length === 0
+          ? '<div class="empty"><div class="empty-ico">' + ico('folder',48) + '</div><p>案件がまだありません<br><br><button class="btn btn-primary mt12" onclick="go(\'projects\')">案件を作成する</button></p></div>'
+          : '<div style="overflow-x:auto"><table class="tbl"><thead><tr><th>月</th><th>案件名</th><th>サロン数</th><th>状況</th><th>操作</th></tr></thead><tbody>' + rows + '</tbody></table></div>') +
+      '</div>';
+  }).catch(function(err){ showErr(err); });
+}
+
+function stat(label, val, style) {
+  return '<div class="card" style="flex:1;min-width:130px;padding:16px;margin-bottom:0">' +
+    '<div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">' + e(label) + '</div>' +
+    '<div style="font-size:26px;font-weight:800;' + (style||'color:var(--navy)') + '">' + e(val) + '</div>' +
+  '</div>';
+}
+
+// =====================================================
+// サロン一覧（案件横断）
+// =====================================================
+function renderAllSalons() {
+  loading();
+  gas('getAllSalons').then(function(salons) {
+    if (salons.length === 0) {
+      document.getElementById('content').innerHTML =
+        '<div class="empty"><div class="empty-ico">' + ico('scissors',48) + '</div>' +
+        '<p>サロンがまだ登録されていません<br><span class="c-muted fs12">案件にサロンを追加すると、ここに表示されます</span></p></div>';
+      return;
+    }
+
+    var searchBar =
+      '<div class="card mb16 no-print">' +
+        '<div class="card-body" style="padding:12px 16px">' +
+          '<div class="flex items-c gap8 wrap">' +
+            '<div style="flex:1;min-width:180px">' +
+              '<input type="text" class="finput" id="saSearch" placeholder="サロン名・会社名で検索..." oninput="filterAllSalons()">' +
+            '</div>' +
+            '<div style="min-width:200px">' +
+              '<select class="finput" id="saProject" onchange="filterAllSalons()">' +
+                '<option value="">▼ 案件で絞り込み</option>' +
+              '</select>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+
+    var projects = {};
+    salons.forEach(function(s) {
+      if (s.projectName && !projects[s.projectId]) projects[s.projectId] = s.projectName;
+    });
+    var projOpts = Object.keys(projects).map(function(pid) {
+      return '<option value="' + e(pid) + '">' + e(projects[pid]) + '</option>';
+    }).join('');
+
+    var cards = salons.map(function(s) {
+      var missing = REQUIRED_FIELDS.filter(function(f){ return !s[f]; });
+      var warn    = missing.length > 0 ? '<span class="scard-warn" title="未入力：' + e(missing.join(', ')) + '">' + ico('alert',15) + '</span>' : '';
+      var tags    = (s.tags||[]).slice(0,4).map(function(t){ return '<span class="stag">' + e(t) + '</span>'; }).join('');
+      var info    = '';
+      if (s.tel)     info += '<span class="scard-info-row">' + ico('phone',12) + ' ' + e(s.tel) + '</span>';
+      if (s.address) info += '<span class="scard-info-row">' + ico('mappin',12) + ' ' + e(s.address) + '</span>';
+
+      return '<div class="scard" data-salon="' + e(s.id) + '" data-pid="' + e(s.projectId) + '" ' +
+             'data-name="' + e((s.salonName||'').toLowerCase() + ' ' + (s.companyName||'').toLowerCase()) + '">' +
+        warn +
+        '<div class="scard-head">' +
+          '<div>' +
+            '<div class="scard-name">' + e(s.salonName||'（未設定）') + '</div>' +
+            '<div class="scard-co">' + e(s.companyName||'') + '</div>' +
+          '</div>' +
+          '<span class="scard-ly">' + e(s.layout||'1/2') + '</span>' +
+        '</div>' +
+        (s.projectName ? '<div style="font-size:10px;color:var(--accent);margin-bottom:8px;display:flex;align-items:center;gap:4px">' + ico('folder',11) + ' ' + e(s.projectName) + '</div>' : '') +
+        (info ? '<div class="scard-info">' + info + '</div>' : '') +
+        (tags ? '<div class="scard-tags">' + tags + '</div>' : '') +
+        '<div class="scard-acts">' +
+          '<button class="btn btn-ghost btn-xs" onclick="go(\'salon-form\',{sid:\'' + e(s.id) + '\',pid:\'' + e(s.projectId) + '\'})">編集</button>' +
+          '<button class="btn btn-ghost btn-xs" onclick="go(\'project-detail\',{pid:\'' + e(s.projectId) + '\'})">案件を開く</button>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+
+    document.getElementById('content').innerHTML =
+      searchBar +
+      '<div id="saGrid" class="salon-grid">' + cards + '</div>' +
+      '<div id="saEmpty" class="empty" style="display:none"><div class="empty-ico">' + ico('scissors',48) + '</div><p>該当するサロンがありません</p></div>';
+
+    var sel = document.getElementById('saProject');
+    if (sel) sel.innerHTML = '<option value="">▼ 案件で絞り込み</option>' + projOpts;
+  }).catch(function(err){ showErr(err); });
+}
+
+function filterAllSalons() {
+  var q    = (document.getElementById('saSearch').value || '').toLowerCase();
+  var pid  = document.getElementById('saProject').value;
+  var cards = document.querySelectorAll('#saGrid .scard');
+  var shown = 0;
+  cards.forEach(function(c) {
+    var matchText = !q || (c.getAttribute('data-name')||'').indexOf(q) !== -1;
+    var matchProj = !pid || c.getAttribute('data-pid') === pid;
+    var show = matchText && matchProj;
+    c.style.display = show ? '' : 'none';
+    if (show) shown++;
+  });
+  var emptyEl = document.getElementById('saEmpty');
+  if (emptyEl) emptyEl.style.display = shown === 0 ? '' : 'none';
+}
+
+// =====================================================
+// 案件一覧
+// =====================================================
+function renderProjects() {
+  loading();
+  gas('getDashboard').then(function(data) {
+    ST.projects = data.map(function(d){ return d.project; });
+
+    document.getElementById('topActs').innerHTML =
+      '<button class="btn btn-primary btn-sm" onclick="openProjectModal()">＋ 新規案件</button>';
+
+    var grouped = {};
+    data.forEach(function(d) {
+      var y = d.project.year;
+      if (!grouped[y]) grouped[y] = [];
+      grouped[y].push(d);
+    });
+
+    var html = '';
+    Object.keys(grouped).sort().reverse().forEach(function(year) {
+      var cards = grouped[year].map(function(d) {
+        var pid = e(d.project.id);
+        var pn  = e(d.project.name);
+        var wMark = d.warnings > 0 ? '<span class="pcard-warn">' + ico('alert',14) + '</span>' : '';
+        return '<div class="pcard" onclick="go(\'project-detail\',{pid:\'' + pid + '\'})">' +
+          '<div class="pcard-year">' + e(d.project.year) + ' ' + e(d.project.month) + '</div>' +
+          '<div class="pcard-name">' + pn + '</div>' +
+          '<div class="pcard-meta">' +
+            '<span class="pcard-count">' + ico('scissors',12) + ' ' + d.count + ' サロン</span>' +
+            wMark +
+          '</div>' +
+          '<div class="pcard-acts" onclick="event.stopPropagation()">' +
+            '<button class="btn btn-ghost btn-xs" onclick="openProjectModal(\'' + pid + '\',\'' + e(d.project.year) + '\',\'' + e(d.project.month) + '\',\'' + pn + '\')">編集</button>' +
+            '<button class="btn btn-ghost btn-xs" onclick="openCopyProject(\'' + pid + '\',\'' + pn + '\')">複製</button>' +
+            '<button class="btn btn-danger btn-xs" onclick="delProject(\'' + pid + '\',\'' + pn + '\')">削除</button>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+
+      html += '<div class="mb16">' +
+        '<div class="fw7 c-navy mb8" style="font-size:13px">' + e(year) + '</div>' +
+        '<div class="project-grid">' + cards + '</div>' +
+      '</div>';
+    });
+
+    document.getElementById('content').innerHTML =
+      (data.length === 0
+        ? '<div class="empty"><div class="empty-ico">' + ico('folder',48) + '</div><p>案件がありません<br>「＋ 新規案件」から作成してください</p></div>'
+        : html);
+  }).catch(function(err){ showErr(err); });
+}
+
+function openProjectModal(id, year, month, name) {
+  Promise.all([gas('getYears'), gas('getMonths')]).then(function(r) {
+    var yo = r[0].map(function(y){ return '<option' + (y===year?' selected':'') + '>' + e(y) + '</option>'; }).join('');
+    var mo = r[1].map(function(m){ return '<option' + (m===month?' selected':'') + '>' + e(m) + '</option>'; }).join('');
+
+    openModal('<div class="moverlay" onclick="if(event.target===this)closeModal()">' +
+      '<div class="mbox">' +
+        '<div class="mhd"><h3>' + (id ? '案件を編集' : '新規案件を作成') + '</h3><button class="mclose" onclick="closeModal()">×</button></div>' +
+        '<div class="mbody">' +
+          '<div class="fg"><label class="flabel req">年度</label><select class="finput" id="pYear">' + yo + '</select></div>' +
+          '<div class="fg"><label class="flabel req">月</label><select class="finput" id="pMonth">' + mo + '</select></div>' +
+          '<div class="fg"><label class="flabel req">案件名（学校・イベント名）</label><input type="text" class="finput" id="pName" value="' + e(name||'') + '" placeholder="例：A美容専門学校"></div>' +
+        '</div>' +
+        '<div class="mfoot"><button class="btn btn-ghost" onclick="closeModal()">キャンセル</button><button class="btn btn-primary" onclick="saveProject(\'' + (id||'') + '\')">保存</button></div>' +
+      '</div></div>');
+  });
+}
+
+function saveProject(id) {
+  var year  = document.getElementById('pYear').value;
+  var month = document.getElementById('pMonth').value;
+  var name  = document.getElementById('pName').value.trim();
+  if (!name) { alert('案件名を入力してください'); return; }
+
+  gas('saveProject', { id: id||null, year:year, month:month, name:name }).then(function() {
+    closeModal(); showToast('案件を保存しました'); renderProjects();
+  }).catch(function(err){ alert('エラー: ' + err.message); });
+}
+
+function openCopyProject(id, name) {
+  Promise.all([gas('getYears'), gas('getMonths')]).then(function(r) {
+    var yo = r[0].map(function(y){ return '<option>' + e(y) + '</option>'; }).join('');
+    var mo = r[1].map(function(m){ return '<option>' + e(m) + '</option>'; }).join('');
+
+    openModal('<div class="moverlay" onclick="if(event.target===this)closeModal()">' +
+      '<div class="mbox">' +
+        '<div class="mhd"><h3>案件を複製</h3><button class="mclose" onclick="closeModal()">×</button></div>' +
+        '<div class="mbody">' +
+          '<p class="c-muted fs12 mb12">「' + e(name) + '」を複製します。<br>複製先の年度と月を選択してください。</p>' +
+          '<div class="fg"><label class="flabel req">複製先の年度</label><select class="finput" id="cpY">' + yo + '</select></div>' +
+          '<div class="fg"><label class="flabel req">複製先の月</label><select class="finput" id="cpM">' + mo + '</select></div>' +
+        '</div>' +
+        '<div class="mfoot"><button class="btn btn-ghost" onclick="closeModal()">キャンセル</button><button class="btn btn-primary" onclick="doCopyProject(\'' + id + '\')">複製する</button></div>' +
+      '</div></div>');
+  });
+}
+
+function doCopyProject(id) {
+  var y = document.getElementById('cpY').value;
+  var m = document.getElementById('cpM').value;
+  gas('copyProject', id, y, m).then(function() {
+    closeModal(); showToast('案件を複製しました'); renderProjects();
+  }).catch(function(err){ alert('エラー: ' + err.message); });
+}
+
+function delProject(id, name) {
+  if (!confirm('「' + name + '」を削除します。\n案件内のサロン情報もすべて削除されます。\n\n本当によろしいですか？')) return;
+  gas('deleteProject', id).then(function() {
+    showToast('案件を削除しました'); renderProjects();
+  }).catch(function(err){ alert('エラー: ' + err.message); });
+}
+
+// =====================================================
+// 案件詳細（サロン一覧）
+// =====================================================
+function renderProjectDetail(pid) {
+  if (!pid) { go('projects'); return; }
+  ST.projectId = pid;
+  loading();
+
+  Promise.all([gas('getProjects'), gas('getSalonsByProject', pid)]).then(function(r) {
+    ST.projects = r[0];
+    var salons  = r[1];
+    var proj    = ST.projects.find(function(p){ return p.id === pid; });
+    var pname   = proj ? proj.year + ' ' + proj.month + ' ' + proj.name : pid;
+
+    document.getElementById('topActs').innerHTML =
+      '<button class="btn btn-ghost btn-sm" onclick="go(\'preview\',{pid:\'' + e(pid) + '\'})">' + ico('eye',13) + ' プレビュー</button>' +
+      '<button class="btn btn-ghost btn-sm" onclick="go(\'csv\',{pid:\'' + e(pid) + '\'})">' + ico('file',13) + ' CSV</button>' +
+      '<button class="btn btn-primary btn-sm" onclick="go(\'salon-form\',{pid:\'' + e(pid) + '\'})">＋ サロン追加</button>';
+
+    var cards = salons.map(function(s) {
+      var missing = REQUIRED_FIELDS.filter(function(f){ return !s[f]; });
+      var warnBadge = missing.length > 0
+        ? '<span class="scard-warn">' + ico('alert',14) + '</span>'
+        : '<span style="position:absolute;top:12px;right:12px;color:var(--success)">' + ico('check',14) + '</span>';
+      var tags = (s.tags||[]).slice(0,5).map(function(t){ return '<span class="stag">' + e(t) + '</span>'; }).join('');
+
+      var info = '';
+      if (s.tel)     info += '<span class="scard-info-row">' + ico('phone',12) + e(s.tel) + '</span>';
+      if (s.address) info += '<span class="scard-info-row">' + ico('mappin',12) + e(s.address) + '</span>';
+
+      var completeness = Math.round((REQUIRED_FIELDS.filter(function(f){ return !!s[f]; }).length / REQUIRED_FIELDS.length) * 100);
+      var barColor = completeness === 100 ? 'var(--success)' : completeness >= 50 ? 'var(--warn)' : 'var(--danger)';
+
+      return '<div class="scard">' +
+        warnBadge +
+        '<div class="scard-head">' +
+          '<div>' +
+            '<div class="scard-name">' + e(s.salonName||'（未設定）') + '</div>' +
+            '<div class="scard-co">' + e(s.companyName||'') + '</div>' +
+          '</div>' +
+          '<span class="scard-ly">' + e(s.layout||'1/2') + '</span>' +
+        '</div>' +
+        (info ? '<div class="scard-info">' + info + '</div>' : '') +
+        (tags ? '<div class="scard-tags">' + tags + '</div>' : '') +
+        '<div style="margin-top:auto">' +
+          '<div style="display:flex;align-items:center;gap:6px;margin-bottom:10px">' +
+            '<div style="flex:1;height:3px;background:var(--border);border-radius:2px">' +
+              '<div style="width:' + completeness + '%;height:100%;background:' + barColor + ';border-radius:2px;transition:width .3s"></div>' +
+            '</div>' +
+            '<span style="font-size:10px;color:var(--muted)">' + completeness + '%</span>' +
+          '</div>' +
+          '<div class="scard-acts">' +
+            '<button class="btn btn-accent btn-xs" onclick="go(\'salon-form\',{sid:\'' + s.id + '\',pid:\'' + e(pid) + '\'})">編集</button>' +
+            '<button class="btn btn-ghost btn-xs" onclick="openCopySalon(\'' + s.id + '\',\'' + e(s.salonName) + '\')">複製</button>' +
+            '<button class="btn btn-ghost btn-xs" onclick="openSaveAsTemplate(\'' + s.id + '\',\'' + e(s.salonName) + '\')">テンプレ保存</button>' +
+            '<button class="btn btn-danger btn-xs" onclick="delSalon(\'' + s.id + '\',\'' + e(s.salonName) + '\')">削除</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+
+    document.getElementById('content').innerHTML =
+      bc([{ label:'案件一覧', fn:"go('projects')" }, { label: pname }]) +
+      (salons.length === 0
+        ? '<div class="empty"><div class="empty-ico">' + ico('scissors',48) + '</div><p>サロンがまだ登録されていません<br><br>' +
+          '<button class="btn btn-primary" onclick="go(\'salon-form\',{pid:\'' + e(pid) + '\'})">＋ サロンを追加する</button></p></div>'
+        : '<div class="salon-grid">' + cards + '</div>');
+  }).catch(function(err){ showErr(err); });
+}
+
+function openCopySalon(sid, sname) {
+  gas('getProjects').then(function(projects) {
+    ST.projects = projects;
+    var opts = projects.map(function(p){
+      return '<option value="' + e(p.id) + '">' + e(p.year + ' ' + p.month + ' - ' + p.name) + '</option>';
+    }).join('');
+
+    openModal('<div class="moverlay" onclick="if(event.target===this)closeModal()">' +
+      '<div class="mbox">' +
+        '<div class="mhd"><h3>サロンを複製</h3><button class="mclose" onclick="closeModal()">×</button></div>' +
+        '<div class="mbody">' +
+          '<p class="c-muted fs12 mb12">「' + e(sname) + '」の複製先案件を選択してください。</p>' +
+          '<div class="fg"><label class="flabel req">複製先案件</label><select class="finput" id="cpSF">' + opts + '</select></div>' +
+        '</div>' +
+        '<div class="mfoot"><button class="btn btn-ghost" onclick="closeModal()">キャンセル</button><button class="btn btn-primary" onclick="doCopySalon(\'' + sid + '\')">複製する</button></div>' +
+      '</div></div>');
+  });
+}
+
+function doCopySalon(sid) {
+  var pid = document.getElementById('cpSF').value;
+  gas('copySalonToProject', sid, pid).then(function() {
+    closeModal(); showToast('サロンを複製しました');
+  }).catch(function(err){ alert('エラー: ' + err.message); });
+}
+
+function openSaveAsTemplate(sid, sname) {
+  openModal('<div class="moverlay" onclick="if(event.target===this)closeModal()">' +
+    '<div class="mbox">' +
+      '<div class="mhd"><h3>テンプレートとして保存</h3><button class="mclose" onclick="closeModal()">×</button></div>' +
+      '<div class="mbody">' +
+        '<p class="c-muted fs12 mb12">「' + e(sname) + '」をテンプレートに保存します。</p>' +
+        '<div class="fg"><label class="flabel req">テンプレート名</label><input type="text" class="finput" id="tmplName" value="' + e(sname) + '" placeholder="わかりやすい名前をつけてください"></div>' +
+      '</div>' +
+      '<div class="mfoot"><button class="btn btn-ghost" onclick="closeModal()">キャンセル</button><button class="btn btn-success" onclick="doSaveAsTemplate(\'' + sid + '\')">保存する</button></div>' +
+    '</div></div>');
+}
+
+function doSaveAsTemplate(sid) {
+  var name = document.getElementById('tmplName').value.trim();
+  if (!name) { alert('テンプレート名を入力してください'); return; }
+  gas('saveAsTemplate', sid, name).then(function() {
+    closeModal(); showToast('テンプレートに保存しました');
+  }).catch(function(err){ alert('エラー: ' + err.message); });
+}
+
+function delSalon(id, name) {
+  if (!confirm('「' + name + '」を削除します。よろしいですか？')) return;
+  gas('deleteSalon', id).then(function() {
+    showToast('削除しました'); renderProjectDetail(ST.projectId);
+  }).catch(function(err){ alert('エラー: ' + err.message); });
+}
+
+// =====================================================
+// サロン入力フォーム
+// =====================================================
+function renderSalonForm(sid, pid) {
+  loading('フォームを準備中...');
+
+  var proms = sid ? [gas('getSalon', sid), gas('getProjects'), gas('getTemplates')] : [Promise.resolve(null), gas('getProjects'), gas('getTemplates')];
+  Promise.all(proms).then(function(r) {
+    var salon = r[0] || {};
+    ST.projects = r[1];
+    var tmpls   = r[2];
+    pid = pid || salon.projectId;
+    var proj  = ST.projects.find(function(p){ return p.id === pid; });
+    var pname = proj ? proj.name : '';
+
+    var tOpts = tmpls.map(function(t) {
+      return '<option value="' + e(t.id) + '">' + e(t.templateName) + '</option>';
+    }).join('');
+    var tmplSec = tmpls.length > 0
+      ? '<div class="alert a-info flex items-c gap8 mb16">' +
+          '<select class="finput" id="tmplSel" style="max-width:200px"><option value="">テンプレートを選択</option>' + tOpts + '</select>' +
+          '<button class="btn btn-accent btn-sm" onclick="applyTemplate()">適用する</button>' +
+        '</div>'
+      : '';
+
+    var tagHtml = TAGS.map(function(t) {
+      var chk = (salon.tags||[]).indexOf(t) !== -1 ? 'checked' : '';
+      return '<input type="checkbox" class="tcb" id="tg_' + e(t) + '" value="' + e(t) + '" ' + chk + '>' +
+             '<label class="tlbl" for="tg_' + e(t) + '">' + e(t) + '</label>';
+    }).join('');
+
+    var ly12 = (!salon.layout || salon.layout==='1/2') ? 'checked' : '';
+    var ly13 = salon.layout==='1/3' ? 'checked' : '';
+
+    document.getElementById('content').innerHTML =
+      bc([
+        {label:'案件一覧',fn:"go('projects')"},
+        {label:pname,fn:"go('project-detail',{pid:'"+e(pid)+"'})"},
+        {label: sid ? 'サロン編集' : 'サロン追加'}
+      ]) +
+      tmplSec +
+
+      '<div class="card">' +
+        '<div class="card-head"><div class="card-title">' + ico('building',14) + ' 基本情報</div></div>' +
+        '<div class="card-body">' +
+          '<div class="grid2">' +
+            fld('会社名','f_co',salon.companyName,'株式会社〇〇',true) +
+            fld('サロン名','f_sn',salon.salonName,'〇〇サロン',true) +
+          '</div>' +
+          fld('キャッチコピー','f_catch',salon.catchphrase,'あなたの美しさを引き出す') +
+          '<div class="grid2">' +
+            fld('代表者名','f_rep',salon.representative,'山田 太郎') +
+            fld('設立年','f_est',salon.established,'2020','','number') +
+          '</div>' +
+          '<div class="grid2">' +
+            fld('店舗数','f_str',salon.stores,'1','','number') +
+            fld('スタッフ数','f_stf',salon.staff,'10','','number') +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+
+      '<div class="card">' +
+        '<div class="card-head"><div class="card-title">' + ico('mappin',14) + ' 連絡先</div></div>' +
+        '<div class="card-body">' +
+          fld('住所','f_addr',salon.address,'東京都渋谷区〇〇 1-2-3',true) +
+          fld('TEL','f_tel',salon.tel,'03-1234-5678',true,'tel') +
+          '<div class="grid2">' +
+            fld('Instagram','f_ig',salon.instagram,'https://www.instagram.com/...','','url') +
+            fld('HP','f_hp',salon.hp,'https://...','','url') +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+
+      '<div class="card">' +
+        '<div class="card-head"><div class="card-title">' + ico('edit3',14) + ' 紹介文・タグ</div></div>' +
+        '<div class="card-body">' +
+          '<div class="fg"><label class="flabel">本文テキスト</label><textarea class="finput" id="f_body" rows="5" placeholder="サロンの紹介文...">' + e(salon.bodyText||'') + '</textarea></div>' +
+          '<div class="fg"><label class="flabel">タグ</label><div class="tags-wrap">' + tagHtml + '</div></div>' +
+        '</div>' +
+      '</div>' +
+
+      '<div class="card">' +
+        '<div class="card-head"><div class="card-title">' + ico('image',14) + ' 画像・レイアウト</div></div>' +
+        '<div class="card-body">' +
+          '<div class="grid2">' +
+            uzHtml('f_p1',  '写真1', salon.photo1) +
+            uzHtml('f_p2',  '写真2', salon.photo2) +
+          '</div>' +
+          uzHtml('f_logo', 'ロゴ',  salon.logo) +
+          '<div class="fg"><label class="flabel req">レイアウト</label>' +
+            '<div class="rgroup">' +
+              '<label><input type="radio" name="rl" value="1/2" ' + ly12 + '><div>1/2（1ページ2社）</div></label>' +
+              '<label><input type="radio" name="rl" value="1/3" ' + ly13 + '><div>1/3（1ページ3社）</div></label>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+
+      '<div class="flex between items-c gap8 no-print" style="padding-bottom:28px">' +
+        '<button class="btn btn-ghost" onclick="go(\'project-detail\',{pid:\'' + e(pid) + '\'})">← 戻る</button>' +
+        '<div class="flex gap8">' +
+          '<button class="btn btn-ghost" onclick="previewOne()">プレビュー</button>' +
+          '<button class="btn btn-primary" id="saveBtn" onclick="doSaveSalon(\'' + e(sid||'') + '\',\'' + e(pid) + '\')">' + ico('save',13) + ' 保存する</button>' +
+        '</div>' +
+      '</div>';
+
+  }).catch(function(err){ showErr(err); });
+}
+
+function fld(label, id, val, ph, req, type) {
+  var r = req ? ' req' : '';
+  var t = type || 'text';
+  return '<div class="fg"><label class="flabel' + r + '">' + e(label) + '</label>' +
+    '<input type="' + t + '" class="finput" id="' + id + '" value="' + e(val||'') + '" placeholder="' + e(ph||'') + '"></div>';
+}
+
+function getFormData() {
+  var tags = [].slice.call(document.querySelectorAll('.tcb:checked')).map(function(c){ return c.value; });
+  var rl   = document.querySelector('input[name="rl"]:checked');
+  return {
+    companyName:    document.getElementById('f_co').value.trim(),
+    salonName:      document.getElementById('f_sn').value.trim(),
+    catchphrase:    document.getElementById('f_catch').value.trim(),
+    representative: document.getElementById('f_rep').value.trim(),
+    established:    document.getElementById('f_est').value,
+    stores:         document.getElementById('f_str').value,
+    staff:          document.getElementById('f_stf').value,
+    address:        document.getElementById('f_addr').value.trim(),
+    tel:            document.getElementById('f_tel').value.trim(),
+    bodyText:       document.getElementById('f_body').value.trim(),
+    tags:           tags,
+    photo1:         document.getElementById('f_p1_url').value,
+    photo2:         document.getElementById('f_p2_url').value,
+    logo:           document.getElementById('f_logo_url').value,
+    instagram:      document.getElementById('f_ig').value.trim(),
+    hp:             document.getElementById('f_hp').value.trim(),
+    layout:         rl ? rl.value : '1/2'
+  };
+}
+
+function doSaveSalon(sid, pid) {
+  var data = getFormData();
+  if (!data.companyName) { alert('会社名を入力してください'); return; }
+  if (!data.salonName)   { alert('サロン名を入力してください'); return; }
+  data.id        = sid || null;
+  data.projectId = pid;
+
+  var btn = document.getElementById('saveBtn');
+  btn.disabled = true; btn.textContent = '保存中...';
+
+  gas('saveSalon', data).then(function() {
+    showToast('保存しました'); go('project-detail', { pid: pid });
+  }).catch(function(err){
+    alert('エラー: ' + err.message);
+    btn.disabled = false; btn.innerHTML = ico('save',13) + ' 保存する';
+  });
+}
+
+function applyTemplate() {
+  var sel = document.getElementById('tmplSel');
+  var tid = sel ? sel.value : '';
+  if (!tid) { alert('テンプレートを選択してください'); return; }
+
+  gas('getTemplates').then(function(tmpls) {
+    var t = tmpls.find(function(x){ return x.id === tid; });
+    if (!t) return;
+    var fields = {
+      f_co:'companyName', f_sn:'salonName', f_catch:'catchphrase',
+      f_rep:'representative', f_est:'established', f_str:'stores',
+      f_stf:'staff', f_addr:'address', f_tel:'tel',
+      f_body:'bodyText', f_ig:'instagram', f_hp:'hp'
+    };
+    Object.keys(fields).forEach(function(elId) {
+      var el = document.getElementById(elId);
+      if (el) el.value = t[fields[elId]] || '';
+    });
+    document.querySelectorAll('.tcb').forEach(function(cb) {
+      cb.checked = (t.tags||[]).indexOf(cb.value) !== -1;
+    });
+    document.querySelectorAll('input[name="rl"]').forEach(function(rb) {
+      rb.checked = rb.value === (t.layout || '1/2');
+    });
+    showToast('テンプレートを適用しました');
+  });
+}
+
+function previewOne() {
+  var d = getFormData();
+  openModal('<div class="moverlay" onclick="if(event.target===this)closeModal()">' +
+    '<div class="mbox">' +
+      '<div class="mhd"><h3>入力プレビュー（' + e(d.layout) + '）</h3><button class="mclose" onclick="closeModal()">×</button></div>' +
+      '<div class="mbody"><div class="pv-card">' + buildPvCard(d) + '</div></div>' +
+      '<div class="mfoot"><button class="btn btn-ghost" onclick="closeModal()">閉じる</button></div>' +
+    '</div></div>');
+}
+
+// =====================================================
+// テンプレート
+// =====================================================
+function renderTemplates() {
+  loading();
+
+  document.getElementById('topActs').innerHTML =
+    '<button class="btn btn-primary btn-sm" onclick="openTemplateForm()">＋ テンプレート作成</button>';
+
+  gas('getTemplates').then(function(tmpls) {
+    if (tmpls.length === 0) {
+      document.getElementById('content').innerHTML =
+        '<div class="empty"><div class="empty-ico">' + ico('clipboard',48) + '</div>' +
+        '<p>テンプレートがありません<br>' +
+        '<span class="c-muted fs12">サロン情報の「テンプレ保存」ボタンや「＋ テンプレート作成」から追加できます</span></p></div>';
+      return;
+    }
+
+    var cards = tmpls.map(function(t) {
+      var sub = [t.companyName, t.address].filter(Boolean).join(' ／ ');
+      var tags = (t.tags||[]).slice(0,4).map(function(tg){ return '<span class="stag">' + e(tg) + '</span>'; }).join('');
+
+      return '<div class="tcard">' +
+        '<div class="tcard-name">' + e(t.templateName) + '</div>' +
+        '<div class="tcard-sub">' +
+          (t.salonName ? e(t.salonName) + '<br>' : '') +
+          (sub ? '<span class="c-muted">' + e(sub) + '</span>' : '') +
+        '</div>' +
+        (tags ? '<div class="scard-tags" style="margin-bottom:10px">' + tags + '</div>' : '') +
+        '<div class="tcard-acts">' +
+          '<button class="btn btn-ghost btn-xs" onclick="openTemplateForm(\'' + e(t.id) + '\')">編集</button>' +
+          '<button class="btn btn-danger btn-xs" onclick="delTemplate(\'' + e(t.id) + '\',\'' + e(t.templateName) + '\')">削除</button>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+
+    document.getElementById('content').innerHTML = '<div class="tmpl-grid">' + cards + '</div>';
+  }).catch(function(err){ showErr(err); });
+}
+
+function openTemplateForm(tid) {
+  var proms = tid ? gas('getTemplates') : Promise.resolve([]);
+  Promise.resolve(proms).then(function(tmpls) {
+    var t = (tid && Array.isArray(tmpls)) ? tmpls.find(function(x){ return x.id === tid; }) : {};
+    t = t || {};
+
+    var tagHtml = TAGS.map(function(tag) {
+      var chk = (t.tags||[]).indexOf(tag) !== -1 ? 'checked' : '';
+      return '<input type="checkbox" class="tcb" id="tt_' + e(tag) + '" value="' + e(tag) + '" ' + chk + '>' +
+             '<label class="tlbl" for="tt_' + e(tag) + '">' + e(tag) + '</label>';
+    }).join('');
+
+    var ly12 = (!t.layout || t.layout==='1/2') ? 'checked' : '';
+    var ly13 = t.layout==='1/3' ? 'checked' : '';
+
+    openModal('<div class="moverlay" onclick="if(event.target===this)closeModal()">' +
+      '<div class="mbox wide">' +
+        '<div class="mhd"><h3>' + (tid ? 'テンプレートを編集' : 'テンプレートを新規作成') + '</h3><button class="mclose" onclick="closeModal()">×</button></div>' +
+        '<div class="mbody">' +
+          '<div class="fg"><label class="flabel req">テンプレート名</label><input type="text" class="finput" id="tn_name" value="' + e(t.templateName||'') + '" placeholder="例：標準サロン（ヘアカラー）"></div>' +
+          '<div class="divider"></div>' +
+          '<div class="grid2">' +
+            '<div class="fg"><label class="flabel">会社名</label><input class="finput" id="tn_co" value="' + e(t.companyName||'') + '"></div>' +
+            '<div class="fg"><label class="flabel">サロン名</label><input class="finput" id="tn_sn" value="' + e(t.salonName||'') + '"></div>' +
+          '</div>' +
+          '<div class="fg"><label class="flabel">キャッチコピー</label><input class="finput" id="tn_catch" value="' + e(t.catchphrase||'') + '"></div>' +
+          '<div class="grid2">' +
+            '<div class="fg"><label class="flabel">代表者名</label><input class="finput" id="tn_rep" value="' + e(t.representative||'') + '"></div>' +
+            '<div class="fg"><label class="flabel">設立年</label><input class="finput" type="number" id="tn_est" value="' + e(t.established||'') + '"></div>' +
+          '</div>' +
+          '<div class="grid2">' +
+            '<div class="fg"><label class="flabel">店舗数</label><input class="finput" type="number" id="tn_str" value="' + e(t.stores||'') + '"></div>' +
+            '<div class="fg"><label class="flabel">スタッフ数</label><input class="finput" type="number" id="tn_stf" value="' + e(t.staff||'') + '"></div>' +
+          '</div>' +
+          '<div class="fg"><label class="flabel">住所</label><input class="finput" id="tn_addr" value="' + e(t.address||'') + '"></div>' +
+          '<div class="fg"><label class="flabel">TEL</label><input class="finput" id="tn_tel" value="' + e(t.tel||'') + '"></div>' +
+          '<div class="fg"><label class="flabel">本文テキスト</label><textarea class="finput" id="tn_body" rows="3">' + e(t.bodyText||'') + '</textarea></div>' +
+          '<div class="fg"><label class="flabel">タグ</label><div class="tags-wrap">' + tagHtml + '</div></div>' +
+          '<div class="fg"><label class="flabel">レイアウト</label><div class="rgroup">' +
+            '<label><input type="radio" name="trl" value="1/2" ' + ly12 + '> 1/2</label>' +
+            '<label><input type="radio" name="trl" value="1/3" ' + ly13 + '> 1/3</label>' +
+          '</div></div>' +
+        '</div>' +
+        '<div class="mfoot"><button class="btn btn-ghost" onclick="closeModal()">キャンセル</button><button class="btn btn-primary" onclick="doSaveTemplate(\'' + (tid||'') + '\')">保存する</button></div>' +
+      '</div></div>');
+  });
+}
+
+function doSaveTemplate(tid) {
+  var tags = [].slice.call(document.querySelectorAll('.tcb:checked')).map(function(c){ return c.value; });
+  var rl   = document.querySelector('input[name="trl"]:checked');
+  var data = {
+    id:           tid || null,
+    templateName: document.getElementById('tn_name').value.trim(),
+    companyName:  document.getElementById('tn_co').value.trim(),
+    salonName:    document.getElementById('tn_sn').value.trim(),
+    catchphrase:  document.getElementById('tn_catch').value.trim(),
+    representative: document.getElementById('tn_rep').value.trim(),
+    established:  document.getElementById('tn_est').value,
+    stores:       document.getElementById('tn_str').value,
+    staff:        document.getElementById('tn_stf').value,
+    address:      document.getElementById('tn_addr').value.trim(),
+    tel:          document.getElementById('tn_tel').value.trim(),
+    bodyText:     document.getElementById('tn_body').value.trim(),
+    tags:         tags,
+    layout:       rl ? rl.value : '1/2'
+  };
+  if (!data.templateName) { alert('テンプレート名を入力してください'); return; }
+
+  gas('saveTemplate', data).then(function() {
+    closeModal(); showToast('テンプレートを保存しました'); renderTemplates();
+  }).catch(function(err){ alert('エラー: ' + err.message); });
+}
+
+function delTemplate(id, name) {
+  if (!confirm('「' + name + '」を削除しますか？')) return;
+  gas('deleteTemplate', id).then(function() {
+    showToast('削除しました'); renderTemplates();
+  }).catch(function(err){ alert('エラー: ' + err.message); });
+}
+
+// =====================================================
+// プレビュー
+// =====================================================
+function renderPreview(pid) {
+  if (pid) ST.prevPid = pid;
+  loading();
+
+  gas('getProjects').then(function(projects) {
+    ST.projects = projects;
+    var opts = '<option value="">▼ 案件を選択</option>' +
+      projects.map(function(p) {
+        return '<option value="' + e(p.id) + '"' + (p.id===ST.prevPid?' selected':'') + '>' +
+               e(p.year + ' ' + p.month + ' - ' + p.name) + '</option>';
+      }).join('');
+
+    var ly12 = ST.prevLayout!=='1/3' ? 'checked' : '';
+    var ly13 = ST.prevLayout==='1/3' ? 'checked' : '';
+
+    document.getElementById('content').innerHTML =
+      '<div class="card no-print">' +
+        '<div class="card-body flex gap16 items-c wrap">' +
+          '<div class="fg mb8" style="flex:1;min-width:200px"><label class="flabel">案件</label>' +
+            '<select class="finput" onchange="switchPrevPid(this.value)">' + opts + '</select></div>' +
+          '<div class="fg mb8"><label class="flabel">レイアウト</label>' +
+            '<div class="rgroup">' +
+              '<label><input type="radio" name="pvrl" value="1/2" ' + ly12 + ' onchange="switchPrevLayout(\'1/2\')"> 1/2</label>' +
+              '<label><input type="radio" name="pvrl" value="1/3" ' + ly13 + ' onchange="switchPrevLayout(\'1/3\')"> 1/3</label>' +
+            '</div></div>' +
+          '<div style="align-self:flex-end">' +
+            '<button class="btn btn-primary" onclick="window.print()">' + ico('printer',13) + ' PDF出力</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div id="pvContent">' +
+        (!ST.prevPid
+          ? '<div class="empty"><div class="empty-ico">' + ico('eye',48) + '</div><p>案件を選択するとプレビューが表示されます</p></div>'
+          : '') +
+      '</div>';
+
+    if (ST.prevPid) loadPreview(ST.prevPid);
+  }).catch(function(err){ showErr(err); });
+}
+
+function switchPrevPid(pid) {
+  if (!pid) return;
+  ST.prevPid = pid;
+  loadPreview(pid);
+}
+
+function switchPrevLayout(ly) {
+  ST.prevLayout = ly;
+  if (ST.prevPid) loadPreview(ST.prevPid);
+}
+
+function loadPreview(pid) {
+  var el = document.getElementById('pvContent');
+  if (!el) return;
+  el.innerHTML = '<div class="loading"><div class="spin"></div>生成中...</div>';
+
+  gas('getSalonsByProject', pid).then(function(salons) {
+    if (!salons || salons.length === 0) {
+      el.innerHTML = '<div class="empty"><div class="empty-ico">' + ico('scissors',48) + '</div><p>サロンが登録されていません</p></div>';
+      return;
+    }
+
+    var perPage = ST.prevLayout === '1/3' ? 3 : 2;
+    var lyClass = ST.prevLayout === '1/3' ? 'ly3' : 'ly2';
+    var pages   = '';
+
+    for (var i = 0; i < salons.length; i += perPage) {
+      var grp = salons.slice(i, i + perPage);
+      while (grp.length < perPage) grp.push(null);
+      var cards = grp.map(function(s) {
+        return s ? '<div class="pv-card">' + buildPvCard(s) + '</div>'
+                 : '<div class="pv-card pv-empty">空白</div>';
+      }).join('');
+      pages += '<div class="prev-page ' + lyClass + '">' + cards + '</div>';
+    }
+
+    el.innerHTML = '<div class="prev-bg">' + pages + '</div>';
+  }).catch(function(err){ el.innerHTML = '<div class="alert a-danger">' + e(err.message) + '</div>'; });
+}
+
+function buildPvCard(s) {
+  var tags  = (s.tags||[]).map(function(t){ return '<span class="pv-tag">' + e(t) + '</span>'; }).join('');
+  var info  = '';
+  if (s.representative) info += '<span class="pv-lbl">代表</span><span>' + e(s.representative) + '</span>';
+  if (s.established)    info += '<span class="pv-lbl">設立</span><span>' + e(s.established) + '年</span>';
+  if (s.stores)         info += '<span class="pv-lbl">店舗</span><span>' + e(s.stores) + '店舗</span>';
+  if (s.staff)          info += '<span class="pv-lbl">スタッフ</span><span>' + e(s.staff) + '名</span>';
+  if (s.address)        info += '<span class="pv-lbl">住所</span><span>' + e(s.address) + '</span>';
+  if (s.tel)            info += '<span class="pv-lbl">TEL</span><span>' + e(s.tel) + '</span>';
+
+  return '<div class="pv-name">' + e(s.salonName||'') + '</div>' +
+    (s.companyName ? '<div class="pv-co">' + e(s.companyName) + '</div>' : '') +
+    (s.catchphrase ? '<div class="pv-catch">' + e(s.catchphrase) + '</div>' : '') +
+    (info ? '<div class="pv-info">' + info + '</div>' : '') +
+    (s.bodyText ? '<div class="pv-body">' + e(s.bodyText) + '</div>' : '') +
+    (tags ? '<div class="pv-tags">' + tags + '</div>' : '');
+}
+
+// =====================================================
+// CSV出力
+// =====================================================
+function renderCSV(pid) {
+  loading();
+  gas('getProjects').then(function(projects) {
+    ST.projects = projects;
+    var opts = '<option value="">▼ 案件を選択</option>' +
+      projects.map(function(p) {
+        return '<option value="' + e(p.id) + '"' + (p.id===pid?' selected':'') + '>' +
+               e(p.year + ' ' + p.month + ' - ' + p.name) + '</option>';
+      }).join('');
+
+    document.getElementById('content').innerHTML =
+      '<div class="card">' +
+        '<div class="card-head"><div class="card-title">' + ico('file',14) + ' CSV出力（InDesign データ結合用）</div></div>' +
+        '<div class="card-body">' +
+          '<div class="alert a-info mb16">フィールド名は <strong>@フィールド名_番号</strong> 形式で出力されます。InDesignのデータ結合にそのままご利用いただけます。</div>' +
+          '<div class="fg"><label class="flabel req">案件</label><select class="finput" id="csvPid" style="max-width:420px">' + opts + '</select></div>' +
+          '<div class="fg"><label class="flabel req">レイアウト</label>' +
+            '<div class="rgroup">' +
+              '<label><input type="radio" name="csvrl" value="1/2" checked><div>1/2（1行に2社分）</div></label>' +
+              '<label><input type="radio" name="csvrl" value="1/3"><div>1/3（1行に3社分）</div></label>' +
+            '</div>' +
+          '</div>' +
+          '<div class="divider"></div>' +
+          '<button class="btn btn-success" onclick="doExportCSV()">' + ico('download',13) + ' CSVをダウンロード</button>' +
+        '</div>' +
+      '</div>';
+  }).catch(function(err){ showErr(err); });
+}
+
+function doExportCSV() {
+  var pid = document.getElementById('csvPid').value;
+  var rl  = document.querySelector('input[name="csvrl"]:checked');
+  if (!pid) { alert('案件を選択してください'); return; }
+  var layout = rl ? rl.value : '1/2';
+
+  gas('exportCSV', pid, layout).then(function(result) {
+    var blob = new Blob([result.csv], { type: 'text/csv;charset=utf-8;' });
+    var url  = URL.createObjectURL(blob);
+    var a    = document.createElement('a');
+    a.href   = url;
+    var proj = ST.projects.find(function(p){ return p.id === pid; });
+    a.download = proj ? proj.year + '_' + proj.month + '_' + proj.name + '_' + layout.replace('/','-') + '.csv' : 'salon.csv';
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a); URL.revokeObjectURL(url);
+    showToast('CSVをダウンロードしました');
+  }).catch(function(err){ alert('エラー: ' + err.message); });
+}
+
+// =====================================================
+// 画像アップロード
+// =====================================================
+function uzHtml(id, label, currentUrl) {
+  var prev = currentUrl
+    ? '<div class="uz-prev" id="' + id + '_prev">' +
+        '<img src="' + e(currentUrl) + '" onerror="this.style.display=\'none\'">' +
+        '<div class="uz-prev-info">' +
+          '<div class="uz-prev-name">アップロード済み</div>' +
+          '<div class="uz-prev-sub">' + e(currentUrl.substring(0,40)) + '...</div>' +
+        '</div>' +
+        '<button class="btn btn-danger btn-xs" type="button" onclick="uzClear(\'' + id + '\')">削除</button>' +
+      '</div>'
+    : '<div id="' + id + '_prev"></div>';
+
+  return '<div class="fg">' +
+    '<label class="flabel">' + e(label) + '</label>' +
+    '<input type="hidden" id="' + id + '_url" value="' + e(currentUrl||'') + '">' +
+    '<div class="uz-zone" id="' + id + '_zone"' +
+      ' onclick="document.getElementById(\'' + id + '_file\').click()"' +
+      ' ondragover="event.preventDefault();this.classList.add(\'drag\')"' +
+      ' ondragleave="this.classList.remove(\'drag\')"' +
+      ' ondrop="uzDrop(event,\'' + id + '\')">' +
+      '<input type="file" id="' + id + '_file" accept="image/*" onchange="uzSelect(event,\'' + id + '\')">' +
+      '<div class="uz-ico">' + ico('image',28) + '</div>' +
+      '<div class="uz-txt">ドラッグ＆ドロップ　または</div>' +
+      '<button class="btn btn-ghost btn-sm" type="button">ファイルを選択</button>' +
+    '</div>' +
+    prev +
+    '<div id="' + id + '_status"></div>' +
+  '</div>';
+}
+
+function uzDrop(event, id) {
+  event.preventDefault();
+  document.getElementById(id + '_zone').classList.remove('drag');
+  var file = event.dataTransfer.files[0];
+  if (file) uzProcess(file, id);
+}
+
+function uzSelect(event, id) {
+  var file = event.target.files[0];
+  if (file) uzProcess(file, id);
+}
+
+function uzProcess(file, id) {
+  if (!file.type.startsWith('image/')) { alert('画像ファイル（JPG・PNG・GIF等）を選択してください'); return; }
+
+  var fr1 = new FileReader();
+  fr1.onload = function(ev) {
+    document.getElementById(id + '_prev').innerHTML =
+      '<div class="uz-prev">' +
+        '<img src="' + ev.target.result + '">' +
+        '<div class="uz-prev-info">' +
+          '<div class="uz-prev-name">' + e(file.name) + '</div>' +
+          '<div class="uz-prev-sub">' + (file.size > 1024*1024 ? (file.size/1024/1024).toFixed(1)+'MB' : Math.round(file.size/1024)+'KB') + '</div>' +
+        '</div>' +
+        '<button class="btn btn-danger btn-xs" type="button" onclick="uzClear(\'' + id + '\')">削除</button>' +
+      '</div>';
+    document.getElementById(id + '_status').innerHTML =
+      '<div class="uz-uploading"><div class="spin" style="width:14px;height:14px;border-width:2px"></div>Driveにアップロード中...</div>';
+  };
+  fr1.readAsDataURL(file);
+
+  var fr2 = new FileReader();
+  fr2.onload = function(ev) {
+    var base64 = ev.target.result.split(',')[1];
+    var pid    = ST.projectId || '';
+    var sname  = (document.getElementById('f_sn') && document.getElementById('f_sn').value) || '未設定';
+
+    gas('uploadImage', base64, file.name, file.type, pid, sname, id)
+      .then(function(result) {
+        document.getElementById(id + '_url').value = result.url;
+        document.getElementById(id + '_status').innerHTML =
+          '<div style="font-size:11px;color:var(--success);margin-top:6px">&#10003; アップロード完了</div>';
+      })
+      .catch(function(err) {
+        document.getElementById(id + '_status').innerHTML =
+          '<div style="font-size:11px;color:var(--danger);margin-top:6px">&#9651; ' + e(err.message) + '</div>';
+      });
+  };
+  fr2.readAsDataURL(file);
+}
+
+function uzClear(id) {
+  document.getElementById(id + '_url').value        = '';
+  document.getElementById(id + '_prev').innerHTML   = '';
+  document.getElementById(id + '_status').innerHTML = '';
+  var fi = document.getElementById(id + '_file');
+  if (fi) fi.value = '';
+}
+
+// =====================================================
+// エラー表示
+// =====================================================
+function showErr(err) {
+  var msg = err && err.message ? err.message : String(err);
+  document.getElementById('content').innerHTML =
+    '<div class="alert a-danger">&#9651; エラー: ' + e(msg) + '</div>';
+}
+
+// =====================================================
+// 起動
+// =====================================================
+window.onload = function() {
+  var saved;
+  try {
+    var raw = localStorage.getItem('_appState');
+    if (raw) saved = JSON.parse(raw);
+  } catch(e) {}
+  if (saved && saved.v) {
+    go(saved.v, saved.p || {});
+  } else {
+    go('dash');
+  }
+};
+</script>
+</body>
+</html>
