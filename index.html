@@ -296,11 +296,11 @@ select.finput {
   gap: 10px;
 }
 .scard:hover { box-shadow: 0 6px 20px rgba(26,43,76,.1); transform: translateY(-1px); }
-.scard-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
-.scard-head > div { flex: 1; min-width: 0; }
-.scard-name { font-size: 15px; font-weight: 700; color: var(--navy); word-break: break-word; overflow-wrap: anywhere; line-height: 1.4; }
-.scard-co   { font-size: 11px; color: var(--muted); margin-top: 3px; word-break: break-word; overflow-wrap: anywhere; }
-.scard-ly   { font-size: 10px; background: var(--bg); border: 1px solid var(--border); padding: 3px 9px; border-radius: 5px; white-space: nowrap; color: var(--muted); flex-shrink: 0; }
+.scard-head { display: flex; flex-direction: column; gap: 4px; }
+.scard-head-badge { display: flex; justify-content: flex-end; margin-bottom: 2px; }
+.scard-name { font-size: 15px; font-weight: 700; color: var(--navy); word-break: break-word; overflow-wrap: anywhere; line-height: 1.4; width: 100%; }
+.scard-co   { font-size: 11px; color: var(--muted); word-break: break-word; overflow-wrap: anywhere; width: 100%; }
+.scard-ly   { font-size: 10px; background: var(--bg); border: 1px solid var(--border); padding: 3px 9px; border-radius: 5px; color: var(--muted); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .scard-info { font-size: 12px; color: var(--muted); line-height: 1.8; display: flex; flex-direction: column; gap: 2px; }
 .scard-info-row { display: flex; align-items: flex-start; gap: 6px; word-break: break-word; }
 .scard-tags { display: flex; flex-wrap: wrap; gap: 4px; }
@@ -889,11 +889,9 @@ function renderAllSalons() {
              'data-name="' + e((s.salonName||'').toLowerCase() + ' ' + (s.companyName||'').toLowerCase()) + '">' +
         warn +
         '<div class="scard-head">' +
-          '<div>' +
-            '<div class="scard-name">' + e(s.salonName||'（未設定）') + '</div>' +
-            '<div class="scard-co">' + e(s.companyName||'') + '</div>' +
-          '</div>' +
-          '<span class="scard-ly">' + e(s.layout||'1/2') + '</span>' +
+          '<div class="scard-head-badge"><span class="scard-ly">' + e(s.layout||'1/2') + '</span></div>' +
+          '<div class="scard-name">' + e(s.salonName||'（未設定）') + '</div>' +
+          '<div class="scard-co">' + e(s.companyName||'') + '</div>' +
         '</div>' +
         (s.projectName ? '<div style="font-size:10px;color:var(--accent);margin-bottom:8px;display:flex;align-items:center;gap:4px">' + ico('folder',11) + ' ' + e(s.projectName) + '</div>' : '') +
         (info ? '<div class="scard-info">' + info + '</div>' : '') +
@@ -1081,11 +1079,9 @@ function renderProjectDetail(pid) {
       return '<div class="scard">' +
         warnBadge +
         '<div class="scard-head">' +
-          '<div>' +
-            '<div class="scard-name">' + e(s.salonName||'（未設定）') + '</div>' +
-            '<div class="scard-co">' + e(s.companyName||'') + '</div>' +
-          '</div>' +
-          '<span class="scard-ly">' + e(s.layout||'1/2') + '</span>' +
+          '<div class="scard-head-badge"><span class="scard-ly">' + e(s.layout||'1/2') + '</span></div>' +
+          '<div class="scard-name">' + e(s.salonName||'（未設定）') + '</div>' +
+          '<div class="scard-co">' + e(s.companyName||'') + '</div>' +
         '</div>' +
         (info ? '<div class="scard-info">' + info + '</div>' : '') +
         (tags ? '<div class="scard-tags">' + tags + '</div>' : '') +
