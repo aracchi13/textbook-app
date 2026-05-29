@@ -191,6 +191,10 @@ body {
   box-shadow: 0 0 0 3px rgba(74,144,217,.14);
 }
 textarea.finput { resize: vertical; min-height: 85px; }
+.finput-invalid { border-color: #e53e3e !important; }
+.finput-err { display: block; font-size: 11px; color: #e53e3e; margin-top: 3px; min-height: 15px; }
+.addr-helper { font-size: 11px; color: var(--muted); margin-bottom: 5px; }
+.pv2-info-val-multi { color: #333; overflow: hidden; white-space: normal; word-break: break-all; line-height: 1.5; }
 select.finput {
   appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7'%3E%3Cpath d='M1 1l4.5 4.5L10 1' stroke='%237a8fa6' fill='none' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E");
@@ -296,11 +300,11 @@ select.finput {
   gap: 10px;
 }
 .scard:hover { box-shadow: 0 6px 20px rgba(26,43,76,.1); transform: translateY(-1px); }
-.scard-head { display: flex; flex-direction: column; gap: 4px; }
-.scard-head-badge { display: flex; justify-content: flex-end; margin-bottom: 2px; }
-.scard-name { font-size: 15px; font-weight: 700; color: var(--navy); word-break: break-word; overflow-wrap: anywhere; line-height: 1.4; width: 100%; }
-.scard-co   { font-size: 11px; color: var(--muted); word-break: break-word; overflow-wrap: anywhere; width: 100%; }
-.scard-ly   { font-size: 10px; background: var(--bg); border: 1px solid var(--border); padding: 3px 9px; border-radius: 5px; color: var(--muted); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.scard-head { display: flex; flex-direction: column; gap: 4px; width: 100%; min-width: 0; }
+.scard-head-badge { display: flex; justify-content: flex-end; margin-bottom: 2px; width: 100%; min-width: 0; overflow: hidden; }
+.scard-name { font-size: 15px; font-weight: 700; color: var(--navy); word-break: break-all; line-height: 1.4; width: 100%; min-width: 0; white-space: normal; }
+.scard-co   { font-size: 11px; color: var(--muted); word-break: break-all; width: 100%; min-width: 0; white-space: normal; }
+.scard-ly   { font-size: 10px; background: var(--bg); border: 1px solid var(--border); padding: 3px 9px; border-radius: 5px; color: var(--muted); max-width: 100%; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .scard-info { font-size: 12px; color: var(--muted); line-height: 1.8; display: flex; flex-direction: column; gap: 2px; }
 .scard-info-row { display: flex; align-items: flex-start; gap: 6px; word-break: break-word; }
 .scard-tags { display: flex; flex-wrap: wrap; gap: 4px; }
@@ -381,26 +385,64 @@ select.finput {
 .prev-bg { background: #6b7280; padding: 20px; border-radius: 8px; }
 .prev-page {
   width: 210mm;
-  min-height: 120mm;
+  height: 297mm;
   background: #fff;
   margin: 0 auto 14px;
-  padding: 12mm 10mm;
+  padding: 8mm 10mm;
   display: grid;
-  gap: 6mm;
+  gap: 5mm;
   box-shadow: 0 4px 24px rgba(0,0,0,.2);
+  overflow: hidden;
 }
-.prev-page.ly2 { grid-template-columns: 1fr 1fr; }
-.prev-page.ly3 { grid-template-columns: 1fr 1fr 1fr; }
-.pv-card { border: 1px solid #ccc; padding: 8px; overflow: hidden; font-size: 8px; }
-.pv-name { font-size: 12px; font-weight: 800; color: var(--navy); border-bottom: 2px solid var(--navy); padding-bottom: 3px; margin-bottom: 5px; }
-.pv-co   { font-size: 8px; color: var(--muted); margin-bottom: 3px; }
-.pv-catch { font-size: 9px; color: var(--navy3); font-style: italic; margin-bottom: 5px; }
-.pv-info { display: grid; grid-template-columns: auto 1fr; gap: 2px 7px; font-size: 7.5px; }
-.pv-lbl  { color: var(--muted); }
-.pv-body { margin-top: 5px; font-size: 7.5px; line-height: 1.6; }
-.pv-tags { display: flex; flex-wrap: wrap; gap: 2px; margin-top: 5px; }
-.pv-tag  { background: var(--navy); color: #fff; padding: 1px 5px; border-radius: 7px; font-size: 7px; }
-.pv-empty { border: 2px dashed #ddd; display: flex; align-items: center; justify-content: center; min-height: 80px; color: #ccc; font-size: 10px; }
+.prev-page.ly2 { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; }
+.prev-page.ly3 { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr 1fr; }
+.pv-card  { overflow: hidden; display: flex; flex-direction: column; height: 100%; }
+.pv-empty { border: 2px dashed #ddd; display: flex; align-items: center; justify-content: center; color: #ccc; font-size: 10px; }
+
+/* --- 1/2・1/3 カード内レイアウト --- */
+.pv2 { display: flex; flex-direction: column; flex: 1; min-height: 0; font-size: 9pt; line-height: 1.4; color: #222; font-family: inherit; }
+
+/* ヘッダー行 */
+.pv2-head { display: flex; align-items: center; gap: 4px; border-bottom: 1.5px solid #1a2b4c; padding-bottom: 2.5px; margin-bottom: 3px; flex-shrink: 0; }
+.pv2-num  { font-size: 16pt; font-weight: 900; color: #1a2b4c; min-width: 22px; line-height: 1; }
+.pv2-title{ font-size: 10pt; font-weight: 700; color: #1a2b4c; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1 1 auto; min-width: 0; }
+.pv2-catch{ font-size: 10pt; color: #555; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 2 1 auto; min-width: 0; }
+.pv2-logo { width: 36px; height: 22px; flex-shrink: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+.pv2-logo img { max-width: 100%; max-height: 100%; object-fit: contain; }
+
+/* ボディ 3カラム */
+.pv2-body { display: flex; flex-direction: row; gap: 2mm; flex: 1; min-height: 0; overflow: hidden; padding-top: 3mm; }
+
+/* 左カラム：写真=body高さの47%、その下にタグ・QR */
+.pv2-left { flex: 0 0 27%; display: flex; flex-direction: column; gap: 2px; overflow: hidden; min-width: 0; }
+.pv2-main-photo { position: relative; flex: 1; background: #e8e8e8; overflow: hidden; border: 0.5px solid #ddd; min-height: 0; }
+.pv2-main-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.pv2-main-ph { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #bbb; font-size: 7pt; }
+.pv2-tags-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 2px; flex-shrink: 0; }
+.pv2-tag  { background: #1a2b4c; color: #fff; font-size: 9pt; padding: 2px 2px; text-align: center; border-radius: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.3; }
+.pv2-tag.empty { background: #efefef; color: transparent; }
+.pv2-qrs  { display: flex; gap: 2px; flex-shrink: 0; margin-top: auto; }
+.pv2-qr-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 1px; }
+.pv2-qr-box { width: 100%; aspect-ratio: 1; background: #f5f5f5; border: 0.5px solid #ccc; display: flex; align-items: center; justify-content: center; font-size: 6pt; color: #aaa; font-weight: 700; }
+.pv2-qr-box.filled { background: #1a2b4c; color: #fff; }
+.pv2-qr-label { font-size: 6pt; color: #555; text-align: center; width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.3; }
+
+/* 中央カラム：説明文(1fr) → 特徴(auto) → 会社情報(auto) */
+.pv2-mid { flex: 1; display: grid; grid-template-rows: 1fr auto auto; row-gap: 3px; overflow: hidden; min-width: 0; }
+.pv2-bodytext { font-size: 9pt; line-height: 1.5; color: #333; overflow: hidden; }
+.pv2-features { display: flex; flex-direction: row; gap: 2px; }
+.pv2-feat { flex: 1; border: 0.7px solid #1a2b4c; padding: 3px 2px; font-size: 9pt; text-align: center; color: #1a2b4c; font-weight: 700; border-radius: 2px; line-height: 1.3; min-width: 0; overflow: hidden; white-space: normal; word-break: break-all; min-height: calc(2 * 1.3em + 6px); display: flex; align-items: center; justify-content: center; }
+.pv2-feat.empty { border-color: #ddd; color: #ccc; }
+.pv2-info-tbl { border-top: 0.7px solid #1a2b4c; padding-top: 2px; }
+.pv2-info-row { display: grid; grid-template-columns: 48px 1fr; gap: 2px; border-bottom: 0.3px solid #eee; padding: 1px 0; font-size: 8.5pt; }
+.pv2-info-lbl { color: #888; font-weight: 600; white-space: nowrap; overflow: hidden; }
+.pv2-info-val { color: #333; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* 右カラム：写真2・3が各50%を占める */
+.pv2-right { flex: 0 0 27%; display: flex; flex-direction: column; gap: 2px; overflow: hidden; min-width: 0; }
+.pv2-photo { flex: 1; position: relative; background: #e8e8e8; overflow: hidden; border: 0.5px solid #ddd; min-height: 0; }
+.pv2-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.pv2-photo-ph { flex: 1; position: relative; background: #f5f5f5; border: 0.5px dashed #ccc; display: flex; align-items: center; justify-content: center; font-size: 7pt; color: #bbb; min-height: 0; }
 
 /* ===================== トースト ===================== */
 #toast {
@@ -1228,7 +1270,20 @@ function renderSalonForm(sid, pid) {
       '<div class="card">' +
         '<div class="card-head"><div class="card-title">' + ico('mappin',14) + ' 連絡先</div></div>' +
         '<div class="card-body">' +
-          fld('住所','f_addr',salon.address,'東京都渋谷区〇〇 1-2-3',true) +
+          (function(){
+            var a = (salon.address||'').split('\n');
+            return '<div class="fg">' +
+              '<label class="flabel req">住所1</label>' +
+              '<div class="addr-helper">数字・ハイフンは半角で入力（例：港北区新横浜3-17-20）</div>' +
+              '<input type="text" class="finput" id="f_addr1" value="' + e(a[0]||'') + '" placeholder="25文字まで" maxlength="25" oninput="validateAddrInput(\'f_addr1\')">' +
+              '<span class="finput-err" id="f_addr1_err"></span>' +
+            '</div>' +
+            '<div class="fg">' +
+              '<label class="flabel">住所2（マンション名・部屋番号など）</label>' +
+              '<input type="text" class="finput" id="f_addr2" value="' + e(a[1]||'') + '" placeholder="25文字まで" maxlength="25" oninput="validateAddrInput(\'f_addr2\')">' +
+              '<span class="finput-err" id="f_addr2_err"></span>' +
+            '</div>';
+          })() +
           fld('TEL','f_tel',salon.tel,'03-1234-5678',true,'tel') +
           '<div class="grid2">' +
             fld('Instagram','f_ig',salon.instagram,'https://www.instagram.com/...','','url') +
@@ -1240,7 +1295,11 @@ function renderSalonForm(sid, pid) {
       '<div class="card">' +
         '<div class="card-head"><div class="card-title">' + ico('edit3',14) + ' 紹介文・タグ</div></div>' +
         '<div class="card-body">' +
-          '<div class="fg"><label class="flabel">本文テキスト</label><textarea class="finput" id="f_body" rows="5" placeholder="サロンの紹介文...">' + e(salon.bodyText||'') + '</textarea></div>' +
+          '<div class="fg">' +
+            '<label class="flabel">本文テキスト<span style="font-weight:400;color:var(--muted);margin-left:6px">（180文字まで）</span></label>' +
+            '<textarea class="finput" id="f_body" rows="5" placeholder="サロンの紹介文..." maxlength="180" oninput="validateBodyText()">' + e(salon.bodyText||'') + '</textarea>' +
+            '<span class="finput-err" id="f_body_err"></span>' +
+          '</div>' +
           '<div class="fg"><label class="flabel">タグ</label><div class="tags-wrap">' + tagHtml + '</div></div>' +
         '</div>' +
       '</div>' +
@@ -1249,9 +1308,10 @@ function renderSalonForm(sid, pid) {
         '<div class="card-head"><div class="card-title">' + ico('image',14) + ' 画像・レイアウト</div></div>' +
         '<div class="card-body">' +
           '<div class="grid2">' +
-            uzHtml('f_p1',  '写真1', salon.photo1) +
+            uzHtml('f_p1',  '写真1（メイン）', salon.photo1) +
             uzHtml('f_p2',  '写真2', salon.photo2) +
           '</div>' +
+          uzHtml('f_p3',  '写真3（任意）', salon.photo3) +
           uzHtml('f_logo', 'ロゴ',  salon.logo) +
           '<div class="fg"><label class="flabel req">レイアウト</label>' +
             '<div class="rgroup">' +
@@ -1280,6 +1340,35 @@ function fld(label, id, val, ph, req, type) {
     '<input type="' + t + '" class="finput" id="' + id + '" value="' + e(val||'') + '" placeholder="' + e(ph||'') + '"></div>';
 }
 
+function validateBodyText() {
+  var el = document.getElementById('f_body');
+  var errEl = document.getElementById('f_body_err');
+  if (!el || !errEl) return;
+  var len = el.value.length;
+  if (len > 180) {
+    errEl.textContent = '180文字を超えています（現在' + len + '文字）';
+    el.classList.add('finput-invalid');
+  } else {
+    errEl.textContent = len > 160 ? (180 - len) + '文字まで入力できます' : '';
+    el.classList.remove('finput-invalid');
+  }
+}
+
+function validateAddrInput(id) {
+  var el = document.getElementById(id);
+  var errEl = document.getElementById(id + '_err');
+  if (!el || !errEl) return;
+  // 全角数字(０-９)・全角ハイフン(－)・長音符(ー)を検出
+  var hasFW = /[０-９－ー]/.test(el.value);
+  if (hasFW) {
+    errEl.textContent = '数字・ハイフンは半角で入力してください（例：3-17-20）';
+    el.classList.add('finput-invalid');
+  } else {
+    errEl.textContent = '';
+    el.classList.remove('finput-invalid');
+  }
+}
+
 function getFormData() {
   var tags = [].slice.call(document.querySelectorAll('.tcb:checked')).map(function(c){ return c.value; });
   var rl   = document.querySelector('input[name="rl"]:checked');
@@ -1291,12 +1380,17 @@ function getFormData() {
     established:    document.getElementById('f_est').value,
     stores:         document.getElementById('f_str').value,
     staff:          document.getElementById('f_stf').value,
-    address:        document.getElementById('f_addr').value.trim(),
+    address:        (function(){
+      var a1 = (document.getElementById('f_addr1').value||'').trim();
+      var a2 = (document.getElementById('f_addr2').value||'').trim();
+      return a1 + (a2 ? '\n' + a2 : '');
+    })(),
     tel:            document.getElementById('f_tel').value.trim(),
     bodyText:       document.getElementById('f_body').value.trim(),
     tags:           tags,
     photo1:         document.getElementById('f_p1_url').value,
     photo2:         document.getElementById('f_p2_url').value,
+    photo3:         document.getElementById('f_p3_url').value,
     logo:           document.getElementById('f_logo_url').value,
     instagram:      document.getElementById('f_ig').value.trim(),
     hp:             document.getElementById('f_hp').value.trim(),
@@ -1308,6 +1402,17 @@ function doSaveSalon(sid, pid) {
   var data = getFormData();
   if (!data.companyName) { alert('会社名を入力してください'); return; }
   if (!data.salonName)   { alert('サロン名を入力してください'); return; }
+  // 本文テキスト180文字チェック
+  if (data.bodyText.length > 180) {
+    alert('本文テキストは180文字以内で入力してください（現在' + data.bodyText.length + '文字）');
+    validateBodyText(); return;
+  }
+  // 住所の全角数字・ハイフンチェック
+  if (/[０-９－ー]/.test(data.address)) {
+    alert('住所の数字・ハイフンは半角で入力してください（例：3-17-20）');
+    validateAddrInput('f_addr1'); validateAddrInput('f_addr2');
+    return;
+  }
   data.id        = sid || null;
   data.projectId = pid;
 
@@ -1333,13 +1438,17 @@ function applyTemplate() {
     var fields = {
       f_co:'companyName', f_sn:'salonName', f_catch:'catchphrase',
       f_rep:'representative', f_est:'established', f_str:'stores',
-      f_stf:'staff', f_addr:'address', f_tel:'tel',
+      f_stf:'staff', f_tel:'tel',
       f_body:'bodyText', f_ig:'instagram', f_hp:'hp'
     };
     Object.keys(fields).forEach(function(elId) {
       var el = document.getElementById(elId);
       if (el) el.value = t[fields[elId]] || '';
     });
+    // 住所を addr1 / addr2 に分割してセット
+    var addrParts = (t.address||'').split('\n');
+    var a1 = document.getElementById('f_addr1'); if (a1) { a1.value = addrParts[0]||''; validateAddrInput('f_addr1'); }
+    var a2 = document.getElementById('f_addr2'); if (a2) { a2.value = addrParts[1]||''; validateAddrInput('f_addr2'); }
     document.querySelectorAll('.tcb').forEach(function(cb) {
       cb.checked = (t.tags||[]).indexOf(cb.value) !== -1;
     });
@@ -1353,9 +1462,13 @@ function applyTemplate() {
 function previewOne() {
   var d = getFormData();
   openModal('<div class="moverlay" onclick="if(event.target===this)closeModal()">' +
-    '<div class="mbox">' +
+    '<div class="mbox" style="max-width:860px;width:95vw">' +
       '<div class="mhd"><h3>入力プレビュー（' + e(d.layout) + '）</h3><button class="mclose" onclick="closeModal()">×</button></div>' +
-      '<div class="mbody"><div class="pv-card">' + buildPvCard(d) + '</div></div>' +
+      '<div class="mbody" style="padding:20px; display:flex; justify-content:center; background:#6b7280;">' +
+        '<div class="pv-card" style="width:190mm; max-width:100%; height:138mm; background:#fff; padding:8mm 10mm; box-shadow:0 4px 24px rgba(0,0,0,.2);">' +
+          buildPvCard(d, 0) +
+        '</div>' +
+      '</div>' +
       '<div class="mfoot"><button class="btn btn-ghost" onclick="closeModal()">閉じる</button></div>' +
     '</div></div>');
 }
@@ -1550,13 +1663,17 @@ function loadPreview(pid) {
     var lyClass = ST.prevLayout === '1/3' ? 'ly3' : 'ly2';
     var pages   = '';
 
+    var globalIdx = 0;
     for (var i = 0; i < salons.length; i += perPage) {
       var grp = salons.slice(i, i + perPage);
       while (grp.length < perPage) grp.push(null);
-      var cards = grp.map(function(s) {
-        return s ? '<div class="pv-card">' + buildPvCard(s) + '</div>'
-                 : '<div class="pv-card pv-empty">空白</div>';
-      }).join('');
+      var cards = (function(grp, startIdx) {
+        return grp.map(function(s, j) {
+          return s ? '<div class="pv-card">' + buildPvCard(s, startIdx + j) + '</div>'
+                   : '<div class="pv-card pv-empty">空白</div>';
+        }).join('');
+      })(grp, globalIdx);
+      globalIdx += perPage;
       pages += '<div class="prev-page ' + lyClass + '">' + cards + '</div>';
     }
 
@@ -1564,22 +1681,125 @@ function loadPreview(pid) {
   }).catch(function(err){ el.innerHTML = '<div class="alert a-danger">' + e(err.message) + '</div>'; });
 }
 
-function buildPvCard(s) {
-  var tags  = (s.tags||[]).map(function(t){ return '<span class="pv-tag">' + e(t) + '</span>'; }).join('');
-  var info  = '';
-  if (s.representative) info += '<span class="pv-lbl">代表</span><span>' + e(s.representative) + '</span>';
-  if (s.established)    info += '<span class="pv-lbl">設立</span><span>' + e(s.established) + '年</span>';
-  if (s.stores)         info += '<span class="pv-lbl">店舗</span><span>' + e(s.stores) + '店舗</span>';
-  if (s.staff)          info += '<span class="pv-lbl">スタッフ</span><span>' + e(s.staff) + '名</span>';
-  if (s.address)        info += '<span class="pv-lbl">住所</span><span>' + e(s.address) + '</span>';
-  if (s.tel)            info += '<span class="pv-lbl">TEL</span><span>' + e(s.tel) + '</span>';
+function buildPvCard(s, idx) {
+  var num = String((idx || 0) + 1).padStart(2, '0');
 
-  return '<div class="pv-name">' + e(s.salonName||'') + '</div>' +
-    (s.companyName ? '<div class="pv-co">' + e(s.companyName) + '</div>' : '') +
-    (s.catchphrase ? '<div class="pv-catch">' + e(s.catchphrase) + '</div>' : '') +
-    (info ? '<div class="pv-info">' + info + '</div>' : '') +
-    (s.bodyText ? '<div class="pv-body">' + e(s.bodyText) + '</div>' : '') +
-    (tags ? '<div class="pv-tags">' + tags + '</div>' : '');
+  // ヘッダー
+  var titleParts = [];
+  if (s.companyName) titleParts.push(e(s.companyName));
+  if (s.salonName)   titleParts.push(e(s.salonName));
+  var titleHtml = titleParts.join('<span style="margin:0 2px;color:#aaa"> / </span>');
+
+  var logoHtml = s.logo
+    ? '<img src="' + e(s.logo) + '" onerror="this.style.display=\'none\'">'
+    : '<span style="font-size:5px;color:#bbb">LOGO</span>';
+
+  // タグ（8枠固定）
+  var tagsHtml = '';
+  for (var t = 0; t < 8; t++) {
+    var tval = s.tags && s.tags[t] ? s.tags[t] : '';
+    tagsHtml += tval
+      ? '<div class="pv2-tag">' + e(tval) + '</div>'
+      : '<div class="pv2-tag empty">&nbsp;</div>';
+  }
+
+  // QRコード（Instagram / HP / 予約枠）
+  var qrDefs = [
+    { label: 'Instagram', filled: !!(s.instagram) },
+    { label: 'HP',        filled: !!(s.hp) },
+    { label: '予約/MAP',  filled: false }
+  ];
+  var qrHtml = qrDefs.map(function(q) {
+    return '<div class="pv2-qr-item">' +
+      '<div class="pv2-qr-box' + (q.filled ? ' filled' : '') + '">' +
+        (q.filled ? 'QR' : '') +
+      '</div>' +
+      '<div class="pv2-qr-label">' + e(q.label) + '</div>' +
+    '</div>';
+  }).join('');
+
+  // 4つの特徴（タグ先頭4件 or プレースホルダー）
+  var featHtml = '';
+  for (var f = 0; f < 4; f++) {
+    var fval = s.tags && s.tags[f] ? s.tags[f].slice(0, 12) : '';
+    featHtml += fval
+      ? '<div class="pv2-feat">' + e(fval) + '</div>'
+      : '<div class="pv2-feat empty">特徴' + (f + 1) + '</div>';
+  }
+
+  // 基本情報テーブル
+  var infoData = [
+    { lbl: '代表',     val: s.representative },
+    { lbl: '設立',     val: s.established ? s.established + '年' : '' },
+    { lbl: '店舗数',   val: s.stores      ? s.stores      + '店舗' : '' },
+    { lbl: 'スタッフ', val: s.staff       ? s.staff       + '名' : '' },
+    { lbl: '住所',     val: s.address },
+    { lbl: 'TEL',      val: s.tel }
+  ].filter(function(r){ return r.val; });
+  var infoHtml = infoData.map(function(r) {
+    if (r.val.indexOf('\n') !== -1) {
+      var parts = r.val.split('\n').filter(Boolean);
+      return '<div class="pv2-info-row">' +
+        '<span class="pv2-info-lbl">' + e(r.lbl) + '</span>' +
+        '<span class="pv2-info-val-multi">' + parts.map(function(p){ return e(p); }).join('<br>') + '</span>' +
+      '</div>';
+    }
+    return '<div class="pv2-info-row">' +
+      '<span class="pv2-info-lbl">' + e(r.lbl) + '</span>' +
+      '<span class="pv2-info-val">' + e(r.val) + '</span>' +
+    '</div>';
+  }).join('');
+
+  // 写真
+  var mainPhotoHtml = s.photo1
+    ? '<img src="' + e(s.photo1) + '" onerror="this.style.display=\'none\'">'
+    : '<div class="pv2-main-ph">写真1</div>';
+
+  // 右カラム：写真2・3の有無に応じて表示を切り替え
+  var rightColHtml = '';
+  if (s.photo2 && s.photo3) {
+    // 2枚とも登録済み → 各50%
+    rightColHtml =
+      '<div class="pv2-photo"><img src="' + e(s.photo2) + '" onerror="this.style.display=\'none\'"></div>' +
+      '<div class="pv2-photo"><img src="' + e(s.photo3) + '" onerror="this.style.display=\'none\'"></div>';
+  } else if (s.photo2) {
+    // 写真2のみ → 全幅
+    rightColHtml =
+      '<div class="pv2-photo"><img src="' + e(s.photo2) + '" onerror="this.style.display=\'none\'"></div>' +
+      '<div class="pv2-photo-ph">写真3</div>';
+  } else {
+    // 未登録 → どちらもプレースホルダー
+    rightColHtml =
+      '<div class="pv2-photo-ph">写真2</div>' +
+      '<div class="pv2-photo-ph">写真3</div>';
+  }
+
+  return '<div class="pv2">' +
+    // ── ヘッダー
+    '<div class="pv2-head">' +
+      '<div class="pv2-num">' + num + '</div>' +
+      '<div class="pv2-title">' + titleHtml + '</div>' +
+      '<div class="pv2-catch">' + e(s.catchphrase || '') + '</div>' +
+      '<div class="pv2-logo">' + logoHtml + '</div>' +
+    '</div>' +
+    // ── ボディ
+    '<div class="pv2-body">' +
+      // 左
+      '<div class="pv2-left">' +
+        '<div class="pv2-main-photo">' + mainPhotoHtml + '</div>' +
+        '<div class="pv2-tags-grid">' + tagsHtml + '</div>' +
+        '<div class="pv2-qrs">' + qrHtml + '</div>' +
+      '</div>' +
+      // 中央
+      '<div class="pv2-mid">' +
+        '<div class="pv2-bodytext">' + (s.bodyText ? e(s.bodyText.slice(0, 180)) : '<span style="color:#ccc">説明文</span>') + '</div>' +
+        '<div class="pv2-features">' + featHtml + '</div>' +
+        (infoHtml ? '<div class="pv2-info-tbl">' + infoHtml + '</div>' : '') +
+      '</div>' +
+      // 右
+      '<div class="pv2-right">' + rightColHtml + '</div>' +
+    '</div>' +
+  '</div>';
 }
 
 // =====================================================
