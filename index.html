@@ -473,7 +473,14 @@ select.finput {
   .main    { margin-left: 0; }
   .content { padding: 0; }
   .prev-bg { background: none; padding: 0; }
-  .prev-page { box-shadow: none; margin: 0; page-break-after: always; }
+  .prev-page {
+    box-shadow: none;
+    margin: 0;
+    page-break-after: always;
+    break-after: page;
+    width: 100%;
+    height: 100vh;
+  }
 }
 
 /* ===================== ユーティリティ ===================== */
@@ -719,7 +726,12 @@ var ST = {
 function gas(fn) {
   var args = [].slice.call(arguments, 1);
   return new Promise(function(ok, ng) {
-    var r = google.script.run.withSuccessHandler(ok).withFailureHandler(ng);
+    var timer = setTimeout(function() {
+      ng(new Error('タイムアウト：サーバーの応答に時間がかかっています。ページを再読み込みしてください。'));
+    }, 30000);
+    var r = google.script.run
+      .withSuccessHandler(function(v) { clearTimeout(timer); ok(v); })
+      .withFailureHandler(function(e) { clearTimeout(timer); ng(e); });
     r[fn].apply(r, args);
   });
 }
@@ -828,6 +840,12 @@ function renderDash() {
 
     var totalS = data.reduce(function(s,d){ return s + d.count; }, 0);
     var totalW = data.reduce(function(s,d){ return s + d.warnings; }, 0);
+    var totalA = data.reduce(function(s,d){ return s + (d.project.approachCount || 0); }, 0);
+
+    // ホバー用にグローバルへ保存
+    window._dashMap    = {};
+    window._dashTotals = { total: data.length, salons: totalS, warnings: totalW, approach: totalA };
+    data.forEach(function(d) { window._dashMap[d.project.id] = d; });
 
     var grouped = {};
     data.forEach(function(d) {
@@ -838,16 +856,36 @@ function renderDash() {
 
     var rows = '';
     Object.keys(grouped).sort().reverse().forEach(function(year) {
-      rows += '<tr><td colspan="5" style="background:var(--navy);color:#fff;padding:8px 16px;font-size:12px;font-weight:700">' + e(year) + '</td></tr>';
+      rows += '<tr><td colspan="8" style="background:var(--navy);color:#fff;padding:8px 16px;font-size:12px;font-weight:700">' + e(year) + '</td></tr>';
       grouped[year].forEach(function(d) {
+        var target   = d.project.targetCount   || 0;
+        var approach = d.project.approachCount || 0;
+        var signup   = d.count;
+        var rate     = target > 0 ? Math.min(100, Math.round(signup / target * 100)) : null;
+        var rateColor = rate === null ? 'var(--muted)' : rate >= 100 ? 'var(--success)' : rate >= 50 ? 'var(--warn)' : 'var(--danger)';
+        var rateHtml  = rate !== null
+          ? '<div style="display:flex;align-items:center;gap:6px">' +
+              '<div style="width:60px;height:5px;background:var(--border);border-radius:3px;overflow:hidden">' +
+                '<div style="width:' + rate + '%;height:100%;background:' + rateColor + ';border-radius:3px"></div>' +
+              '</div>' +
+              '<span style="font-size:11px;color:' + rateColor + ';font-weight:700">' + rate + '%</span>' +
+            '</div>'
+          : '<span style="font-size:11px;color:var(--muted)">-</span>';
         var w = d.warnings > 0
           ? '<span class="badge b-warn">' + ico('alert',10) + ' ' + d.warnings + '件</span>'
           : '<span class="badge b-success">' + ico('check',10) + '</span>';
-        rows += '<tr><td style="padding-left:28px">' + e(d.project.month) + '</td>' +
+        rows += '<tr style="cursor:pointer" ' +
+          'onmouseenter="dashHover(\'' + d.project.id + '\')" ' +
+          'onmouseleave="dashReset()" ' +
+          'onclick="go(\'project-detail\',{pid:\'' + d.project.id + '\'})">' +
+          '<td style="padding-left:28px">' + e(d.project.month) + '</td>' +
           '<td class="fw7">' + e(d.project.name) + '</td>' +
-          '<td><span class="badge b-navy">' + d.count + '</span></td>' +
+          '<td style="text-align:center"><span style="font-size:13px;font-weight:700;color:var(--muted)">' + (target || '-') + '</span></td>' +
+          '<td style="text-align:center"><span style="font-size:13px;font-weight:700;color:var(--navy3)">' + (approach || '-') + '</span></td>' +
+          '<td style="text-align:center"><span style="font-size:13px;font-weight:700;color:var(--success)">' + signup + '</span></td>' +
+          '<td>' + rateHtml + '</td>' +
           '<td>' + w + '</td>' +
-          '<td><div class="acts">' +
+          '<td onclick="event.stopPropagation()"><div class="acts">' +
             '<button class="btn btn-ghost btn-xs" onclick="go(\'project-detail\',{pid:\'' + d.project.id + '\'})">開く →</button>' +
           '</div></td></tr>';
       });
@@ -858,11 +896,7 @@ function renderDash() {
       : '';
 
     document.getElementById('content').innerHTML =
-      '<div class="flex gap12 mb16 wrap">' +
-        stat('総案件数',  data.length + ' 件') +
-        stat('総サロン数', totalS + ' 件') +
-        stat('未入力警告', totalW + ' 件', totalW > 0 ? 'color:var(--warn)' : 'color:var(--success)') +
-      '</div>' +
+      '<div id="dashStats"></div>' +
       warnAlert +
       '<div class="card">' +
         '<div class="card-head"><div class="card-title">' + ico('clipboard',14) + ' 案件一覧</div>' +
@@ -870,15 +904,69 @@ function renderDash() {
         '</div>' +
         (data.length === 0
           ? '<div class="empty"><div class="empty-ico">' + ico('folder',48) + '</div><p>案件がまだありません<br><br><button class="btn btn-primary mt12" onclick="go(\'projects\')">案件を作成する</button></p></div>'
-          : '<div style="overflow-x:auto"><table class="tbl"><thead><tr><th>月</th><th>案件名</th><th>サロン数</th><th>状況</th><th>操作</th></tr></thead><tbody>' + rows + '</tbody></table></div>') +
+          : '<div style="overflow-x:auto"><table class="tbl"><thead><tr><th>月</th><th>案件名</th><th style="text-align:center">目標</th><th style="text-align:center">アプローチ</th><th style="text-align:center">申し込み</th><th>達成率</th><th>状況</th><th>操作</th></tr></thead><tbody>' + rows + '</tbody></table></div>') +
       '</div>';
+
+    // 初期表示（全体合計）
+    dashReset();
   }).catch(function(err){ showErr(err); });
+}
+
+function dashStatsHtml(pid) {
+  var t = window._dashTotals || {};
+  var label, c1label, c1val, c1style, c2label, c2val, c2style, c3label, c3val, c3style, c4label, c4val, c4style;
+
+  if (!pid) {
+    label   = ico('home',11) + ' 全体';
+    c1label = '総案件数';    c1val = (t.total    || 0) + ' 件'; c1style = '';
+    c2label = '総アプローチ数'; c2val = (t.approach || 0) + ' 件'; c2style = 'color:var(--navy3)';
+    c3label = '総申し込み数'; c3val = (t.salons   || 0) + ' 件'; c3style = 'color:var(--success)';
+    c4label = '未入力警告';  c4val = (t.warnings || 0) + ' 件'; c4style = (t.warnings||0) > 0 ? 'color:var(--warn)' : 'color:var(--success)';
+  } else {
+    var d = (window._dashMap || {})[pid];
+    if (!d) return dashStatsHtml(null);
+    var target   = d.project.targetCount   || 0;
+    var approach = d.project.approachCount || 0;
+    var signup   = d.count;
+    var warn     = d.warnings;
+    label   = ico('folder',11) + ' ' + e(d.project.year + ' ' + d.project.month + ' ' + d.project.name);
+    c1label = '目標サロン数'; c1val = target   ? target   + ' 件' : '-'; c1style = '';
+    c2label = 'アプローチ数'; c2val = approach ? approach + ' 件' : '-'; c2style = 'color:var(--navy3)';
+    c3label = '申し込み数';   c3val = signup + ' 件';                    c3style = 'color:var(--success)';
+    c4label = '未入力警告';   c4val = warn   + ' 件';                    c4style = warn > 0 ? 'color:var(--warn)' : 'color:var(--success)';
+  }
+
+  return '<div style="height:20px;margin-bottom:6px;font-size:11px;font-weight:700;display:flex;align-items:center;gap:5px;' +
+      (pid ? 'color:var(--accent)' : 'color:var(--muted)') + '">' + label + '</div>' +
+    '<div class="flex gap12 mb16 wrap">' +
+      stat(c1label, c1val, c1style) +
+      stat(c2label, c2val, c2style) +
+      stat(c3label, c3val, c3style) +
+      stat(c4label, c4val, c4style) +
+    '</div>';
+}
+
+function dashHover(pid) {
+  var el = document.getElementById('dashStats');
+  if (el) el.innerHTML = dashStatsHtml(pid);
+}
+
+function dashReset() {
+  var el = document.getElementById('dashStats');
+  if (el) el.innerHTML = dashStatsHtml(null);
 }
 
 function stat(label, val, style) {
   return '<div class="card" style="flex:1;min-width:130px;padding:16px;margin-bottom:0">' +
     '<div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">' + e(label) + '</div>' +
     '<div style="font-size:26px;font-weight:800;' + (style||'color:var(--navy)') + '">' + e(val) + '</div>' +
+  '</div>';
+}
+
+function kpiCell(label, val, style) {
+  return '<div style="padding:14px 18px;border-right:1px solid var(--border)">' +
+    '<div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">' + e(label) + '</div>' +
+    '<div style="font-size:22px;font-weight:800;' + (style||'color:var(--navy)') + '">' + e(val) + '</div>' +
   '</div>';
 }
 
@@ -1003,7 +1091,7 @@ function renderProjects() {
             wMark +
           '</div>' +
           '<div class="pcard-acts" onclick="event.stopPropagation()">' +
-            '<button class="btn btn-ghost btn-xs" onclick="openProjectModal(\'' + pid + '\',\'' + e(d.project.year) + '\',\'' + e(d.project.month) + '\',\'' + pn + '\')">編集</button>' +
+            '<button class="btn btn-ghost btn-xs" onclick="openProjectModal(\'' + pid + '\',\'' + e(d.project.year) + '\',\'' + e(d.project.month) + '\',\'' + pn + '\',' + (d.project.targetCount||0) + ',' + (d.project.approachCount||0) + ')">編集</button>' +
             '<button class="btn btn-ghost btn-xs" onclick="openCopyProject(\'' + pid + '\',\'' + pn + '\')">複製</button>' +
             '<button class="btn btn-danger btn-xs" onclick="delProject(\'' + pid + '\',\'' + pn + '\')">削除</button>' +
           '</div>' +
@@ -1023,7 +1111,7 @@ function renderProjects() {
   }).catch(function(err){ showErr(err); });
 }
 
-function openProjectModal(id, year, month, name) {
+function openProjectModal(id, year, month, name, targetCount, approachCount) {
   Promise.all([gas('getYears'), gas('getMonths')]).then(function(r) {
     var yo = r[0].map(function(y){ return '<option' + (y===year?' selected':'') + '>' + e(y) + '</option>'; }).join('');
     var mo = r[1].map(function(m){ return '<option' + (m===month?' selected':'') + '>' + e(m) + '</option>'; }).join('');
@@ -1035,6 +1123,10 @@ function openProjectModal(id, year, month, name) {
           '<div class="fg"><label class="flabel req">年度</label><select class="finput" id="pYear">' + yo + '</select></div>' +
           '<div class="fg"><label class="flabel req">月</label><select class="finput" id="pMonth">' + mo + '</select></div>' +
           '<div class="fg"><label class="flabel req">案件名（学校・イベント名）</label><input type="text" class="finput" id="pName" value="' + e(name||'') + '" placeholder="例：A美容専門学校"></div>' +
+          '<div class="grid2">' +
+            '<div class="fg"><label class="flabel">目標サロン数</label><input type="number" class="finput" id="pTarget" value="' + (targetCount||0) + '" min="0" placeholder="0"></div>' +
+            '<div class="fg"><label class="flabel">アプローチ数</label><input type="number" class="finput" id="pApproach" value="' + (approachCount||0) + '" min="0" placeholder="0"></div>' +
+          '</div>' +
         '</div>' +
         '<div class="mfoot"><button class="btn btn-ghost" onclick="closeModal()">キャンセル</button><button class="btn btn-primary" onclick="saveProject(\'' + (id||'') + '\')">保存</button></div>' +
       '</div></div>');
@@ -1042,12 +1134,14 @@ function openProjectModal(id, year, month, name) {
 }
 
 function saveProject(id) {
-  var year  = document.getElementById('pYear').value;
-  var month = document.getElementById('pMonth').value;
-  var name  = document.getElementById('pName').value.trim();
+  var year     = document.getElementById('pYear').value;
+  var month    = document.getElementById('pMonth').value;
+  var name     = document.getElementById('pName').value.trim();
+  var target   = Number(document.getElementById('pTarget').value)   || 0;
+  var approach = Number(document.getElementById('pApproach').value) || 0;
   if (!name) { alert('案件名を入力してください'); return; }
 
-  gas('saveProject', { id: id||null, year:year, month:month, name:name }).then(function() {
+  gas('saveProject', { id: id||null, year:year, month:month, name:name, targetCount:target, approachCount:approach }).then(function() {
     closeModal(); showToast('案件を保存しました'); renderProjects();
   }).catch(function(err){ alert('エラー: ' + err.message); });
 }
@@ -1144,8 +1238,37 @@ function renderProjectDetail(pid) {
       '</div>';
     }).join('');
 
+    var targetCount   = proj ? (proj.targetCount   || 0) : 0;
+    var approachCount = proj ? (proj.approachCount || 0) : 0;
+    var signupCount   = salons.length;
+    var signupRate    = targetCount > 0 ? Math.min(100, Math.round(signupCount / targetCount * 100)) : 0;
+    var rateColor     = signupRate >= 100 ? 'var(--success)' : signupRate >= 50 ? 'var(--warn)' : 'var(--accent)';
+
+    var kpiBar =
+      '<div class="card mb16" style="padding:0">' +
+        '<div class="card-head" style="padding:10px 16px">' +
+          '<div class="card-title">' + ico('clipboard',13) + ' 進捗サマリー</div>' +
+          '<button class="btn btn-ghost btn-xs" onclick="openProjectModal(\'' + e(pid) + '\',\'' + e(proj ? proj.year : '') + '\',\'' + e(proj ? proj.month : '') + '\',\'' + e(proj ? proj.name : '') + '\',' + targetCount + ',' + approachCount + ')">' + ico('edit3',11) + ' 編集</button>' +
+        '</div>' +
+        '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 2fr;gap:0;border-top:1px solid var(--border)">' +
+          kpiCell('目標サロン数', targetCount + ' 件', 'color:var(--navy)') +
+          kpiCell('アプローチ数', approachCount + ' 件', 'color:var(--navy3)') +
+          kpiCell('申し込み数',   signupCount   + ' 件', 'color:var(--success)') +
+          '<div style="padding:14px 18px;border-left:1px solid var(--border)">' +
+            '<div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">申し込み達成率</div>' +
+            '<div style="display:flex;align-items:center;gap:10px">' +
+              '<div style="flex:1;height:8px;background:var(--border);border-radius:4px;overflow:hidden">' +
+                '<div style="width:' + signupRate + '%;height:100%;background:' + rateColor + ';border-radius:4px;transition:width .4s"></div>' +
+              '</div>' +
+              '<span style="font-size:18px;font-weight:800;color:' + rateColor + ';min-width:44px;text-align:right">' + signupRate + '%</span>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+
     document.getElementById('content').innerHTML =
       bc([{ label:'案件一覧', fn:"go('projects')" }, { label: pname }]) +
+      kpiBar +
       (salons.length === 0
         ? '<div class="empty"><div class="empty-ico">' + ico('scissors',48) + '</div><p>サロンがまだ登録されていません<br><br>' +
           '<button class="btn btn-primary" onclick="go(\'salon-form\',{pid:\'' + e(pid) + '\'})">＋ サロンを追加する</button></p></div>'

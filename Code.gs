@@ -23,7 +23,7 @@ function doGet() {
 // シート初期化
 // ------------------------------------------------------------
 function initSheets() {
-  var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  var ss = _ss_();
 
   var sheetDefs = [
     { name: SH_PROJECT,  headers: ['ID','年度','月','案件名','作成日時'] },
@@ -55,30 +55,35 @@ function getProjects() {
   var rows = _getRows(SH_PROJECT);
   return rows.map(function(r) {
     return {
-      id:        String(r[0]),
-      year:      String(r[1]),
-      month:     String(r[2]),
-      name:      String(r[3]),
-      createdAt: _fmtDate(r[4])
+      id:           String(r[0]),
+      year:         String(r[1]),
+      month:        String(r[2]),
+      name:         String(r[3]),
+      createdAt:    _fmtDate(r[4]),
+      targetCount:  r[5] !== '' ? Number(r[5]) : 0,
+      approachCount: r[6] !== '' ? Number(r[6]) : 0
     };
   });
 }
 
 function saveProject(data) {
-  var sh  = _sheet(SH_PROJECT);
-  var all = sh.getDataRange().getValues();
+  var sh      = _sheet(SH_PROJECT);
+  var all     = sh.getDataRange().getValues();
+  var target  = data.targetCount  !== undefined ? Number(data.targetCount)  : 0;
+  var approach = data.approachCount !== undefined ? Number(data.approachCount) : 0;
 
   if (data.id) {
     for (var i = 1; i < all.length; i++) {
       if (String(all[i][0]) === String(data.id)) {
         sh.getRange(i + 1, 2, 1, 3).setValues([[data.year, data.month, data.name]]);
+        sh.getRange(i + 1, 6, 1, 2).setValues([[target, approach]]);
         return { success: true, id: data.id };
       }
     }
   }
 
   var id = 'P' + Date.now();
-  sh.appendRow([id, data.year, data.month, data.name, new Date()]);
+  sh.appendRow([id, data.year, data.month, data.name, new Date(), target, approach]);
   return { success: true, id: id };
 }
 
@@ -331,8 +336,14 @@ function getMonths() {
   return ['4月','5月','6月','7月','8月','9月','10月','11月','12月','1月','2月','3月'];
 }
 
+var _ss = null;
+function _ss_() {
+  if (!_ss) _ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  return _ss;
+}
+
 function _sheet(name) {
-  return SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(name);
+  return _ss_().getSheetByName(name);
 }
 
 function _getRows(sheetName) {
