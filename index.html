@@ -444,6 +444,29 @@ select.finput {
 .pv2-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
 .pv2-photo-ph { flex: 1; position: relative; background: #f5f5f5; border: 0.5px dashed #ccc; display: flex; align-items: center; justify-content: center; font-size: 7pt; color: #bbb; min-height: 0; }
 
+/* ===================== 1/3専用レイアウト ===================== */
+/* ヘッダー：タイトル行 + キャッチコピー行 */
+.pv3-head { flex-shrink: 0; border-bottom: 1.5px solid #1a2b4c; padding-bottom: 2px; margin-bottom: 0; }
+.pv3-head-top { display: flex; align-items: center; gap: 4px; }
+.pv3-catch { font-size: 9pt; color: #555; padding: 1px 0 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* ボディ：3カラム */
+.pv3-body { display: flex; flex-direction: row; gap: 2mm; flex: 1; min-height: 0; overflow: hidden; padding-top: 2mm; }
+.pv3-col-photo { flex: 0 0 28%; overflow: hidden; min-width: 0; display: flex; flex-direction: column; }
+.pv3-col-content { flex: 1; display: flex; flex-direction: column; gap: 2px; overflow: hidden; min-width: 0; }
+.pv3-col-right { flex: 0 0 24%; display: flex; flex-direction: column; gap: 3px; overflow: hidden; min-width: 0; }
+/* タグpill */
+.pv3-pills { display: flex; gap: 2px; flex-shrink: 0; }
+.pv3-pill { background: #e8edf5; color: #1a2b4c; font-size: 7pt; padding: 1.5px 4px; border-radius: 2px; white-space: nowrap; overflow: hidden; font-weight: 600; flex: 1; text-align: center; }
+.pv3-pill.empty { background: #f0f0f0; color: transparent; }
+/* 本文・情報 */
+.pv3-bodytext { font-size: 8pt; line-height: 1.5; color: #333; overflow: hidden; flex: 1; }
+/* QRエリア */
+.pv3-qrs { display: flex; gap: 3px; justify-content: center; flex-shrink: 0; padding-top: 2px; }
+.pv3-qr-item { display: flex; flex-direction: column; align-items: center; gap: 1px; flex: 1; }
+.pv3-qr-box { width: 100%; aspect-ratio: 1; background: #f5f5f5; border: 0.5px solid #ccc; display: flex; align-items: center; justify-content: center; font-size: 5.5pt; color: #aaa; font-weight: 700; }
+.pv3-qr-box.filled { background: #1a2b4c; color: #fff; }
+.pv3-qr-label { font-size: 5.5pt; color: #555; text-align: center; width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.3; }
+
 /* ===================== トースト ===================== */
 #toast {
   position: fixed; bottom: 22px; right: 22px;
@@ -1589,7 +1612,7 @@ function previewOne() {
       '<div class="mhd"><h3>入力プレビュー（' + e(d.layout) + '）</h3><button class="mclose" onclick="closeModal()">×</button></div>' +
       '<div class="mbody" style="padding:20px; display:flex; justify-content:center; background:#6b7280;">' +
         '<div class="pv-card" style="width:190mm; max-width:100%; height:138mm; background:#fff; padding:8mm 10mm; box-shadow:0 4px 24px rgba(0,0,0,.2);">' +
-          buildPvCard(d, 0) +
+          buildPvCard(d, 0, d.layout) +
         '</div>' +
       '</div>' +
       '<div class="mfoot"><button class="btn btn-ghost" onclick="closeModal()">閉じる</button></div>' +
@@ -1792,7 +1815,7 @@ function loadPreview(pid) {
       while (grp.length < perPage) grp.push(null);
       var cards = (function(grp, startIdx) {
         return grp.map(function(s, j) {
-          return s ? '<div class="pv-card">' + buildPvCard(s, startIdx + j) + '</div>'
+          return s ? '<div class="pv-card">' + buildPvCard(s, startIdx + j, ST.prevLayout) + '</div>'
                    : '<div class="pv-card pv-empty">空白</div>';
         }).join('');
       })(grp, globalIdx);
@@ -1804,8 +1827,9 @@ function loadPreview(pid) {
   }).catch(function(err){ el.innerHTML = '<div class="alert a-danger">' + e(err.message) + '</div>'; });
 }
 
-function buildPvCard(s, idx) {
+function buildPvCard(s, idx, layout) {
   var num = String((idx || 0) + 1).padStart(2, '0');
+  var is13 = (layout || s.layout) === '1/3';
 
   // ヘッダー
   var titleParts = [];
@@ -1897,15 +1921,76 @@ function buildPvCard(s, idx) {
       '<div class="pv2-photo-ph">写真3</div>';
   }
 
-  return '<div class="pv2">' +
-    // ── ヘッダー
+  // ── 共通ヘッダー
+  var headerHtml =
     '<div class="pv2-head">' +
       '<div class="pv2-num">' + num + '</div>' +
       '<div class="pv2-title">' + titleHtml + '</div>' +
       '<div class="pv2-catch">' + e(s.catchphrase || '') + '</div>' +
       '<div class="pv2-logo">' + logoHtml + '</div>' +
-    '</div>' +
-    // ── ボディ
+    '</div>';
+
+  if (is13) {
+    // ── 1/3レイアウト：左=写真1、中央=タグ+本文+情報、右=写真2+QR
+    var photo1Html = s.photo1
+      ? '<img src="' + e(s.photo1) + '" onerror="this.style.display=\'none\'">'
+      : '<div class="pv2-main-ph">写真1</div>';
+    var photo2Html = s.photo2
+      ? '<img src="' + e(s.photo2) + '" onerror="this.style.display=\'none\'">'
+      : '<div class="pv2-main-ph">写真2</div>';
+
+    // タグpill（先頭4件）
+    var pillsHtml = '';
+    for (var tp = 0; tp < 4; tp++) {
+      var tpval = s.tags && s.tags[tp] ? s.tags[tp] : '';
+      pillsHtml += tpval
+        ? '<span class="pv3-pill">' + e(tpval) + '</span>'
+        : '<span class="pv3-pill empty">&nbsp;</span>';
+    }
+
+    var qr3Html = qrDefs.map(function(q) {
+      return '<div class="pv3-qr-item">' +
+        '<div class="pv3-qr-box' + (q.filled ? ' filled' : '') + '">' +
+          (q.filled ? 'QR' : '') +
+        '</div>' +
+        '<div class="pv3-qr-label">' + e(q.label) + '</div>' +
+      '</div>';
+    }).join('');
+
+    return '<div class="pv2">' +
+      // ヘッダー：2行（タイトル行 + キャッチコピー行）
+      '<div class="pv3-head">' +
+        '<div class="pv3-head-top">' +
+          '<div class="pv2-num">' + num + '</div>' +
+          '<div class="pv2-title">' + titleHtml + '</div>' +
+          '<div class="pv2-logo">' + logoHtml + '</div>' +
+        '</div>' +
+        '<div class="pv3-catch">' + e(s.catchphrase || '') + '</div>' +
+      '</div>' +
+      // ボディ：3カラム
+      '<div class="pv3-body">' +
+        // 左：写真1（縦全体）
+        '<div class="pv3-col-photo">' +
+          '<div class="pv2-photo" style="flex:1">' + photo1Html + '</div>' +
+        '</div>' +
+        // 中央：タグ + 本文 + 会社情報
+        '<div class="pv3-col-content">' +
+          '<div class="pv3-pills">' + pillsHtml + '</div>' +
+          '<div class="pv3-bodytext">' + (s.bodyText ? e(s.bodyText.slice(0, 200)) : '<span style="color:#ccc">説明文</span>') + '</div>' +
+          (infoHtml ? '<div class="pv2-info-tbl" style="flex-shrink:0">' + infoHtml + '</div>' : '') +
+        '</div>' +
+        // 右：写真2 + QRコード
+        '<div class="pv3-col-right">' +
+          '<div class="pv2-photo" style="flex:1">' + photo2Html + '</div>' +
+          '<div class="pv3-qrs">' + qr3Html + '</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }
+
+  return '<div class="pv2">' +
+    headerHtml +
+    // ── ボディ（1/2レイアウト）
     '<div class="pv2-body">' +
       // 左
       '<div class="pv2-left">' +
