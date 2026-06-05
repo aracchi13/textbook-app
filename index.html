@@ -384,13 +384,13 @@ select.finput {
 /* ===================== プレビュー ===================== */
 .prev-bg { background: #6b7280; padding: 20px; border-radius: 8px; }
 .prev-page {
-  width: 210mm;
-  height: 297mm;
+  width: 794px;
+  height: 1123px;
   background: #fff;
   margin: 0 auto 14px;
-  padding: 8mm 10mm;
+  padding: 30px 38px;
   display: grid;
-  gap: 5mm;
+  gap: 19px;
   box-shadow: 0 4px 24px rgba(0,0,0,.2);
   overflow: hidden;
 }
@@ -461,8 +461,8 @@ select.finput {
 .pv3-catch { font-size: 11pt; font-weight: 700; color: #444; line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .pv3-upper-center { flex: 1; display: flex; flex-direction: column; padding-left: 20px; padding-right: 8px; }
 .pv3-center-spacer { height: 20px; flex-shrink: 0; }
-.pv3-tags-grid { display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: 48px 48px; gap: 2px; flex-shrink: 0; }
-.pv3-tag { display: flex; align-items: center; justify-content: center; font-size: 7.5pt; font-weight: 700; color: #fff; border-radius: 2px; overflow: hidden; padding: 0 2px; text-align: center; line-height: 1.2; }
+.pv3-tags-grid { display: flex !important; flex-wrap: wrap !important; gap: 5px !important; padding: 8px 20px !important; align-content: center !important; align-items: center !important; }
+.pv3-tag { display: inline-block !important; font-size: 13px !important; font-weight: 600 !important; color: #fff !important; border-radius: 3px !important; padding: 4px 10px !important; white-space: nowrap !important; line-height: 1.4 !important; }
 .pv3-tag.c-blue   { background: #4a90d9; }
 .pv3-tag.c-orange { background: #e06c3a; }
 .pv3-tag.c-green  { background: #5cb85c; }
@@ -510,7 +510,6 @@ select.finput {
   .main       { margin-left: 0; }
   .menu-btn   { display: block; }
   .grid2, .grid3 { grid-template-columns: 1fr; }
-  .prev-page  { width: 100%; padding: 8px; min-height: unset; }
   .prev-bg    { padding: 8px; }
   .project-grid, .salon-grid, .tmpl-grid { grid-template-columns: 1fr; }
 }
@@ -527,6 +526,8 @@ select.finput {
     break-after: page;
     width: 100%;
     height: 100vh;
+    transform: none !important;
+    margin-bottom: 0 !important;
   }
 }
 
@@ -1528,12 +1529,28 @@ function validateAddrInput(id) {
   var el = document.getElementById(id);
   var errEl = document.getElementById(id + '_err');
   if (!el || !errEl) return;
-  // 全角数字(０-９)・全角ハイフン(－)・長音符(ー)を検出
-  var hasFW = /[０-９－ー]/.test(el.value);
-  if (hasFW) {
-    errEl.textContent = '数字・ハイフンは半角で入力してください（例：3-17-20）';
-    el.classList.add('finput-invalid');
+
+  // 全角数字→半角・全角ハイフン→半角（両フィールド共通で自動変換）
+  var converted = el.value
+    .replace(/[０-９]/g, function(c) { return String.fromCharCode(c.charCodeAt(0) - 0xFEE0); })
+    .replace(/－/g, '-');
+  if (converted !== el.value) {
+    var pos = el.selectionStart;
+    el.value = converted;
+    try { el.setSelectionRange(pos, pos); } catch(e) {}
+  }
+
+  if (id === 'f_addr1') {
+    // 住所1：長音符（ー）が残っている場合はエラー
+    if (/ー/.test(el.value)) {
+      errEl.textContent = '番地の数字とハイフンは半角で入力してください（例：3-17-20）';
+      el.classList.add('finput-invalid');
+    } else {
+      errEl.textContent = '';
+      el.classList.remove('finput-invalid');
+    }
   } else {
+    // 住所2：バリデーションエラーなし
     errEl.textContent = '';
     el.classList.remove('finput-invalid');
   }
@@ -1577,10 +1594,11 @@ function doSaveSalon(sid, pid) {
     alert('本文テキストは180文字以内で入力してください（現在' + data.bodyText.length + '文字）');
     validateBodyText(); return;
   }
-  // 住所の全角数字・ハイフンチェック
-  if (/[０-９－ー]/.test(data.address)) {
-    alert('住所の数字・ハイフンは半角で入力してください（例：3-17-20）');
-    validateAddrInput('f_addr1'); validateAddrInput('f_addr2');
+  // 住所1：長音符チェック（全角数字・全角ハイフンは入力時に自動変換済み）
+  var addr1El = document.getElementById('f_addr1');
+  if (addr1El && /ー/.test(addr1El.value)) {
+    alert('番地の数字とハイフンは半角で入力してください（例：3-17-20）');
+    validateAddrInput('f_addr1');
     return;
   }
   data.id        = sid || null;
@@ -1631,16 +1649,35 @@ function applyTemplate() {
 
 function previewOne() {
   var d = getFormData();
+  var is13 = d.layout === '1/3';
+  // 1/3: 794×374px（仕様固定、padingなし）
+  // 1/2: 794px幅・padding 30px 38px → コンテンツ高さ522px
+  var cardW = 794;
+  var cardH = is13 ? 374 : 582;
+  var cardStyle = is13
+    ? 'width:794px; height:374px; flex-shrink:0; background:#fff; box-shadow:0 4px 24px rgba(0,0,0,.2); overflow:hidden;'
+    : 'width:794px; height:582px; flex-shrink:0; background:#fff; padding:30px 38px; box-shadow:0 4px 24px rgba(0,0,0,.2); overflow:hidden;';
+
   openModal('<div class="moverlay" onclick="if(event.target===this)closeModal()">' +
     '<div class="mbox" style="max-width:860px;width:95vw">' +
       '<div class="mhd"><h3>入力プレビュー（' + e(d.layout) + '）</h3><button class="mclose" onclick="closeModal()">×</button></div>' +
-      '<div class="mbody" style="padding:20px; display:flex; justify-content:center; background:#6b7280;">' +
-        '<div class="pv-card" style="width:190mm; max-width:100%; height:138mm; background:#fff; padding:8mm 10mm; box-shadow:0 4px 24px rgba(0,0,0,.2);">' +
+      '<div class="mbody" style="padding:20px; display:flex; justify-content:center; background:#6b7280; overflow:hidden;">' +
+        '<div id="pvOneCard" class="pv-card" style="' + cardStyle + '">' +
           buildPvCard(d, 0, d.layout) +
         '</div>' +
       '</div>' +
       '<div class="mfoot"><button class="btn btn-ghost" onclick="closeModal()">閉じる</button></div>' +
     '</div></div>');
+  setTimeout(function() {
+    var card = document.getElementById('pvOneCard');
+    if (!card) return;
+    var mbody = card.parentNode;
+    var avail = mbody.clientWidth - 40;
+    var scale = Math.min(1, avail / cardW);
+    card.style.transformOrigin = 'top center';
+    card.style.transform = 'scale(' + scale + ')';
+    card.style.marginBottom = ((cardH * scale) - cardH) + 'px';
+  }, 0);
 }
 
 // =====================================================
@@ -1848,8 +1885,22 @@ function loadPreview(pid) {
     }
 
     el.innerHTML = '<div class="prev-bg">' + pages + '</div>';
+    setTimeout(scalePrevPages, 0);
   }).catch(function(err){ el.innerHTML = '<div class="alert a-danger">' + e(err.message) + '</div>'; });
 }
+
+function scalePrevPages() {
+  var bg = document.querySelector('#pvContent .prev-bg');
+  if (!bg) return;
+  var avail = bg.clientWidth - 40;
+  var scale = Math.min(1, avail / 794);
+  document.querySelectorAll('#pvContent .prev-page').forEach(function(p) {
+    p.style.transformOrigin = 'top center';
+    p.style.transform = 'scale(' + scale + ')';
+    p.style.marginBottom = ((1123 * scale) - 1123 + 14) + 'px';
+  });
+}
+window.addEventListener('resize', scalePrevPages);
 
 function getTagColor(tag) {
   var prefectures = ['北海道','青森','岩手','宮城','秋田','山形','福島','茨城','栃木','群馬','埼玉','千葉','東京','神奈川','新潟','富山','石川','福井','山梨','長野','岐阜','静岡','愛知','三重','滋賀','京都','大阪','兵庫','奈良','和歌山','鳥取','島根','岡山','広島','山口','徳島','香川','愛媛','高知','福岡','佐賀','長崎','熊本','大分','宮崎','鹿児島','沖縄'];
@@ -1995,8 +2046,12 @@ function buildPvCard(s, idx, layout) {
         : '<div class="pv3-tag empty"></div>';
     }
 
-    // QR
-    var qr3Html = qrDefs.map(function(q) {
+    // QR（1/3は Instagram・HPの2個のみ）
+    var qrDefs3 = [
+      { label: 'Instagram', filled: !!(s.instagram) },
+      { label: 'HP',        filled: !!(s.hp) }
+    ];
+    var qr3Html = qrDefs3.map(function(q) {
       return '<div class="pv3-qr-item">' +
         '<div class="pv3-qr-box' + (q.filled ? ' filled' : '') + '">' + (q.filled ? 'QR' : '') + '</div>' +
         '<div class="pv3-qr-label">' + e(q.label) + '</div>' +
