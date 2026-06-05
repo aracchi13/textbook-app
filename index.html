@@ -444,28 +444,52 @@ select.finput {
 .pv2-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
 .pv2-photo-ph { flex: 1; position: relative; background: #f5f5f5; border: 0.5px dashed #ccc; display: flex; align-items: center; justify-content: center; font-size: 7pt; color: #bbb; min-height: 0; }
 
-/* ===================== 1/3専用レイアウト ===================== */
-/* ヘッダー：タイトル行 + キャッチコピー行 */
-.pv3-head { flex-shrink: 0; border-bottom: 1.5px solid #1a2b4c; padding-bottom: 2px; margin-bottom: 0; }
-.pv3-head-top { display: flex; align-items: center; gap: 4px; }
-.pv3-catch { font-size: 9pt; color: #555; padding: 1px 0 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-/* ボディ：3カラム */
-.pv3-body { display: flex; flex-direction: row; gap: 2mm; flex: 1; min-height: 0; overflow: hidden; padding-top: 2mm; }
-.pv3-col-photo { flex: 0 0 28%; overflow: hidden; min-width: 0; display: flex; flex-direction: column; }
-.pv3-col-content { flex: 1; display: flex; flex-direction: column; gap: 2px; overflow: hidden; min-width: 0; }
-.pv3-col-right { flex: 0 0 24%; display: flex; flex-direction: column; gap: 3px; overflow: hidden; min-width: 0; }
-/* タグpill */
-.pv3-pills { display: flex; gap: 2px; flex-shrink: 0; }
-.pv3-pill { background: #e8edf5; color: #1a2b4c; font-size: 7pt; padding: 1.5px 4px; border-radius: 2px; white-space: nowrap; overflow: hidden; font-weight: 600; flex: 1; text-align: center; }
-.pv3-pill.empty { background: #f0f0f0; color: transparent; }
-/* 本文・情報 */
-.pv3-bodytext { font-size: 8pt; line-height: 1.5; color: #333; overflow: hidden; flex: 1; }
-/* QRエリア */
-.pv3-qrs { display: flex; gap: 3px; justify-content: center; flex-shrink: 0; padding-top: 2px; }
-.pv3-qr-item { display: flex; flex-direction: column; align-items: center; gap: 1px; flex: 1; }
-.pv3-qr-box { width: 100%; aspect-ratio: 1; background: #f5f5f5; border: 0.5px solid #ccc; display: flex; align-items: center; justify-content: center; font-size: 5.5pt; color: #aaa; font-weight: 700; }
+/* ===================== 1/3専用レイアウト（794×374px・A4縦3社分） ===================== */
+/* ヘッダー：num + 会社名/サロン名 + ロゴ（1行） */
+.pv3-head { display: flex; align-items: center; gap: 4px; padding: 16px 30px 4px 20px; border-bottom: 1.5px solid #1a2b4c; flex-shrink: 0; }
+.pv3-num  { font-size: 16pt; font-weight: 900; color: #1a2b4c; min-width: 26px; line-height: 1; flex-shrink: 0; }
+.pv3-hd-title { font-size: 10pt; font-weight: 700; color: #444; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pv3-hd-logo  { flex-shrink: 0; width: 48px; height: 26px; display: flex; align-items: center; justify-content: flex-end; overflow: hidden; }
+.pv3-hd-logo img { max-width: 100%; max-height: 100%; object-fit: contain; }
+
+/* ボディ：縦2段構造 */
+.pv3-body { display: flex; flex-direction: column; flex: 1; min-height: 0; overflow: hidden; }
+
+/* ── 上段：キャッチ（左）＋ タグ（中央）/ 右カラムなし */
+.pv3-upper { display: flex; flex-direction: row; flex-shrink: 0; border-bottom: 0.7px solid #ddd; }
+.pv3-upper-left { width: 250px; flex-shrink: 0; display: flex; align-items: center; padding: 4px 20px; border-right: 0.7px solid #ddd; overflow: hidden; }
+.pv3-catch { font-size: 11pt; font-weight: 700; color: #444; line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pv3-upper-center { flex: 1; display: flex; flex-direction: column; padding-left: 20px; padding-right: 8px; }
+.pv3-center-spacer { height: 20px; flex-shrink: 0; }
+.pv3-tags-grid { display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: 48px 48px; gap: 2px; flex-shrink: 0; }
+.pv3-tag { display: flex; align-items: center; justify-content: center; font-size: 7.5pt; font-weight: 700; color: #fff; border-radius: 2px; overflow: hidden; padding: 0 2px; text-align: center; line-height: 1.2; }
+.pv3-tag.c-blue   { background: #4a90d9; }
+.pv3-tag.c-orange { background: #e06c3a; }
+.pv3-tag.c-green  { background: #5cb85c; }
+.pv3-tag.c-grey   { background: #777; }
+.pv3-tag.empty    { background: #efefef; }
+
+/* ── 下段：写真1（左）＋ 説明文・会社情報（中央）＋ 写真2・QR（右） */
+.pv3-lower { display: flex; flex-direction: row; flex: 1; min-height: 0; overflow: hidden; }
+.pv3-lower-left { width: 250px; flex-shrink: 0; padding: 8px 15px 0 15px; border-right: 0.7px solid #ddd; overflow: hidden; }
+.pv3-photo1-wrap { width: 100%; height: calc(100% - 90px); overflow: hidden; }
+.pv3-photo1-img  { width: 100%; height: 100%; object-fit: cover; display: block; }
+.pv3-photo1-ph   { width: 100%; height: 100%; background: #e8e8e8; border: 0.5px solid #ddd; display: flex; align-items: center; justify-content: center; font-size: 7pt; color: #bbb; }
+.pv3-lower-center { flex: 1; display: flex; flex-direction: column; padding-left: 20px; overflow: hidden; min-width: 0; }
+.pv3-desc { font-size: 7.5pt; color: #333; max-height: 78px; overflow: hidden; line-height: 1.5; margin-top: 10px; padding-right: 28px; flex-shrink: 0; }
+.pv3-info { margin-top: auto; flex-shrink: 0; padding-bottom: 6px; padding-right: 8px; }
+.pv3-info-row { display: flex; align-items: baseline; gap: 3px; overflow: hidden; }
+.pv3-info-lbl { color: #888; font-weight: 600; white-space: nowrap; flex-shrink: 0; font-size: 7pt; }
+.pv3-info-val { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 7pt; color: #444; }
+.pv3-lower-right { width: 200px; flex-shrink: 0; padding-right: 30px; display: flex; flex-direction: column; overflow: hidden; }
+.pv3-photo2-wrap { height: 154px; margin-top: 19px; margin-bottom: 7px; flex-shrink: 0; overflow: hidden; }
+.pv3-photo2-img  { width: 100%; height: 100%; object-fit: cover; display: block; }
+.pv3-photo2-ph   { width: 100%; height: 100%; background: #e8e8e8; border: 0.5px solid #ddd; display: flex; align-items: center; justify-content: center; font-size: 7pt; color: #bbb; }
+.pv3-qrs { height: 72px; display: flex; align-items: flex-end; justify-content: center; gap: 3px; padding-bottom: 3px; margin-top: auto; }
+.pv3-qr-item  { display: flex; flex-direction: column; align-items: center; gap: 1px; flex: 1; }
+.pv3-qr-box   { width: 100%; aspect-ratio: 1; background: #f5f5f5; border: 0.5px solid #ccc; display: flex; align-items: center; justify-content: center; font-size: 5.5pt; color: #aaa; font-weight: 700; }
 .pv3-qr-box.filled { background: #1a2b4c; color: #fff; }
-.pv3-qr-label { font-size: 5.5pt; color: #555; text-align: center; width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.3; }
+.pv3-qr-label { font-size: 6.5pt; color: #555; text-align: center; width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.3; }
 
 /* ===================== トースト ===================== */
 #toast {
@@ -1827,6 +1851,16 @@ function loadPreview(pid) {
   }).catch(function(err){ el.innerHTML = '<div class="alert a-danger">' + e(err.message) + '</div>'; });
 }
 
+function getTagColor(tag) {
+  var prefectures = ['北海道','青森','岩手','宮城','秋田','山形','福島','茨城','栃木','群馬','埼玉','千葉','東京','神奈川','新潟','富山','石川','福井','山梨','長野','岐阜','静岡','愛知','三重','滋賀','京都','大阪','兵庫','奈良','和歌山','鳥取','島根','岡山','広島','山口','徳島','香川','愛媛','高知','福岡','佐賀','長崎','熊本','大分','宮崎','鹿児島','沖縄'];
+  var conditions  = ['駅近','駐車場','週休','社会保険','交通費','育休','産休','残業','夜勤','土日','勤務','シフト','正社員','アルバイト','パート'];
+  var jobTypes    = ['ヘアカラー','カット','パーマ','トリートメント','ネイル','アイラッシュ','エステ','メイク','ブライダル','メンズ','キッズ','オーガニック','アイブロウ','フェイシャル','マッサージ','ボディ','まつ毛'];
+  if (prefectures.indexOf(tag) !== -1 || prefectures.some(function(p){ return tag.indexOf(p) !== -1; })) return 'c-blue';
+  if (conditions.some(function(c){ return tag.indexOf(c) !== -1; })) return 'c-green';
+  if (jobTypes.some(function(j){ return tag.indexOf(j) !== -1; })) return 'c-orange';
+  return 'c-grey';
+}
+
 function buildPvCard(s, idx, layout) {
   var num = String((idx || 0) + 1).padStart(2, '0');
   var is13 = (layout || s.layout) === '1/3';
@@ -1931,58 +1965,89 @@ function buildPvCard(s, idx, layout) {
     '</div>';
 
   if (is13) {
-    // ── 1/3レイアウト：左=写真1、中央=タグ+本文+情報、右=写真2+QR
-    var photo1Html = s.photo1
-      ? '<img src="' + e(s.photo1) + '" onerror="this.style.display=\'none\'">'
-      : '<div class="pv2-main-ph">写真1</div>';
-    var photo2Html = s.photo2
-      ? '<img src="' + e(s.photo2) + '" onerror="this.style.display=\'none\'">'
-      : '<div class="pv2-main-ph">写真2</div>';
+    // タイトル（会社名 / サロン名）
+    var titleParts3 = [];
+    if (s.companyName) titleParts3.push(e(s.companyName));
+    if (s.salonName)   titleParts3.push(e(s.salonName));
+    var title3 = titleParts3.join('<span style="margin:0 2px;color:#aaa"> / </span>');
 
-    // タグpill（先頭4件）
-    var pillsHtml = '';
-    for (var tp = 0; tp < 4; tp++) {
-      var tpval = s.tags && s.tags[tp] ? s.tags[tp] : '';
-      pillsHtml += tpval
-        ? '<span class="pv3-pill">' + e(tpval) + '</span>'
-        : '<span class="pv3-pill empty">&nbsp;</span>';
+    // ロゴ
+    var logo3 = s.logo
+      ? '<img src="' + e(s.logo) + '" onerror="this.style.display=\'none\'">'
+      : '<span style="font-size:5px;color:#bbb">LOGO</span>';
+
+    // 写真1
+    var ph1 = s.photo1
+      ? '<img class="pv3-photo1-img" src="' + e(s.photo1) + '" onerror="this.style.display=\'none\'">'
+      : '<div class="pv3-photo1-ph">写真1</div>';
+
+    // 写真2
+    var ph2 = s.photo2
+      ? '<img class="pv3-photo2-img" src="' + e(s.photo2) + '" onerror="this.style.display=\'none\'">'
+      : '<div class="pv3-photo2-ph">写真2</div>';
+
+    // タグ：2行×4列（8枠固定）・色分けあり
+    var tagsGrid3 = '';
+    for (var ti = 0; ti < 8; ti++) {
+      var tv = s.tags && s.tags[ti] ? s.tags[ti] : '';
+      tagsGrid3 += tv
+        ? '<div class="pv3-tag ' + getTagColor(tv) + '">' + e(tv) + '</div>'
+        : '<div class="pv3-tag empty"></div>';
     }
 
+    // QR
     var qr3Html = qrDefs.map(function(q) {
       return '<div class="pv3-qr-item">' +
-        '<div class="pv3-qr-box' + (q.filled ? ' filled' : '') + '">' +
-          (q.filled ? 'QR' : '') +
-        '</div>' +
+        '<div class="pv3-qr-box' + (q.filled ? ' filled' : '') + '">' + (q.filled ? 'QR' : '') + '</div>' +
         '<div class="pv3-qr-label">' + e(q.label) + '</div>' +
       '</div>';
     }).join('');
 
+    // 会社情報（サロン名・代表者名・設立・店舗数・スタッフ数・住所・電話番号）
+    var infoRows3 = [
+      { lbl: 'サロン名',   val: s.salonName },
+      { lbl: '代表者名',   val: s.representative },
+      { lbl: '設立',       val: s.established ? s.established + '年' : '' },
+      { lbl: '店舗数',     val: s.stores      ? s.stores      + '店舗' : '' },
+      { lbl: 'スタッフ数', val: s.staff       ? s.staff       + '名' : '' },
+      { lbl: '住所',       val: s.address },
+      { lbl: '電話番号',   val: s.tel }
+    ].filter(function(r){ return r.val; });
+    var info3Html = infoRows3.map(function(r) {
+      return '<div class="pv3-info-row">' +
+        '<span class="pv3-info-lbl">【' + e(r.lbl) + '】</span>' +
+        '<span class="pv3-info-val">' + e(r.val) + '</span>' +
+      '</div>';
+    }).join('');
+
     return '<div class="pv2">' +
-      // ヘッダー：2行（タイトル行 + キャッチコピー行）
+      // ヘッダー（1行）：num + 会社名/サロン名 + ロゴ
       '<div class="pv3-head">' +
-        '<div class="pv3-head-top">' +
-          '<div class="pv2-num">' + num + '</div>' +
-          '<div class="pv2-title">' + titleHtml + '</div>' +
-          '<div class="pv2-logo">' + logoHtml + '</div>' +
-        '</div>' +
-        '<div class="pv3-catch">' + e(s.catchphrase || '') + '</div>' +
+        '<div class="pv3-num">' + num + '</div>' +
+        '<div class="pv3-hd-title">' + title3 + '</div>' +
+        '<div class="pv3-hd-logo">' + logo3 + '</div>' +
       '</div>' +
-      // ボディ：3カラム
+      // ボディ：縦2段
       '<div class="pv3-body">' +
-        // 左：写真1（縦全体）
-        '<div class="pv3-col-photo">' +
-          '<div class="pv2-photo" style="flex:1">' + photo1Html + '</div>' +
+        // ── 上段：キャッチ（左）＋ スペーサー+タグ（中央）
+        '<div class="pv3-upper">' +
+          '<div class="pv3-upper-left"><div class="pv3-catch">' + e(s.catchphrase || '') + '</div></div>' +
+          '<div class="pv3-upper-center">' +
+            '<div class="pv3-center-spacer"></div>' +
+            '<div class="pv3-tags-grid">' + tagsGrid3 + '</div>' +
+          '</div>' +
         '</div>' +
-        // 中央：タグ + 本文 + 会社情報
-        '<div class="pv3-col-content">' +
-          '<div class="pv3-pills">' + pillsHtml + '</div>' +
-          '<div class="pv3-bodytext">' + (s.bodyText ? e(s.bodyText.slice(0, 200)) : '<span style="color:#ccc">説明文</span>') + '</div>' +
-          (infoHtml ? '<div class="pv2-info-tbl" style="flex-shrink:0">' + infoHtml + '</div>' : '') +
-        '</div>' +
-        // 右：写真2 + QRコード
-        '<div class="pv3-col-right">' +
-          '<div class="pv2-photo" style="flex:1">' + photo2Html + '</div>' +
-          '<div class="pv3-qrs">' + qr3Html + '</div>' +
+        // ── 下段：写真1（左）＋ 説明文+会社情報（中央）＋ 写真2+QR（右）
+        '<div class="pv3-lower">' +
+          '<div class="pv3-lower-left"><div class="pv3-photo1-wrap">' + ph1 + '</div></div>' +
+          '<div class="pv3-lower-center">' +
+            '<div class="pv3-desc">' + (s.bodyText ? e(s.bodyText.slice(0, 200)) : '<span style="color:#ccc">説明文</span>') + '</div>' +
+            (info3Html ? '<div class="pv3-info">' + info3Html + '</div>' : '<div style="margin-top:auto"></div>') +
+          '</div>' +
+          '<div class="pv3-lower-right">' +
+            '<div class="pv3-photo2-wrap">' + ph2 + '</div>' +
+            '<div class="pv3-qrs">' + qr3Html + '</div>' +
+          '</div>' +
         '</div>' +
       '</div>' +
     '</div>';
