@@ -23,12 +23,12 @@ function doGet() {
 // シート初期化
 // ------------------------------------------------------------
 function initSheets() {
-  var ss = _ss_();
+  var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
 
   var sheetDefs = [
     { name: SH_PROJECT,  headers: ['ID','年度','月','案件名','作成日時'] },
-    { name: SH_SALON,    headers: ['ID','案件ID','会社名','サロン名','キャッチコピー','代表者名','設立年','店舗数','スタッフ数','住所','TEL','本文テキスト','タグ','写真パス1','写真パス2','写真パス3','ロゴパス','Instagramリンク','HPリンク','レイアウト','作成日時','更新日時'] },
-    { name: SH_TEMPLATE, headers: ['ID','テンプレート名','会社名','サロン名','キャッチコピー','代表者名','設立年','店舗数','スタッフ数','住所','TEL','本文テキスト','タグ','写真パス1','写真パス2','写真パス3','ロゴパス','Instagramリンク','HPリンク','レイアウト','作成日時'] }
+    { name: SH_SALON,    headers: ['ID','案件ID','会社名','サロン名','キャッチコピー','代表者名','設立年','店舗数','スタッフ数','住所','TEL','本文テキスト','タグ','写真パス1','写真パス2','ロゴパス','Instagramリンク','HPリンク','レイアウト','作成日時','更新日時'] },
+    { name: SH_TEMPLATE, headers: ['ID','テンプレート名','会社名','サロン名','キャッチコピー','代表者名','設立年','店舗数','スタッフ数','住所','TEL','本文テキスト','タグ','写真パス1','写真パス2','ロゴパス','Instagramリンク','HPリンク','レイアウト','作成日時'] }
   ];
 
   sheetDefs.forEach(function(def) {
@@ -55,35 +55,30 @@ function getProjects() {
   var rows = _getRows(SH_PROJECT);
   return rows.map(function(r) {
     return {
-      id:           String(r[0]),
-      year:         String(r[1]),
-      month:        String(r[2]),
-      name:         String(r[3]),
-      createdAt:    _fmtDate(r[4]),
-      targetCount:  r[5] !== '' ? Number(r[5]) : 0,
-      approachCount: r[6] !== '' ? Number(r[6]) : 0
+      id:        String(r[0]),
+      year:      String(r[1]),
+      month:     String(r[2]),
+      name:      String(r[3]),
+      createdAt: _fmtDate(r[4])
     };
   });
 }
 
 function saveProject(data) {
-  var sh      = _sheet(SH_PROJECT);
-  var all     = sh.getDataRange().getValues();
-  var target  = data.targetCount  !== undefined ? Number(data.targetCount)  : 0;
-  var approach = data.approachCount !== undefined ? Number(data.approachCount) : 0;
+  var sh  = _sheet(SH_PROJECT);
+  var all = sh.getDataRange().getValues();
 
   if (data.id) {
     for (var i = 1; i < all.length; i++) {
       if (String(all[i][0]) === String(data.id)) {
         sh.getRange(i + 1, 2, 1, 3).setValues([[data.year, data.month, data.name]]);
-        sh.getRange(i + 1, 6, 1, 2).setValues([[target, approach]]);
         return { success: true, id: data.id };
       }
     }
   }
 
   var id = 'P' + Date.now();
-  sh.appendRow([id, data.year, data.month, data.name, new Date(), target, approach]);
+  sh.appendRow([id, data.year, data.month, data.name, new Date()]);
   return { success: true, id: id };
 }
 
@@ -151,7 +146,7 @@ function saveSalon(data) {
     for (var i = 1; i < all.length; i++) {
       if (String(all[i][0]) === String(data.id)) {
         row[0]  = data.id;
-        row[20] = all[i][20];
+        row[19] = all[i][19];
         sh.getRange(i + 1, 1, 1, row.length).setValues([row]);
         return { success: true, id: data.id };
       }
@@ -160,7 +155,7 @@ function saveSalon(data) {
 
   var id  = 'S' + Date.now();
   row[0]  = id;
-  row[20] = now;
+  row[19] = now;
   sh.appendRow(row);
   return { success: true, id: id };
 }
@@ -239,7 +234,6 @@ function saveAsTemplate(salonId, templateName) {
     tags:           salon.tags,
     photo1:         salon.photo1,
     photo2:         salon.photo2,
-    photo3:         salon.photo3,
     logo:           salon.logo,
     instagram:      salon.instagram,
     hp:             salon.hp,
@@ -290,7 +284,7 @@ function getAllSalons() {
 function exportCSV(projectId, layout) {
   var salons  = getSalonsByProject(projectId);
   var perRow  = layout === '1/3' ? 3 : 2;
-  var baseH   = ['会社名','サロン名','キャッチコピー','代表者名','設立年','店舗数','スタッフ数','住所','TEL','本文テキスト','タグ','写真パス1','写真パス2','写真パス3','ロゴパス','Instagramリンク','HPリンク','レイアウト'];
+  var baseH   = ['会社名','サロン名','キャッチコピー','代表者名','設立年','店舗数','スタッフ数','住所','TEL','本文テキスト','タグ','写真パス1','写真パス2','ロゴパス','Instagramリンク','HPリンク','レイアウト'];
 
   var headers = [];
   for (var n = 1; n <= perRow; n++) {
@@ -305,7 +299,7 @@ function exportCSV(projectId, layout) {
     for (var j = 0; j < perRow; j++) {
       var s = group[j];
       if (s) {
-        row = row.concat([s.companyName, s.salonName, s.catchphrase, s.representative, s.established, s.stores, s.staff, s.address, s.tel, s.bodyText, (s.tags||[]).join('|'), s.photo1, s.photo2, s.photo3, s.logo, s.instagram, s.hp, s.layout]);
+        row = row.concat([s.companyName, s.salonName, s.catchphrase, s.representative, s.established, s.stores, s.staff, s.address, s.tel, s.bodyText, (s.tags||[]).join('|'), s.photo1, s.photo2, s.logo, s.instagram, s.hp, s.layout]);
       } else {
         for (var k = 0; k < baseH.length; k++) row.push('');
       }
@@ -368,11 +362,6 @@ function _fmtDate(v) {
   try { return Utilities.formatDate(new Date(v), 'Asia/Tokyo', 'yyyy/MM/dd'); } catch(e) { return ''; }
 }
 
-function _validLayout(v) {
-  var s = String(v || '');
-  return (s === '1/2' || s === '1/3') ? s : '1/2';
-}
-
 function _tagsStr(tags) {
   return Array.isArray(tags) ? tags.join(',') : (tags || '');
 }
@@ -390,10 +379,10 @@ function _rowToSalon(r) {
     staff: String(r[8]||''), address: String(r[9]||''),
     tel: String(r[10]||''), bodyText: String(r[11]||''),
     tags: _tagsArr(r[12]),
-    photo1: String(r[13]||''), photo2: String(r[14]||''), photo3: String(r[15]||''),
-    logo: String(r[16]||''), instagram: String(r[17]||''),
-    hp: String(r[18]||''), layout: _validLayout(r[19]),
-    createdAt: _fmtDate(r[20]), updatedAt: _fmtDate(r[21])
+    photo1: String(r[13]||''), photo2: String(r[14]||''),
+    logo: String(r[15]||''), instagram: String(r[16]||''),
+    hp: String(r[17]||''), layout: String(r[18]||'1/2'),
+    createdAt: _fmtDate(r[19]), updatedAt: _fmtDate(r[20])
   };
 }
 
@@ -404,7 +393,7 @@ function _salonToRow(d, now) {
     d.representative||'', d.established||'', d.stores||'',
     d.staff||'', d.address||'', d.tel||'', d.bodyText||'',
     _tagsStr(d.tags),
-    d.photo1||'', d.photo2||'', d.photo3||'', d.logo||'',
+    d.photo1||'', d.photo2||'', d.logo||'',
     d.instagram||'', d.hp||'', d.layout||'1/2',
     d.createdAt ? new Date(d.createdAt) : now, now
   ];
@@ -419,10 +408,10 @@ function _rowToTemplate(r) {
     staff: String(r[8]||''), address: String(r[9]||''),
     tel: String(r[10]||''), bodyText: String(r[11]||''),
     tags: _tagsArr(r[12]),
-    photo1: String(r[13]||''), photo2: String(r[14]||''), photo3: String(r[15]||''),
-    logo: String(r[16]||''), instagram: String(r[17]||''),
-    hp: String(r[18]||''), layout: String(r[19]||'1/2'),
-    createdAt: _fmtDate(r[20])
+    photo1: String(r[13]||''), photo2: String(r[14]||''),
+    logo: String(r[15]||''), instagram: String(r[16]||''),
+    hp: String(r[17]||''), layout: String(r[18]||'1/2'),
+    createdAt: _fmtDate(r[19])
   };
 }
 
@@ -433,7 +422,7 @@ function _templateToRow(d, now) {
     d.representative||'', d.established||'', d.stores||'',
     d.staff||'', d.address||'', d.tel||'', d.bodyText||'',
     _tagsStr(d.tags),
-    d.photo1||'', d.photo2||'', d.photo3||'', d.logo||'',
+    d.photo1||'', d.photo2||'', d.logo||'',
     d.instagram||'', d.hp||'', d.layout||'1/2',
     now
   ];

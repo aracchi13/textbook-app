@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>サロン情報管理システム</title>
+<title>学校案件管理システム</title>
 <style>
 :root {
   --navy:      #1a2b4c;
@@ -208,6 +208,20 @@ select.finput {
 
 /* タグ */
 .tags-wrap { display: flex; flex-wrap: wrap; gap: 7px; }
+.tag-cats { display: flex; flex-direction: column; gap: 10px; }
+.tag-cat-sec { }
+.tag-cat-hd {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding-bottom: 4px;
+  margin-bottom: 6px;
+  text-transform: none;
+}
+.tag-cat-hd.cat-area    { color: #1e3b7a; border-bottom: 2px solid #1e3b7a; }
+.tag-cat-hd.cat-job     { color: #c94070; border-bottom: 2px solid #c94070; }
+.tag-cat-hd.cat-feature { color: #1a9e8a; border-bottom: 2px solid #1a9e8a; }
 .tcb { display: none; }
 .tlbl {
   padding: 4px 12px;
@@ -220,6 +234,42 @@ select.finput {
   user-select: none;
 }
 .tcb:checked + .tlbl { background: var(--navy); color: #fff; border-color: var(--navy); }
+.tcb:checked + .tlbl.cat-area    { background: #1e3b7a; color: #fff; border-color: #1e3b7a; }
+.tcb:checked + .tlbl.cat-job     { background: #d4547a; color: #fff; border-color: #d4547a; }
+.tcb:checked + .tlbl.cat-feature { background: #2ab5a0; color: #fff; border-color: #2ab5a0; }
+.tcb:disabled + .tlbl { opacity: .35; cursor: not-allowed; }
+
+/* カスタムタグ追加UI */
+.tag-cb-wrap { display: inline-flex; position: relative; }
+.tag-del-btn {
+  display: none;
+  position: absolute;
+  top: -4px; right: -4px;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--danger);
+  color: #fff;
+  font-size: 9px;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  z-index: 1;
+  user-select: none;
+}
+.tag-cb-wrap:hover .tag-del-btn { display: flex; }
+.tag-add-row { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; margin-top: 6px; }
+.tag-add-inp {
+  padding: 3px 8px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  font-size: 11px;
+  font-family: inherit;
+  color: var(--text);
+  background: var(--white);
+  width: 120px;
+}
+.tag-add-inp:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px rgba(74,144,217,.14); }
 
 /* ラジオ */
 .rgroup { display: flex; gap: 18px; flex-wrap: wrap; }
@@ -422,9 +472,9 @@ select.finput {
 .pv2-tag  { background: #1a2b4c; color: #fff; font-size: 9pt; padding: 2px 2px; text-align: center; border-radius: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.3; }
 .pv2-tag.empty { background: #efefef; color: transparent; }
 .pv2-qrs  { display: flex; gap: 2px; flex-shrink: 0; margin-top: auto; }
-.pv2-qr-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 1px; }
-.pv2-qr-box { width: 100%; aspect-ratio: 1; background: #f5f5f5; border: 0.5px solid #ccc; display: flex; align-items: center; justify-content: center; font-size: 6pt; color: #aaa; font-weight: 700; }
-.pv2-qr-box.filled { background: #1a2b4c; color: #fff; }
+.pv2-qr-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 0 2.5px; }
+.pv2-qr-box { width: 100%; aspect-ratio: 1; background: #f5f5f5; border: 0.5px solid #ccc; display: flex; align-items: center; justify-content: center; font-size: 6pt; color: #aaa; font-weight: 700; overflow: hidden; }
+.pv2-qr-box.filled { background: #fff; color: #fff; }
 .pv2-qr-label { font-size: 6pt; color: #555; text-align: center; width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.3; }
 
 /* 中央カラム：説明文(1fr) → 特徴(auto) → 会社情報(auto) */
@@ -461,11 +511,12 @@ select.finput {
 .pv3-catch { font-size: 11pt; font-weight: 700; color: #444; line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .pv3-upper-center { flex: 1; display: flex; flex-direction: column; padding-left: 20px; padding-right: 8px; }
 .pv3-center-spacer { height: 20px; flex-shrink: 0; }
-.pv3-tags-grid { display: flex !important; flex-wrap: wrap !important; gap: 5px !important; padding: 8px 20px !important; align-content: center !important; align-items: center !important; }
-.pv3-tag { display: inline-block !important; font-size: 13px !important; font-weight: 600 !important; color: #fff !important; border-radius: 3px !important; padding: 4px 10px !important; white-space: nowrap !important; line-height: 1.4 !important; }
-.pv3-tag.c-blue   { background: #4a90d9; }
-.pv3-tag.c-orange { background: #e06c3a; }
-.pv3-tag.c-green  { background: #5cb85c; }
+.pv3-tags-grid { display: grid !important; grid-template-columns: repeat(5, 1fr) !important; gap: 4px !important; padding: 6px 20px !important; align-content: center !important; }
+.pv3-tag { text-align: center !important; }
+.pv3-tag { display: inline-block !important; font-size: 11px !important; font-weight: 600 !important; color: #fff !important; border-radius: 2px !important; padding: 2px 8px !important; white-space: nowrap !important; line-height: 1.4 !important; }
+.pv3-tag.c-blue   { background: #1e3b7a; }
+.pv3-tag.c-pink   { background: #d4547a; }
+.pv3-tag.c-green  { background: #2ab5a0; }
 .pv3-tag.c-grey   { background: #777; }
 .pv3-tag.empty    { background: #efefef; }
 
@@ -476,19 +527,21 @@ select.finput {
 .pv3-photo1-img  { width: 100%; height: 100%; object-fit: cover; display: block; }
 .pv3-photo1-ph   { width: 100%; height: 100%; background: #e8e8e8; border: 0.5px solid #ddd; display: flex; align-items: center; justify-content: center; font-size: 7pt; color: #bbb; }
 .pv3-lower-center { flex: 1; display: flex; flex-direction: column; padding-left: 20px; overflow: hidden; min-width: 0; }
-.pv3-desc { font-size: 7.5pt; color: #333; max-height: 78px; overflow: hidden; line-height: 1.5; margin-top: 10px; padding-right: 28px; flex-shrink: 0; }
-.pv3-info { margin-top: auto; flex-shrink: 0; padding-bottom: 6px; padding-right: 8px; }
+.pv3-desc { font-size: 7.5pt; color: #333; max-height: 120px; overflow: hidden; line-height: 1.5; margin-top: 10px; padding-right: 28px; flex-shrink: 0; }
+.pv3-info { margin-top: auto; flex-shrink: 0; padding-bottom: 6px; padding-right: 8px; margin-bottom: 5px; }
 .pv3-info-row { display: flex; align-items: baseline; gap: 3px; overflow: hidden; }
+.pv3-info-row-wrap { align-items: flex-start; }
 .pv3-info-lbl { color: #888; font-weight: 600; white-space: nowrap; flex-shrink: 0; font-size: 7pt; }
 .pv3-info-val { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 7pt; color: #444; }
+.pv3-info-val-multi { font-size: 7pt; color: #444; line-height: 1.4; word-break: break-all; white-space: normal; }
 .pv3-lower-right { width: 200px; flex-shrink: 0; padding-right: 30px; display: flex; flex-direction: column; overflow: hidden; }
-.pv3-photo2-wrap { height: 154px; margin-top: 19px; margin-bottom: 7px; flex-shrink: 0; overflow: hidden; }
+.pv3-photo2-wrap { height: 154px; margin-top: 8px; margin-bottom: 7px; flex-shrink: 0; overflow: hidden; }
 .pv3-photo2-img  { width: 100%; height: 100%; object-fit: cover; display: block; }
 .pv3-photo2-ph   { width: 100%; height: 100%; background: #e8e8e8; border: 0.5px solid #ddd; display: flex; align-items: center; justify-content: center; font-size: 7pt; color: #bbb; }
 .pv3-qrs { height: 72px; display: flex; align-items: flex-end; justify-content: center; gap: 3px; padding-bottom: 3px; margin-top: auto; }
-.pv3-qr-item  { display: flex; flex-direction: column; align-items: center; gap: 1px; flex: 1; }
-.pv3-qr-box   { width: 100%; aspect-ratio: 1; background: #f5f5f5; border: 0.5px solid #ccc; display: flex; align-items: center; justify-content: center; font-size: 5.5pt; color: #aaa; font-weight: 700; }
-.pv3-qr-box.filled { background: #1a2b4c; color: #fff; }
+.pv3-qr-item  { display: flex; flex-direction: column; align-items: center; gap: 1px; flex: 1; padding: 0 2.5px; }
+.pv3-qr-box   { width: 100%; aspect-ratio: 1; background: #f5f5f5; border: 0.5px solid #ccc; display: flex; align-items: center; justify-content: center; font-size: 5.5pt; color: #aaa; font-weight: 700; overflow: hidden; }
+.pv3-qr-box.filled { background: #fff; color: #fff; }
 .pv3-qr-label { font-size: 6.5pt; color: #555; text-align: center; width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.3; }
 
 /* ===================== トースト ===================== */
@@ -691,8 +744,8 @@ select.finput {
 <!-- ===== サイドバー ===== -->
 <aside class="sb" id="sb">
   <div class="sb-logo" onclick="go('dash')" style="cursor:pointer" title="ホームへ戻る">
-    <div class="en">Salon Management</div>
-    <div class="ja">サロン情報<br>管理システム</div>
+    <div class="en">School Project Management</div>
+    <div class="ja">学校案件<br>管理システム</div>
   </div>
   <nav class="sb-nav">
     <div class="sb-sec">メイン</div>
@@ -749,12 +802,135 @@ function ico(name, sz) {
 // =====================================================
 // 定数
 // =====================================================
-var TAGS = [
-  'ヘアカラー','カット','パーマ','トリートメント',
-  'ネイル','アイラッシュ','エステ','メイク',
-  'ブライダル','メンズ','キッズ','オーガニック',
-  'ハイセンス','アットホーム','駅近','駐車場あり'
+var TAG_CATEGORIES = [
+  { name: 'エリア',       cls: 'cat-area',    tags: ['駅近','駐車場あり'] },
+  { name: '募集職種',     cls: 'cat-job',     tags: ['ヘアカラー','カット','パーマ','トリートメント','ネイル','アイラッシュ','エステ','メイク','ブライダル','メンズ','キッズ'] },
+  { name: 'できる事・特徴', cls: 'cat-feature', tags: ['オーガニック','ハイセンス','アットホーム'] }
 ];
+var TAGS = TAG_CATEGORIES.reduce(function(a,c){ return a.concat(c.tags); }, []);
+
+function getCustomTags() {
+  try { return JSON.parse(localStorage.getItem('salonCustomTags') || '{}'); } catch(e) { return {}; }
+}
+function saveCustomTags(obj) {
+  try { localStorage.setItem('salonCustomTags', JSON.stringify(obj)); } catch(e) {}
+}
+
+function renderTagCheckboxes(selectedTags, prefix) {
+  var custom = getCustomTags();
+  return TAG_CATEGORIES.map(function(cat) {
+    var allTags = cat.tags.concat(custom[cat.cls] || []);
+    var tagsHtml = allTags.map(function(t) {
+      var isCustom = (custom[cat.cls] || []).indexOf(t) !== -1;
+      var chk = (selectedTags||[]).indexOf(t) !== -1 ? 'checked' : '';
+      var id  = prefix + '_' + t.replace(/[\s\/]/g,'_');
+      var delBtn = isCustom
+        ? '<span class="tag-del-btn" onclick="delCustomTag(\'' + cat.cls + '\',\'' + t.replace(/'/g,"\\'") + '\',\'' + prefix + '\')" title="削除">×</span>'
+        : '';
+      return '<span class="tag-cb-wrap">' +
+               '<input type="checkbox" class="tcb" id="' + e(id) + '" value="' + e(t) + '" ' + chk +
+                 ' onchange="updateTagCount(\'' + prefix + '\')">' +
+               '<label class="tlbl ' + cat.cls + '" for="' + e(id) + '">' + e(t) + '</label>' +
+               delBtn +
+             '</span>';
+    }).join('');
+    return '<div class="tag-cat-sec">' +
+             '<div class="tag-cat-hd ' + cat.cls + '">' + e(cat.name) + '</div>' +
+             '<div class="tags-wrap" id="tagwrap_' + cat.cls + '_' + prefix + '">' + tagsHtml + '</div>' +
+             '<div class="tag-add-row">' +
+               '<input type="text" class="tag-add-inp" id="taginp_' + cat.cls + '_' + prefix + '" placeholder="タグ名を入力"' +
+                 ' style="display:none"' +
+                 ' onkeydown="if(event.key===\'Enter\'){event.preventDefault();addCustomTag(\'' + cat.cls + '\',\'' + prefix + '\');}">' +
+               '<button class="btn btn-ghost btn-xs" id="tagbtn_' + cat.cls + '_' + prefix + '"' +
+                 ' onclick="toggleTagInput(\'' + cat.cls + '\',\'' + prefix + '\')">＋ タグを追加</button>' +
+               '<button class="btn btn-accent btn-xs" id="tagconfirm_' + cat.cls + '_' + prefix + '"' +
+                 ' style="display:none" onclick="addCustomTag(\'' + cat.cls + '\',\'' + prefix + '\')">追加</button>' +
+               '<button class="btn btn-ghost btn-xs" id="tagcancel_' + cat.cls + '_' + prefix + '"' +
+                 ' style="display:none" onclick="cancelTagInput(\'' + cat.cls + '\',\'' + prefix + '\')">キャンセル</button>' +
+             '</div>' +
+           '</div>';
+  }).join('');
+}
+
+function updateTagCount(prefix) {
+  var cbs = document.querySelectorAll('.tcb');
+  var cnt = 0;
+  cbs.forEach(function(cb){ if (cb.checked) cnt++; });
+  var el = document.getElementById('tagCnt_' + prefix);
+  if (el) {
+    el.textContent = cnt + ' / 10 選択中';
+    el.style.color      = cnt >= 10 ? 'var(--danger)' : 'var(--muted)';
+    el.style.fontWeight = cnt >= 10 ? '700' : '400';
+  }
+  cbs.forEach(function(cb) { if (!cb.checked) cb.disabled = cnt >= 10; });
+}
+
+function toggleTagInput(cls, prefix) {
+  document.getElementById('taginp_'      + cls + '_' + prefix).style.display = 'inline-block';
+  document.getElementById('tagconfirm_'  + cls + '_' + prefix).style.display = 'inline-flex';
+  document.getElementById('tagcancel_'   + cls + '_' + prefix).style.display = 'inline-flex';
+  document.getElementById('tagbtn_'      + cls + '_' + prefix).style.display = 'none';
+  document.getElementById('taginp_'      + cls + '_' + prefix).focus();
+}
+
+function cancelTagInput(cls, prefix) {
+  document.getElementById('taginp_'      + cls + '_' + prefix).style.display = 'none';
+  document.getElementById('tagconfirm_'  + cls + '_' + prefix).style.display = 'none';
+  document.getElementById('tagcancel_'   + cls + '_' + prefix).style.display = 'none';
+  document.getElementById('tagbtn_'      + cls + '_' + prefix).style.display = 'inline-flex';
+  document.getElementById('taginp_'      + cls + '_' + prefix).value = '';
+}
+
+function addCustomTag(cls, prefix) {
+  var inp = document.getElementById('taginp_' + cls + '_' + prefix);
+  var val = (inp.value || '').trim();
+  if (!val) { inp.focus(); return; }
+
+  var custom   = getCustomTags();
+  var existing = TAGS.concat(
+    Object.keys(custom).reduce(function(a,k){ return a.concat(custom[k]); }, [])
+  );
+  if (existing.indexOf(val) !== -1) {
+    showToast('「' + val + '」は既に存在します', false); return;
+  }
+
+  if (!custom[cls]) custom[cls] = [];
+  custom[cls].push(val);
+  saveCustomTags(custom);
+
+  var cnt = document.querySelectorAll('.tcb:checked').length;
+  var id  = prefix + '_' + val.replace(/[\s\/]/g,'_');
+  var newHtml =
+    '<span class="tag-cb-wrap">' +
+      '<input type="checkbox" class="tcb" id="' + e(id) + '" value="' + e(val) + '"' +
+        (cnt >= 8 ? ' disabled' : '') +
+        ' onchange="updateTagCount(\'' + prefix + '\')">' +
+      '<label class="tlbl ' + cls + '" for="' + e(id) + '">' + e(val) + '</label>' +
+      '<span class="tag-del-btn" onclick="delCustomTag(\'' + cls + '\',\'' + val.replace(/'/g,"\\'") + '\',\'' + prefix + '\')" title="削除">×</span>' +
+    '</span>';
+
+  var wrap = document.getElementById('tagwrap_' + cls + '_' + prefix);
+  if (wrap) wrap.insertAdjacentHTML('beforeend', newHtml);
+  cancelTagInput(cls, prefix);
+  showToast('「' + val + '」を追加しました');
+}
+
+function delCustomTag(cls, tagVal, prefix) {
+  if (!confirm('カスタムタグ「' + tagVal + '」を削除しますか？\nこのカテゴリから完全に削除されます。')) return;
+  var custom = getCustomTags();
+  if (custom[cls]) {
+    custom[cls] = custom[cls].filter(function(t){ return t !== tagVal; });
+    saveCustomTags(custom);
+  }
+  var id = prefix + '_' + tagVal.replace(/[\s\/]/g,'_');
+  var cb = document.getElementById(id);
+  if (cb) {
+    var wrap = cb.closest('.tag-cb-wrap');
+    if (wrap) wrap.remove();
+    updateTagCount(prefix);
+  }
+  showToast('「' + tagVal + '」を削除しました');
+}
 var REQUIRED_FIELDS = ['companyName','salonName','address','tel'];
 
 // =====================================================
@@ -860,7 +1036,7 @@ function go(view, params) {
     projects: '案件一覧',
     salons: 'サロン一覧',
     'project-detail': '案件詳細',
-    'salon-form': 'サロン情報入力',
+    'salon-form': '学校情報入力',
     templates: 'テンプレート一覧',
     preview: 'プレビュー・PDF出力',
     csv: 'CSV出力'
@@ -1402,14 +1578,7 @@ function renderSalonForm(sid, pid) {
         '</div>'
       : '';
 
-    var tagHtml = TAGS.map(function(t) {
-      var chk = (salon.tags||[]).indexOf(t) !== -1 ? 'checked' : '';
-      return '<input type="checkbox" class="tcb" id="tg_' + e(t) + '" value="' + e(t) + '" ' + chk + '>' +
-             '<label class="tlbl" for="tg_' + e(t) + '">' + e(t) + '</label>';
-    }).join('');
-
-    var ly12 = (!salon.layout || salon.layout==='1/2') ? 'checked' : '';
-    var ly13 = salon.layout==='1/3' ? 'checked' : '';
+    var tagHtml = renderTagCheckboxes(salon.tags, 'tg');
 
     document.getElementById('content').innerHTML =
       bc([
@@ -1467,11 +1636,17 @@ function renderSalonForm(sid, pid) {
         '<div class="card-head"><div class="card-title">' + ico('edit3',14) + ' 紹介文・タグ</div></div>' +
         '<div class="card-body">' +
           '<div class="fg">' +
-            '<label class="flabel">本文テキスト<span style="font-weight:400;color:var(--muted);margin-left:6px">（180文字まで）</span></label>' +
-            '<textarea class="finput" id="f_body" rows="5" placeholder="サロンの紹介文..." maxlength="180" oninput="validateBodyText()">' + e(salon.bodyText||'') + '</textarea>' +
+            '<label class="flabel">本文テキスト<span style="font-weight:400;color:var(--muted);margin-left:6px">（200文字まで）</span></label>' +
+            '<textarea class="finput" id="f_body" rows="5" placeholder="サロンの紹介文..." maxlength="200" oninput="validateBodyText()">' + e(salon.bodyText||'') + '</textarea>' +
             '<span class="finput-err" id="f_body_err"></span>' +
           '</div>' +
-          '<div class="fg"><label class="flabel">タグ</label><div class="tags-wrap">' + tagHtml + '</div></div>' +
+          '<div class="fg">' +
+            '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">' +
+              '<label class="flabel" style="margin:0">タグ<span style="font-weight:400;color:var(--muted);margin-left:4px">（最大10まで）</span></label>' +
+              '<span id="tagCnt_tg" style="font-size:11px;color:var(--muted)">0 / 8 選択中</span>' +
+            '</div>' +
+            '<div class="tag-cats">' + tagHtml + '</div>' +
+          '</div>' +
         '</div>' +
       '</div>' +
 
@@ -1479,17 +1654,11 @@ function renderSalonForm(sid, pid) {
         '<div class="card-head"><div class="card-title">' + ico('image',14) + ' 画像・レイアウト</div></div>' +
         '<div class="card-body">' +
           '<div class="grid2">' +
-            uzHtml('f_p1',  '写真1（メイン）', salon.photo1) +
-            uzHtml('f_p2',  '写真2', salon.photo2) +
+            uzHtml('f_p1',  '写真1（メイン）', salon.photo1, '推奨：800 × 650px 以上') +
+            uzHtml('f_p2',  '写真2', salon.photo2, '推奨：620 × 570px 以上') +
           '</div>' +
-          uzHtml('f_p3',  '写真3（任意）', salon.photo3) +
           uzHtml('f_logo', 'ロゴ',  salon.logo) +
-          '<div class="fg"><label class="flabel req">レイアウト</label>' +
-            '<div class="rgroup">' +
-              '<label><input type="radio" name="rl" value="1/2" ' + ly12 + '><div>1/2（1ページ2社）</div></label>' +
-              '<label><input type="radio" name="rl" value="1/3" ' + ly13 + '><div>1/3（1ページ3社）</div></label>' +
-            '</div>' +
-          '</div>' +
+          '<input type="hidden" name="rl" id="rl_hidden" value="1/3">' +
         '</div>' +
       '</div>' +
 
@@ -1500,6 +1669,8 @@ function renderSalonForm(sid, pid) {
           '<button class="btn btn-primary" id="saveBtn" onclick="doSaveSalon(\'' + e(sid||'') + '\',\'' + e(pid) + '\')">' + ico('save',13) + ' 保存する</button>' +
         '</div>' +
       '</div>';
+
+    setTimeout(function(){ updateTagCount('tg'); }, 0);
 
   }).catch(function(err){ showErr(err); });
 }
@@ -1516,11 +1687,11 @@ function validateBodyText() {
   var errEl = document.getElementById('f_body_err');
   if (!el || !errEl) return;
   var len = el.value.length;
-  if (len > 180) {
-    errEl.textContent = '180文字を超えています（現在' + len + '文字）';
+  if (len > 200) {
+    errEl.textContent = '200文字を超えています（現在' + len + '文字）';
     el.classList.add('finput-invalid');
   } else {
-    errEl.textContent = len > 160 ? (180 - len) + '文字まで入力できます' : '';
+    errEl.textContent = len > 180 ? (200 - len) + '文字まで入力できます' : '';
     el.classList.remove('finput-invalid');
   }
 }
@@ -1575,13 +1746,13 @@ function getFormData() {
     tel:            document.getElementById('f_tel').value.trim(),
     bodyText:       document.getElementById('f_body').value.trim(),
     tags:           tags,
-    photo1:         document.getElementById('f_p1_url').value,
-    photo2:         document.getElementById('f_p2_url').value,
-    photo3:         document.getElementById('f_p3_url').value,
-    logo:           document.getElementById('f_logo_url').value,
+    photo1:         document.getElementById('f_p1_url').value   || document.getElementById('f_p1_local').value,
+    photo2:         document.getElementById('f_p2_url').value   || document.getElementById('f_p2_local').value,
+    photo3:         '',
+    logo:           document.getElementById('f_logo_url').value || document.getElementById('f_logo_local').value,
     instagram:      document.getElementById('f_ig').value.trim(),
     hp:             document.getElementById('f_hp').value.trim(),
-    layout:         rl ? rl.value : '1/2'
+    layout:         '1/3'
   };
 }
 
@@ -1589,9 +1760,9 @@ function doSaveSalon(sid, pid) {
   var data = getFormData();
   if (!data.companyName) { alert('会社名を入力してください'); return; }
   if (!data.salonName)   { alert('サロン名を入力してください'); return; }
-  // 本文テキスト180文字チェック
-  if (data.bodyText.length > 180) {
-    alert('本文テキストは180文字以内で入力してください（現在' + data.bodyText.length + '文字）');
+  // 本文テキスト200文字チェック
+  if (data.bodyText.length > 200) {
+    alert('本文テキストは200文字以内で入力してください（現在' + data.bodyText.length + '文字）');
     validateBodyText(); return;
   }
   // 住所1：長音符チェック（全角数字・全角ハイフンは入力時に自動変換済み）
@@ -1726,11 +1897,7 @@ function openTemplateForm(tid) {
     var t = (tid && Array.isArray(tmpls)) ? tmpls.find(function(x){ return x.id === tid; }) : {};
     t = t || {};
 
-    var tagHtml = TAGS.map(function(tag) {
-      var chk = (t.tags||[]).indexOf(tag) !== -1 ? 'checked' : '';
-      return '<input type="checkbox" class="tcb" id="tt_' + e(tag) + '" value="' + e(tag) + '" ' + chk + '>' +
-             '<label class="tlbl" for="tt_' + e(tag) + '">' + e(tag) + '</label>';
-    }).join('');
+    var tagHtml = renderTagCheckboxes(t.tags, 'tt');
 
     var ly12 = (!t.layout || t.layout==='1/2') ? 'checked' : '';
     var ly13 = t.layout==='1/3' ? 'checked' : '';
@@ -1757,7 +1924,13 @@ function openTemplateForm(tid) {
           '<div class="fg"><label class="flabel">住所</label><input class="finput" id="tn_addr" value="' + e(t.address||'') + '"></div>' +
           '<div class="fg"><label class="flabel">TEL</label><input class="finput" id="tn_tel" value="' + e(t.tel||'') + '"></div>' +
           '<div class="fg"><label class="flabel">本文テキスト</label><textarea class="finput" id="tn_body" rows="3">' + e(t.bodyText||'') + '</textarea></div>' +
-          '<div class="fg"><label class="flabel">タグ</label><div class="tags-wrap">' + tagHtml + '</div></div>' +
+          '<div class="fg">' +
+            '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">' +
+              '<label class="flabel" style="margin:0">タグ<span style="font-weight:400;color:var(--muted);margin-left:4px">（最大10まで）</span></label>' +
+              '<span id="tagCnt_tt" style="font-size:11px;color:var(--muted)">0 / 8 選択中</span>' +
+            '</div>' +
+            '<div class="tag-cats">' + tagHtml + '</div>' +
+          '</div>' +
           '<div class="fg"><label class="flabel">レイアウト</label><div class="rgroup">' +
             '<label><input type="radio" name="trl" value="1/2" ' + ly12 + '> 1/2</label>' +
             '<label><input type="radio" name="trl" value="1/3" ' + ly13 + '> 1/3</label>' +
@@ -1765,6 +1938,7 @@ function openTemplateForm(tid) {
         '</div>' +
         '<div class="mfoot"><button class="btn btn-ghost" onclick="closeModal()">キャンセル</button><button class="btn btn-primary" onclick="doSaveTemplate(\'' + (tid||'') + '\')">保存する</button></div>' +
       '</div></div>');
+    setTimeout(function(){ updateTagCount('tt'); }, 0);
   });
 }
 
@@ -1903,12 +2077,16 @@ function scalePrevPages() {
 window.addEventListener('resize', scalePrevPages);
 
 function getTagColor(tag) {
-  var prefectures = ['北海道','青森','岩手','宮城','秋田','山形','福島','茨城','栃木','群馬','埼玉','千葉','東京','神奈川','新潟','富山','石川','福井','山梨','長野','岐阜','静岡','愛知','三重','滋賀','京都','大阪','兵庫','奈良','和歌山','鳥取','島根','岡山','広島','山口','徳島','香川','愛媛','高知','福岡','佐賀','長崎','熊本','大分','宮崎','鹿児島','沖縄'];
-  var conditions  = ['駅近','駐車場','週休','社会保険','交通費','育休','産休','残業','夜勤','土日','勤務','シフト','正社員','アルバイト','パート'];
-  var jobTypes    = ['ヘアカラー','カット','パーマ','トリートメント','ネイル','アイラッシュ','エステ','メイク','ブライダル','メンズ','キッズ','オーガニック','アイブロウ','フェイシャル','マッサージ','ボディ','まつ毛'];
-  if (prefectures.indexOf(tag) !== -1 || prefectures.some(function(p){ return tag.indexOf(p) !== -1; })) return 'c-blue';
-  if (conditions.some(function(c){ return tag.indexOf(c) !== -1; })) return 'c-green';
-  if (jobTypes.some(function(j){ return tag.indexOf(j) !== -1; })) return 'c-orange';
+  var custom = getCustomTags();
+  for (var i = 0; i < TAG_CATEGORIES.length; i++) {
+    var cat     = TAG_CATEGORIES[i];
+    var allTags = cat.tags.concat(custom[cat.cls] || []);
+    if (allTags.indexOf(tag) !== -1) {
+      if (cat.cls === 'cat-area')    return 'c-blue';
+      if (cat.cls === 'cat-job')     return 'c-pink';
+      if (cat.cls === 'cat-feature') return 'c-green';
+    }
+  }
   return 'c-grey';
 }
 
@@ -1937,15 +2115,16 @@ function buildPvCard(s, idx, layout) {
 
   // QRコード（Instagram / HP / 予約枠）
   var qrDefs = [
-    { label: 'Instagram', filled: !!(s.instagram) },
-    { label: 'HP',        filled: !!(s.hp) },
-    { label: '予約/MAP',  filled: false }
+    { label: 'Instagram', url: s.instagram },
+    { label: 'HP',        url: s.hp },
+    { label: '予約/MAP',  url: '' }
   ];
   var qrHtml = qrDefs.map(function(q) {
+    var inner = q.url
+      ? '<img src="https://api.qrserver.com/v1/create-qr-code/?size=735x735&data=' + encodeURIComponent(q.url) + '" style="width:100%;height:100%;display:block;object-fit:cover" alt="QR">'
+      : '';
     return '<div class="pv2-qr-item">' +
-      '<div class="pv2-qr-box' + (q.filled ? ' filled' : '') + '">' +
-        (q.filled ? 'QR' : '') +
-      '</div>' +
+      '<div class="pv2-qr-box' + (q.url ? ' filled' : '') + '">' + inner + '</div>' +
       '<div class="pv2-qr-label">' + e(q.label) + '</div>' +
     '</div>';
   }).join('');
@@ -2037,9 +2216,9 @@ function buildPvCard(s, idx, layout) {
       ? '<img class="pv3-photo2-img" src="' + e(s.photo2) + '" onerror="this.style.display=\'none\'">'
       : '<div class="pv3-photo2-ph">写真2</div>';
 
-    // タグ：2行×4列（8枠固定）・色分けあり
+    // タグ：2行×5列（10枠固定）・色分けあり
     var tagsGrid3 = '';
-    for (var ti = 0; ti < 8; ti++) {
+    for (var ti = 0; ti < 10; ti++) {
       var tv = s.tags && s.tags[ti] ? s.tags[ti] : '';
       tagsGrid3 += tv
         ? '<div class="pv3-tag ' + getTagColor(tv) + '">' + e(tv) + '</div>'
@@ -2048,12 +2227,15 @@ function buildPvCard(s, idx, layout) {
 
     // QR（1/3は Instagram・HPの2個のみ）
     var qrDefs3 = [
-      { label: 'Instagram', filled: !!(s.instagram) },
-      { label: 'HP',        filled: !!(s.hp) }
+      { label: 'Instagram', url: s.instagram },
+      { label: 'HP',        url: s.hp }
     ];
     var qr3Html = qrDefs3.map(function(q) {
+      var inner = q.url
+        ? '<img src="https://api.qrserver.com/v1/create-qr-code/?size=735x735&data=' + encodeURIComponent(q.url) + '" style="width:100%;height:100%;display:block;object-fit:cover" alt="QR">'
+        : '';
       return '<div class="pv3-qr-item">' +
-        '<div class="pv3-qr-box' + (q.filled ? ' filled' : '') + '">' + (q.filled ? 'QR' : '') + '</div>' +
+        '<div class="pv3-qr-box' + (q.url ? ' filled' : '') + '">' + inner + '</div>' +
         '<div class="pv3-qr-label">' + e(q.label) + '</div>' +
       '</div>';
     }).join('');
@@ -2069,6 +2251,13 @@ function buildPvCard(s, idx, layout) {
       { lbl: '電話番号',   val: s.tel }
     ].filter(function(r){ return r.val; });
     var info3Html = infoRows3.map(function(r) {
+      if (r.val.indexOf('\n') !== -1) {
+        var parts = r.val.split('\n').filter(Boolean);
+        return '<div class="pv3-info-row pv3-info-row-wrap">' +
+          '<span class="pv3-info-lbl">【' + e(r.lbl) + '】</span>' +
+          '<span class="pv3-info-val-multi">' + parts.map(function(p){ return e(p); }).join('<br>') + '</span>' +
+        '</div>';
+      }
       return '<div class="pv3-info-row">' +
         '<span class="pv3-info-lbl">【' + e(r.lbl) + '】</span>' +
         '<span class="pv3-info-val">' + e(r.val) + '</span>' +
@@ -2120,7 +2309,7 @@ function buildPvCard(s, idx, layout) {
       '</div>' +
       // 中央
       '<div class="pv2-mid">' +
-        '<div class="pv2-bodytext">' + (s.bodyText ? e(s.bodyText.slice(0, 180)) : '<span style="color:#ccc">説明文</span>') + '</div>' +
+        '<div class="pv2-bodytext">' + (s.bodyText ? e(s.bodyText.slice(0, 200)) : '<span style="color:#ccc">説明文</span>') + '</div>' +
         '<div class="pv2-features">' + featHtml + '</div>' +
         (infoHtml ? '<div class="pv2-info-tbl">' + infoHtml + '</div>' : '') +
       '</div>' +
@@ -2184,7 +2373,7 @@ function doExportCSV() {
 // =====================================================
 // 画像アップロード
 // =====================================================
-function uzHtml(id, label, currentUrl) {
+function uzHtml(id, label, currentUrl, hint) {
   var prev = currentUrl
     ? '<div class="uz-prev" id="' + id + '_prev">' +
         '<img src="' + e(currentUrl) + '" onerror="this.style.display=\'none\'">' +
@@ -2197,8 +2386,9 @@ function uzHtml(id, label, currentUrl) {
     : '<div id="' + id + '_prev"></div>';
 
   return '<div class="fg">' +
-    '<label class="flabel">' + e(label) + '</label>' +
-    '<input type="hidden" id="' + id + '_url" value="' + e(currentUrl||'') + '">' +
+    '<label class="flabel">' + e(label) + (hint ? '<span style="font-weight:400;color:var(--muted);font-size:11px;margin-left:6px">' + e(hint) + '</span>' : '') + '</label>' +
+    '<input type="hidden" id="' + id + '_url"   value="' + e(currentUrl||'') + '">' +
+    '<input type="hidden" id="' + id + '_local" value="">' +
     '<div class="uz-zone" id="' + id + '_zone"' +
       ' onclick="document.getElementById(\'' + id + '_file\').click()"' +
       ' ondragover="event.preventDefault();this.classList.add(\'drag\')"' +
@@ -2231,6 +2421,7 @@ function uzProcess(file, id) {
 
   var fr1 = new FileReader();
   fr1.onload = function(ev) {
+    document.getElementById(id + '_local').value = ev.target.result;
     document.getElementById(id + '_prev').innerHTML =
       '<div class="uz-prev">' +
         '<img src="' + ev.target.result + '">' +
@@ -2267,6 +2458,7 @@ function uzProcess(file, id) {
 
 function uzClear(id) {
   document.getElementById(id + '_url').value        = '';
+  document.getElementById(id + '_local').value      = '';
   document.getElementById(id + '_prev').innerHTML   = '';
   document.getElementById(id + '_status').innerHTML = '';
   var fi = document.getElementById(id + '_file');
