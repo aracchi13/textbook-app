@@ -382,7 +382,8 @@ function _rowToSalon(r) {
     photo1: String(r[13]||''), photo2: String(r[14]||''),
     logo: String(r[15]||''), instagram: String(r[16]||''),
     hp: String(r[17]||''), layout: String(r[18]||'1/2'),
-    createdAt: _fmtDate(r[19]), updatedAt: _fmtDate(r[20])
+    createdAt: _fmtDate(r[19]), updatedAt: _fmtDate(r[20]),
+    qr1Label: String(r[21]||''), qr2Label: String(r[22]||'')
   };
 }
 
@@ -395,7 +396,8 @@ function _salonToRow(d, now) {
     _tagsStr(d.tags),
     d.photo1||'', d.photo2||'', d.logo||'',
     d.instagram||'', d.hp||'', d.layout||'1/2',
-    d.createdAt ? new Date(d.createdAt) : now, now
+    d.createdAt ? new Date(d.createdAt) : now, now,
+    d.qr1Label||'', d.qr2Label||''
   ];
 }
 
@@ -411,7 +413,8 @@ function _rowToTemplate(r) {
     photo1: String(r[13]||''), photo2: String(r[14]||''),
     logo: String(r[15]||''), instagram: String(r[16]||''),
     hp: String(r[17]||''), layout: String(r[18]||'1/2'),
-    createdAt: _fmtDate(r[19])
+    createdAt: _fmtDate(r[19]),
+    qr1Label: String(r[20]||''), qr2Label: String(r[21]||'')
   };
 }
 
@@ -424,7 +427,8 @@ function _templateToRow(d, now) {
     _tagsStr(d.tags),
     d.photo1||'', d.photo2||'', d.logo||'',
     d.instagram||'', d.hp||'', d.layout||'1/2',
-    now
+    now,
+    d.qr1Label||'', d.qr2Label||''
   ];
 }
 
@@ -449,7 +453,7 @@ function uploadImage(base64Data, fileName, mimeType, projectId, salonName, slot)
     return {
       success: true,
       fileId:  fileId,
-      url:     'https://drive.google.com/uc?export=view&id=' + fileId,
+      url:     'https://lh3.googleusercontent.com/d/' + fileId,
       name:    fileName
     };
   } catch(e) {
