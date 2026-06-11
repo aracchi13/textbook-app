@@ -445,7 +445,9 @@ select.finput {
   overflow: hidden;
 }
 .prev-page.ly2 { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; }
-.prev-page.ly3 { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr 1fr; }
+.prev-page.ly3 { display: flex; flex-direction: column; padding: 0; gap: 0; }
+.prev-page.ly3 .pv-card  { height: 374px; flex-shrink: 0; }
+.prev-page.ly3 .pv-empty { height: 374px; flex-shrink: 0; }
 .pv-card  { overflow: hidden; display: flex; flex-direction: column; height: 100%; }
 .pv-empty { border: 2px dashed #ddd; display: flex; align-items: center; justify-content: center; color: #ccc; font-size: 10px; }
 
@@ -571,11 +573,24 @@ select.finput {
   .project-grid, .salon-grid, .tmpl-grid { grid-template-columns: 1fr; }
 }
 
+@page { margin: 0; size: A4; }
+
 @media print {
   .sb, .topbar, .no-print { display: none !important; }
   .main    { margin-left: 0; }
   .content { padding: 0; }
   .prev-bg { background: none; padding: 0; }
+  .pv-empty { border: none !important; color: transparent !important; }
+  /* タグ背景色を強制印刷 */
+  .pv3-tag { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  /* 写真周りのグレー線を除去 */
+  .pv3-upper       { border-bottom: none !important; }
+  .pv3-upper-left  { border-right: none !important; }
+  .pv3-lower-left  { border-right: none !important; }
+  .pv2-main-photo { border: none !important; }
+  .pv2-photo      { border: none !important; }
+  .pv3-photo1-ph  { border: none !important; }
+  .pv3-photo2-ph  { border: none !important; }
   .prev-page {
     box-shadow: none;
     margin: 0;
@@ -2066,10 +2081,10 @@ function loadPreview(pid) {
     for (var i = 0; i < salons.length; i += perPage) {
       var grp = salons.slice(i, i + perPage);
       while (grp.length < perPage) grp.push(null);
-      var cards = (function(grp, startIdx) {
-        return grp.map(function(s, j) {
+      var cards = (function(grp2, startIdx) {
+        return grp2.map(function(s, j) {
           return s ? '<div class="pv-card">' + buildPvCard(s, startIdx + j, '1/3') + '</div>'
-                   : '<div class="pv-card pv-empty">空白</div>';
+                   : '<div class="pv-card pv-empty"></div>';
         }).join('');
       })(grp, globalIdx);
       globalIdx += perPage;
