@@ -449,6 +449,10 @@ select.finput {
 .pv-card  { overflow: hidden; display: flex; flex-direction: column; height: 100%; }
 .pv-empty { border: 2px dashed #ddd; display: flex; align-items: center; justify-content: center; color: #ccc; font-size: 10px; }
 
+/* --- インラインプレビュー（案件詳細） --- */
+.pv-inline-bg { padding: 20px; background: #6b7280; display: flex; flex-direction: column; align-items: flex-start; gap: 0; }
+.pv-inline-card { width: 794px; height: 374px; background: #fff; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,.2); flex-shrink: 0; display: flex; flex-direction: column; transform-origin: top left; }
+
 /* --- 1/2・1/3 カード内レイアウト --- */
 .pv2 { display: flex; flex-direction: column; flex: 1; min-height: 0; font-size: 9pt; line-height: 1.4; color: #222; font-family: inherit; }
 
@@ -535,10 +539,10 @@ select.finput {
 .pv3-info-val { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 7pt; color: #444; }
 .pv3-info-val-multi { font-size: 7pt; color: #444; line-height: 1.4; word-break: break-all; white-space: normal; }
 .pv3-lower-right { width: 200px; flex-shrink: 0; padding-right: 30px; display: flex; flex-direction: column; overflow: hidden; }
-.pv3-photo2-wrap { height: calc(100% - 90px); margin-top: 8px; margin-bottom: 7px; flex-shrink: 0; overflow: hidden; }
+.pv3-photo2-wrap { flex: 1; min-height: 0; margin-top: 8px; overflow: hidden; }
 .pv3-photo2-img  { width: 100%; height: 100%; object-fit: cover; display: block; }
 .pv3-photo2-ph   { width: 100%; height: 100%; background: #e8e8e8; border: 0.5px solid #ddd; display: flex; align-items: center; justify-content: center; font-size: 7pt; color: #bbb; }
-.pv3-qrs { height: 68px; display: flex; align-items: flex-end; justify-content: center; gap: 16px; padding-bottom: 4px; margin-top: auto; flex-shrink: 0; }
+.pv3-qrs { height: 76px; display: flex; align-items: flex-end; justify-content: center; gap: 16px; padding-bottom: 11px; margin-top: 14px; flex-shrink: 0; }
 .pv3-qr-item  { display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 54px; }
 .pv3-qr-box   { width: 50px; height: 50px; flex-shrink: 0; background: #f5f5f5; border: 0.5px solid #ccc; display: flex; align-items: center; justify-content: center; font-size: 5.5pt; color: #aaa; font-weight: 700; overflow: hidden; }
 .pv3-qr-box.filled { background: #fff; color: #fff; }
@@ -941,7 +945,7 @@ var ST = {
   projectId:   null,
   projects:    [],
   prevPid:     null,
-  prevLayout:  '1/2'
+  prevLayout:  '1/3'
 };
 
 // =====================================================
@@ -1496,7 +1500,18 @@ function renderProjectDetail(pid) {
       (salons.length === 0
         ? '<div class="empty"><div class="empty-ico">' + ico('scissors',48) + '</div><p>サロンがまだ登録されていません<br><br>' +
           '<button class="btn btn-primary" onclick="go(\'salon-form\',{pid:\'' + e(pid) + '\'})">＋ サロンを追加する</button></p></div>'
-        : '<div class="salon-grid">' + cards + '</div>');
+        : '<div class="salon-grid">' + cards + '</div>') +
+      (salons.length > 0
+        ? '<div class="card mt16 no-print">' +
+            '<div class="card-head">' +
+              '<div class="card-title">' + ico('eye',13) + ' プレビュー</div>' +
+              '<button class="btn btn-primary btn-sm" onclick="window.print()">' + ico('printer',13) + ' PDF出力</button>' +
+            '</div>' +
+            '<div id="inlinePvContent"></div>' +
+          '</div>'
+        : '');
+
+    if (salons.length > 0) loadInlinePreview(pid);
   }).catch(function(err){ showErr(err); });
 }
 
@@ -2000,19 +2015,13 @@ function renderPreview(pid) {
                e(p.year + ' ' + p.month + ' - ' + p.name) + '</option>';
       }).join('');
 
-    var ly12 = ST.prevLayout!=='1/3' ? 'checked' : '';
-    var ly13 = ST.prevLayout==='1/3' ? 'checked' : '';
+    ST.prevLayout = '1/3';
 
     document.getElementById('content').innerHTML =
       '<div class="card no-print">' +
         '<div class="card-body flex gap16 items-c wrap">' +
           '<div class="fg mb8" style="flex:1;min-width:200px"><label class="flabel">案件</label>' +
             '<select class="finput" onchange="switchPrevPid(this.value)">' + opts + '</select></div>' +
-          '<div class="fg mb8"><label class="flabel">レイアウト</label>' +
-            '<div class="rgroup">' +
-              '<label><input type="radio" name="pvrl" value="1/2" ' + ly12 + ' onchange="switchPrevLayout(\'1/2\')"> 1/2</label>' +
-              '<label><input type="radio" name="pvrl" value="1/3" ' + ly13 + ' onchange="switchPrevLayout(\'1/3\')"> 1/3</label>' +
-            '</div></div>' +
           '<div style="align-self:flex-end">' +
             '<button class="btn btn-primary" onclick="window.print()">' + ico('printer',13) + ' PDF出力</button>' +
           '</div>' +
@@ -2050,8 +2059,7 @@ function loadPreview(pid) {
       return;
     }
 
-    var perPage = ST.prevLayout === '1/3' ? 3 : 2;
-    var lyClass = ST.prevLayout === '1/3' ? 'ly3' : 'ly2';
+    var perPage = 3;
     var pages   = '';
 
     var globalIdx = 0;
@@ -2060,12 +2068,12 @@ function loadPreview(pid) {
       while (grp.length < perPage) grp.push(null);
       var cards = (function(grp, startIdx) {
         return grp.map(function(s, j) {
-          return s ? '<div class="pv-card">' + buildPvCard(s, startIdx + j, ST.prevLayout) + '</div>'
+          return s ? '<div class="pv-card">' + buildPvCard(s, startIdx + j, '1/3') + '</div>'
                    : '<div class="pv-card pv-empty">空白</div>';
         }).join('');
       })(grp, globalIdx);
       globalIdx += perPage;
-      pages += '<div class="prev-page ' + lyClass + '">' + cards + '</div>';
+      pages += '<div class="prev-page ly3">' + cards + '</div>';
     }
 
     el.innerHTML = '<div class="prev-bg">' + pages + '</div>';
@@ -2085,6 +2093,36 @@ function scalePrevPages() {
   });
 }
 window.addEventListener('resize', scalePrevPages);
+
+function loadInlinePreview(pid) {
+  var el = document.getElementById('inlinePvContent');
+  if (!el) return;
+  el.innerHTML = '<div class="loading"><div class="spin"></div>生成中...</div>';
+
+  gas('getSalonsByProject', pid).then(function(salons) {
+    if (!salons || salons.length === 0) { el.innerHTML = ''; return; }
+    var cards = salons.map(function(s, i) {
+      return '<div class="pv-inline-card">' + buildPvCard(s, i, '1/3') + '</div>';
+    }).join('');
+    el.innerHTML = '<div class="pv-inline-bg">' + cards + '</div>';
+    setTimeout(scaleInlinePrevPages, 0);
+  }).catch(function(err) { el.innerHTML = '<div class="alert a-danger">' + e(err.message) + '</div>'; });
+}
+
+function scaleInlinePrevPages() {
+  var bg = document.querySelector('#inlinePvContent .pv-inline-bg');
+  if (!bg) return;
+  var avail = bg.clientWidth - 40;
+  var scale = Math.min(1, avail / 794);
+  var cardH = 374;
+  var gap = 14;
+  document.querySelectorAll('#inlinePvContent .pv-inline-card').forEach(function(c) {
+    c.style.transform = 'scale(' + scale + ')';
+    c.style.marginBottom = ((cardH * scale) - cardH + gap) + 'px';
+  });
+  bg.style.paddingBottom = (20 + gap) + 'px';
+}
+window.addEventListener('resize', scaleInlinePrevPages);
 
 function getTagColor(tag) {
   var custom = getCustomTags();
