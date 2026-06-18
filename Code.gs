@@ -10,6 +10,14 @@ var SH_PROJECT  = '案件';
 var SH_SALON    = 'サロン情報';
 var SH_TEMPLATE = 'テンプレート';
 
+var HEARING_FIELDS = {
+  appointmentStatus: 23,
+  attendanceStatus:  24,
+  documentStatus:    25,
+  surveyStatus:      26,
+  invoiceStatus:     27
+};
+
 // ------------------------------------------------------------
 // Webアプリ エントリーポイント
 // ------------------------------------------------------------
@@ -27,7 +35,7 @@ function initSheets() {
 
   var sheetDefs = [
     { name: SH_PROJECT,  headers: ['ID','年度','月','案件名','作成日時'] },
-    { name: SH_SALON,    headers: ['ID','案件ID','会社名','サロン名','キャッチコピー','代表者名','設立年','店舗数','スタッフ数','住所','TEL','本文テキスト','タグ','写真パス1','写真パス2','ロゴパス','Instagramリンク','HPリンク','レイアウト','作成日時','更新日時'] },
+    { name: SH_SALON,    headers: ['ID','案件ID','会社名','サロン名','キャッチコピー','代表者名','設立年','店舗数','スタッフ数','住所','TEL','本文テキスト','タグ','写真パス1','写真パス2','ロゴパス','Instagramリンク','HPリンク','レイアウト','作成日時','更新日時','QR1ラベル','QR2ラベル','アポイント','参加','資料作成','事後アンケート','請求書発行'] },
     { name: SH_TEMPLATE, headers: ['ID','テンプレート名','会社名','サロン名','キャッチコピー','代表者名','設立年','店舗数','スタッフ数','住所','TEL','本文テキスト','タグ','写真パス1','写真パス2','ロゴパス','Instagramリンク','HPリンク','レイアウト','作成日時'] }
   ];
 
@@ -158,6 +166,22 @@ function saveSalon(data) {
   row[19] = now;
   sh.appendRow(row);
   return { success: true, id: id };
+}
+
+// ヒアリングシート項目を1セルだけ更新
+function saveHearingItem(salonId, field, value) {
+  var colIdx = HEARING_FIELDS[field];
+  if (colIdx === undefined) throw new Error('不明なフィールド: ' + field);
+  if (value !== '○' && value !== '×' && value !== '') throw new Error('不正な値: ' + value);
+  var sh   = _sheet(SH_SALON);
+  var rows = sh.getDataRange().getValues();
+  for (var i = 1; i < rows.length; i++) {
+    if (String(rows[i][0]) === String(salonId)) {
+      sh.getRange(i + 1, colIdx + 1).setValue(value);
+      return { success: true };
+    }
+  }
+  throw new Error('サロンが見つかりません');
 }
 
 function deleteSalon(id) {
@@ -383,7 +407,12 @@ function _rowToSalon(r) {
     logo: String(r[15]||''), instagram: String(r[16]||''),
     hp: String(r[17]||''), layout: String(r[18]||'1/2'),
     createdAt: _fmtDate(r[19]), updatedAt: _fmtDate(r[20]),
-    qr1Label: String(r[21]||''), qr2Label: String(r[22]||'')
+    qr1Label: String(r[21]||''), qr2Label: String(r[22]||''),
+    appointmentStatus: String(r[23]||''),
+    attendanceStatus:  String(r[24]||''),
+    documentStatus:    String(r[25]||''),
+    surveyStatus:      String(r[26]||''),
+    invoiceStatus:     String(r[27]||'')
   };
 }
 
@@ -397,7 +426,10 @@ function _salonToRow(d, now) {
     d.photo1||'', d.photo2||'', d.logo||'',
     d.instagram||'', d.hp||'', d.layout||'1/2',
     d.createdAt ? new Date(d.createdAt) : now, now,
-    d.qr1Label||'', d.qr2Label||''
+    d.qr1Label||'', d.qr2Label||'',
+    d.appointmentStatus||'', d.attendanceStatus||'',
+    d.documentStatus||'',    d.surveyStatus||'',
+    d.invoiceStatus||''
   ];
 }
 

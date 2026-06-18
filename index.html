@@ -670,6 +670,36 @@ select.finput {
 
 /* ===================== SVGアイコン共通 ===================== */
 .ico-svg { vertical-align: middle; flex-shrink: 0; }
+
+/* ===================== サロン検索 ===================== */
+.ss-wrap { position: relative; }
+.ss-results {
+  position: absolute;
+  top: calc(100% + 4px); left: 0; right: 0;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  box-shadow: 0 10px 32px rgba(0,0,0,.14);
+  z-index: 60;
+  max-height: 300px;
+  overflow-y: auto;
+  display: none;
+}
+.ss-results.open { display: block; }
+.ss-item {
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: background .12s;
+}
+.ss-item:last-child { border-bottom: none; }
+.ss-item:hover { background: rgba(74,144,217,.07); }
+.ss-item-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.ss-item-name { font-size: 13px; font-weight: 700; color: var(--navy); }
+.ss-item-sub  { font-size: 11px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ss-empty { padding: 14px; font-size: 12px; color: var(--muted); text-align: center; }
 </style>
 </head>
 <body>
@@ -1509,9 +1539,56 @@ function renderProjectDetail(pid) {
         '</div>' +
       '</div>';
 
+    var hearingHtml = '';
+    if (salons.length > 0) {
+      var HEARING_COLS = [
+        { key: 'appointmentStatus', label: 'アポイント' },
+        { key: 'attendanceStatus',  label: '参加' },
+        { key: 'documentStatus',    label: '資料作成' },
+        { key: 'surveyStatus',      label: '事後アンケート' },
+        { key: 'invoiceStatus',     label: '請求書発行' }
+      ];
+      var hrows = salons.map(function(s) {
+        var cells = HEARING_COLS.map(function(col) {
+          var val = s[col.key] || '';
+          var opts = ['', '○', '×'].map(function(v) {
+            return '<option value="' + v + '"' + (v === val ? ' selected' : '') + '>' + (v || '-') + '</option>';
+          }).join('');
+          return '<td style="text-align:center;padding:6px 8px">' +
+            '<select class="hearing-sel" data-sid="' + e(s.id) + '" data-field="' + col.key + '" ' +
+              'onchange="saveHearing(this)" ' +
+              'style="width:72px;padding:4px 6px;font-size:12px;border:1px solid var(--border);border-radius:5px;background:var(--white);cursor:pointer;appearance:none;text-align:center">' +
+            opts + '</select></td>';
+        }).join('');
+        return '<tr>' +
+          '<td style="padding:6px 14px;font-size:12px;white-space:nowrap">' + e(s.salonName || '（未設定）') + '</td>' +
+          cells +
+        '</tr>';
+      }).join('');
+
+      var hheads = HEARING_COLS.map(function(col) {
+        return '<th style="text-align:center;white-space:nowrap">' + col.label + '</th>';
+      }).join('');
+
+      hearingHtml =
+        '<div class="card mb16 no-print">' +
+          '<div class="card-head" style="cursor:pointer;user-select:none" onclick="toggleHearing()">' +
+            '<div class="card-title">' + ico('clipboard',13) + ' アプローチ確認リスト</div>' +
+            '<span id="hearingToggleBtn" style="font-size:11px;color:var(--muted);font-weight:600">▼ 開く</span>' +
+          '</div>' +
+          '<div id="hearingBody" style="display:none;overflow-x:auto">' +
+            '<table class="tbl">' +
+              '<thead><tr><th>サロン名</th>' + hheads + '</tr></thead>' +
+              '<tbody>' + hrows + '</tbody>' +
+            '</table>' +
+          '</div>' +
+        '</div>';
+    }
+
     document.getElementById('content').innerHTML =
       bc([{ label:'案件一覧', fn:"go('projects')" }, { label: pname }]) +
       kpiBar +
+      hearingHtml +
       (salons.length === 0
         ? '<div class="empty"><div class="empty-ico">' + ico('scissors',48) + '</div><p>サロンがまだ登録されていません<br><br>' +
           '<button class="btn btn-primary" onclick="go(\'salon-form\',{pid:\'' + e(pid) + '\'})">＋ サロンを追加する</button></p></div>'
@@ -1525,6 +1602,8 @@ function renderProjectDetail(pid) {
             '<div id="inlinePvContent"></div>' +
           '</div>'
         : '');
+
+    // ヒアリングセルの初期色設定（開いた時に toggleHearing 内で行う）
 
     if (salons.length > 0) loadInlinePreview(pid);
   }).catch(function(err){ showErr(err); });
@@ -1583,17 +1662,58 @@ function delSalon(id, name) {
   }).catch(function(err){ alert('エラー: ' + err.message); });
 }
 
+function toggleHearing() {
+  var body = document.getElementById('hearingBody');
+  var btn  = document.getElementById('hearingToggleBtn');
+  if (!body) return;
+  var isOpen = body.style.display !== 'none';
+  body.style.display = isOpen ? 'none' : '';
+  if (btn) btn.textContent = isOpen ? '▼ 開く' : '▲ 閉じる';
+  if (!isOpen) {
+    var circle = '○', cross = '×';
+    body.querySelectorAll('.hearing-sel').forEach(function(sel) {
+      sel.setAttribute('data-prev', sel.value);
+      sel.style.color = sel.value === circle ? 'var(--success)' : sel.value === cross ? 'var(--danger)' : 'var(--muted)';
+    });
+  }
+}
+
+function saveHearing(sel) {
+  var sid   = sel.getAttribute('data-sid');
+  var field = sel.getAttribute('data-field');
+  var value = sel.value;
+  var prev  = sel.getAttribute('data-prev') || '';
+  sel.setAttribute('data-prev', value);
+
+  var circle  = '○'; // ○
+  var cross   = '×'; // ×
+  sel.style.color =
+    value === circle ? 'var(--success)' :
+    value === cross  ? 'var(--danger)'  : 'var(--muted)';
+
+  gas('saveHearingItem', sid, field, value).then(function() {
+    showToast('保存しました');
+  }).catch(function(err) {
+    sel.value = prev;
+    sel.style.color = prev === circle ? 'var(--success)' : prev === cross ? 'var(--danger)' : 'var(--muted)';
+    showToast('保存エラー: ' + err.message, false);
+  });
+}
+
 // =====================================================
 // サロン入力フォーム
 // =====================================================
 function renderSalonForm(sid, pid) {
   loading('フォームを準備中...');
 
-  var proms = sid ? [gas('getSalon', sid), gas('getProjects'), gas('getTemplates')] : [Promise.resolve(null), gas('getProjects'), gas('getTemplates')];
+  var proms = sid
+    ? [gas('getSalon', sid), gas('getProjects'), gas('getTemplates'), gas('getAllSalons')]
+    : [Promise.resolve(null),  gas('getProjects'), gas('getTemplates'), gas('getAllSalons')];
   Promise.all(proms).then(function(r) {
     var salon = r[0] || {};
     ST.projects = r[1];
     var tmpls   = r[2];
+    window._allSalons = r[3] || [];
     pid = pid || salon.projectId;
     var proj  = ST.projects.find(function(p){ return p.id === pid; });
     var pname = proj ? proj.name : '';
@@ -1610,12 +1730,28 @@ function renderSalonForm(sid, pid) {
 
     var tagHtml = renderTagCheckboxes(salon.tags, 'tg');
 
+    var searchSec =
+      '<div class="card mb16">' +
+        '<div class="card-head"><div class="card-title">' + ico('building',14) + ' 過去のサロン情報を流用</div></div>' +
+        '<div class="card-body" style="padding:14px 18px">' +
+          '<p class="c-muted fs12 mb8">過去に入力したサロンを検索してクリックすると、すべてのフィールドに自動反映されます。</p>' +
+          '<div class="ss-wrap">' +
+            '<input type="text" class="finput" id="salonSearchInput" placeholder="サロン名・会社名で検索..." ' +
+              'oninput="filterSalonSearch(this.value)" ' +
+              'onfocus="filterSalonSearch(this.value)" ' +
+              'autocomplete="off">' +
+            '<div class="ss-results" id="salonSearchResults"></div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+
     document.getElementById('content').innerHTML =
       bc([
         {label:'案件一覧',fn:"go('projects')"},
         {label:pname,fn:"go('project-detail',{pid:'"+e(pid)+"'})"},
         {label: sid ? 'サロン編集' : 'サロン追加'}
       ]) +
+      searchSec +
       tmplSec +
 
       '<div class="card">' +
@@ -1824,6 +1960,116 @@ function doSaveSalon(sid, pid) {
     alert('エラー: ' + err.message);
     btn.disabled = false; btn.innerHTML = ico('save',13) + ' 保存する';
   });
+}
+
+// =====================================================
+// サロン検索（過去データ流用）
+// =====================================================
+function filterSalonSearch(q) {
+  var res = document.getElementById('salonSearchResults');
+  if (!res) return;
+  var all = window._allSalons || [];
+  q = (q || '').trim().toLowerCase();
+
+  var hits = all.filter(function(s) {
+    var text = ((s.salonName||'') + ' ' + (s.companyName||'')).toLowerCase();
+    return !q || text.indexOf(q) !== -1;
+  }).slice(0, 30);
+
+  if (hits.length === 0) {
+    res.innerHTML = '<div class="ss-empty">' + (q ? '該当するサロンが見つかりません' : '登録済みのサロンがありません') + '</div>';
+  } else {
+    res.innerHTML = hits.map(function(s) {
+      var sub = [s.projectName, s.tel, s.address ? s.address.split('\n')[0] : ''].filter(Boolean).join('　');
+      var j   = JSON.stringify(JSON.stringify(s));
+      return '<div class="ss-item">' +
+        '<div class="ss-item-info">' +
+          '<div class="ss-item-name">' + e(s.salonName || '（未設定）') + (s.companyName ? '　<span style="font-weight:400">' + e(s.companyName) + '</span>' : '') + '</div>' +
+          (sub ? '<div class="ss-item-sub">' + e(sub) + '</div>' : '') +
+        '</div>' +
+        '<button class="btn btn-accent btn-xs" style="flex-shrink:0" ' +
+          'onmousedown="event.preventDefault();applySalonData(' + j + ')">＋ 流用</button>' +
+      '</div>';
+    }).join('');
+  }
+  res.classList.add('open');
+
+  // 検索ボックス外クリックで閉じる（1度だけ登録）
+  if (!window._ssCloseHandler) {
+    window._ssCloseHandler = function(ev) {
+      var inp = document.getElementById('salonSearchInput');
+      var r2  = document.getElementById('salonSearchResults');
+      if (inp && !inp.contains(ev.target) && r2 && !r2.contains(ev.target)) {
+        r2.classList.remove('open');
+      }
+    };
+    document.addEventListener('click', window._ssCloseHandler);
+  }
+}
+
+function applySalonData(jsonStr) {
+  var s;
+  try { s = JSON.parse(jsonStr); } catch(err) { return; }
+
+  var map = {
+    f_co: 'companyName', f_sn: 'salonName', f_catch: 'catchphrase',
+    f_rep: 'representative', f_est: 'established', f_str: 'stores',
+    f_stf: 'staff', f_tel: 'tel', f_body: 'bodyText',
+    f_ig: 'instagram', f_hp: 'hp',
+    f_qr1label: 'qr1Label', f_qr2label: 'qr2Label'
+  };
+  Object.keys(map).forEach(function(elId) {
+    var el = document.getElementById(elId);
+    if (el) el.value = s[map[elId]] || '';
+  });
+
+  // 住所を addr1/addr2 に分割
+  var parts = (s.address || '').split('\n');
+  var a1 = document.getElementById('f_addr1');
+  var a2 = document.getElementById('f_addr2');
+  if (a1) { a1.value = parts[0] || ''; validateAddrInput('f_addr1'); }
+  if (a2) { a2.value = parts[1] || ''; validateAddrInput('f_addr2'); }
+
+  // タグ
+  document.querySelectorAll('.tcb').forEach(function(cb) {
+    cb.checked = (s.tags || []).indexOf(cb.value) !== -1;
+  });
+  updateTagCount('tg');
+
+  // 画像URL（Drive保存済みのもの）
+  ['f_p1','f_p2','f_logo'].forEach(function(pfx, i) {
+    var urlKey = i === 0 ? 'photo1' : i === 1 ? 'photo2' : 'logo';
+    var url    = s[urlKey] || '';
+    var urlEl  = document.getElementById(pfx + '_url');
+    var locEl  = document.getElementById(pfx + '_local');
+    var prevEl = document.getElementById(pfx + '_prev');
+    if (urlEl)  urlEl.value  = url;
+    if (locEl)  locEl.value  = '';
+    if (prevEl) {
+      if (url) {
+        prevEl.innerHTML =
+          '<div class="uz-prev">' +
+            '<img src="' + e(fixImgUrl(url)) + '" onerror="this.style.display=\'none\'">' +
+            '<div class="uz-prev-info">' +
+              '<div class="uz-prev-name">アップロード済み</div>' +
+              '<div class="uz-prev-sub">' + e(url.substring(0,40)) + '...</div>' +
+            '</div>' +
+            '<button class="btn btn-danger btn-xs" type="button" onclick="uzClear(\'' + pfx + '\')">削除</button>' +
+          '</div>';
+      } else {
+        prevEl.innerHTML = '';
+      }
+    }
+  });
+
+  // 検索欄を閉じてフィールド名で表示
+  var inp = document.getElementById('salonSearchInput');
+  var res = document.getElementById('salonSearchResults');
+  if (inp) inp.value = s.salonName || '';
+  if (res) res.classList.remove('open');
+
+  showToast((s.salonName || 'サロン') + ' の情報を反映しました');
+  validateBodyText();
 }
 
 function applyTemplate() {
