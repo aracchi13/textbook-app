@@ -321,59 +321,57 @@ function getAllSalons() {
 // ============================================================
 function exportCSV(projectId, layout) {
   var salons = getSalonsByProject(projectId);
-  var fields = ['会社名','サロン名','キャッチコピー','代表者名','設立年','店舗数','スタッフ数','住所','TEL','本文テキスト','タグ','写真パス1','写真パス2','ロゴパス','Instagramリンク','HPリンク','レイアウト'];
+  var perRow = 3;
+  var baseH  = ['会社名','サロン名','キャッチコピー','代表者名','設立年',
+                 '店舗数','スタッフ数','住所','TEL','本文テキスト','タグ',
+                 '写真パス1','写真パス2','ロゴパス','Instagramリンク',
+                 'HPリンク','レイアウト'];
 
-  // ヘッダー行
-  var hdr = [];
-  for (var n = 1; n <= 3; n++) {
-    for (var fi = 0; fi < fields.length; fi++) {
-      hdr.push('"@' + fields[fi] + '_' + n + '"');
-    }
-  }
-  var lines = [hdr.join(',')];
-
-  // データ行（3サロンずつ）
-  for (var i = 0; i < salons.length; i += 3) {
-    var cells = [];
-    for (var j = 0; j < 3; j++) {
-      var s = salons[i + j];
-      if (!s) {
-        for (var e = 0; e < fields.length; e++) cells.push('""');
-      } else {
-        cells.push(csvQ(s.companyName));
-        cells.push(csvQ(s.salonName));
-        cells.push(csvQ(s.catchphrase));
-        cells.push(csvQ(s.representative));
-        cells.push(csvQ(s.established));
-        cells.push(csvQ(s.stores));
-        cells.push(csvQ(s.staff));
-        cells.push(csvQ(s.address));
-        cells.push(csvQ(s.tel));
-        cells.push(csvQ(s.bodyText));
-        cells.push(csvQ((s.tags || []).join('|')));
-        cells.push(csvQ(s.photo1));
-        cells.push(csvQ(s.photo2));
-        cells.push(csvQ(s.logo));
-        cells.push(csvQ(s.instagram));
-        cells.push(csvQ(s.hp));
-        cells.push(csvQ(s.layout));
-      }
-    }
-    lines.push(cells.join(','));
+  var headers = [];
+  for (var n = 1; n <= perRow; n++) {
+    baseH.forEach(function(h) { headers.push('@' + h + '_' + n); });
   }
 
-  return { success: true, csv: lines.join('\r\n') };
+  var lines = [];
+  lines.push(headers.map(csvCell).join(','));
+
+  for (var i = 0; i < salons.length; i += perRow) {
+    var row = [];
+    for (var j = 0; j < perRow; j++) {
+      var s = salons[i + j] || {};
+      row.push(
+        csvCell(s.companyName),
+        csvCell(s.salonName),
+        csvCell(s.catchphrase),
+        csvCell(s.representative),
+        csvCell(s.established),
+        csvCell(s.stores),
+        csvCell(s.staff),
+        csvCell(s.address),
+        csvCell(s.tel),
+        csvCell(s.bodyText),
+        csvCell((s.tags||[]).join('|')),
+        csvCell(s.photo1),
+        csvCell(s.photo2),
+        csvCell(s.logo),
+        csvCell(s.instagram),
+        csvCell(s.hp),
+        csvCell(s.layout)
+      );
+    }
+    lines.push(row.join(','));
+  }
+
+  var csv = lines.join('\r\n');
+  return { success: true, csv: '﻿' + csv };
 }
 
-function csvQ(v) {
-  if (v === null || v === undefined) return '""';
-  if (v instanceof Date) return '""';
-  v = String(v);
-  v = v.split('\r\n').join(' ');
-  v = v.split('\r').join(' ');
-  v = v.split('\n').join(' ');
-  v = v.split('"').join('""');
-  return '"' + v + '"';
+function csvCell(val) {
+  if (val instanceof Date) val = '';
+  var s = String(val == null ? '' : val)
+    .replace(/\r\n|\r|\n/g, ' ')
+    .replace(/"/g, '""');
+  return '"' + s + '"';
 }
 
 // ============================================================
