@@ -209,7 +209,6 @@ select.finput {
 /* タグ */
 .tags-wrap { display: flex; flex-wrap: wrap; gap: 7px; }
 .tag-cats { display: flex; flex-direction: column; gap: 10px; }
-.tag-cat-sec { }
 .tag-cat-hd {
   display: inline-block;
   font-size: 10px;
@@ -445,9 +444,9 @@ select.finput {
   overflow: hidden;
 }
 .prev-page.ly2 { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; }
-.prev-page.ly3 { display: flex; flex-direction: column; padding: 0; gap: 0; }
-.prev-page.ly3 .pv-card  { height: 374px; flex-shrink: 0; }
-.prev-page.ly3 .pv-empty { height: 374px; flex-shrink: 0; }
+.prev-page.ly3 { display: flex; flex-direction: column; padding: 24px 28px; gap: 8px; }
+.prev-page.ly3 .pv-card  { height: 353px; flex-shrink: 0; }
+.prev-page.ly3 .pv-empty { height: 353px; flex-shrink: 0; }
 .pv-card  { overflow: hidden; display: flex; flex-direction: column; height: 100%; }
 .pv-empty { border: 2px dashed #ddd; display: flex; align-items: center; justify-content: center; color: #ccc; font-size: 10px; }
 
@@ -512,9 +511,9 @@ select.finput {
 .pv3-body { display: flex; flex-direction: column; flex: 1; min-height: 0; overflow: hidden; }
 
 /* ── 上段：キャッチ（左）＋ タグ（中央）/ 右カラムなし */
-.pv3-upper { display: flex; flex-direction: row; flex-shrink: 0; border-bottom: 0.7px solid #ddd; }
-.pv3-upper-left { width: 250px; flex-shrink: 0; display: flex; align-items: center; padding: 4px 20px; border-right: 0.7px solid #ddd; overflow: hidden; }
-.pv3-catch { font-size: 11pt; font-weight: 700; color: #444; line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pv3-upper { display: flex; flex-direction: row; flex-shrink: 0; }
+.pv3-upper-left { width: 250px; flex-shrink: 0; display: flex; align-items: center; padding: 4px 20px; overflow: hidden; }
+.pv3-catch { font-size: 11pt; font-weight: 700; color: #444; line-height: 1.4; white-space: pre-line; overflow: hidden; }
 .pv3-upper-center { flex: 1; display: flex; flex-direction: column; padding-left: 20px; padding-right: 8px; }
 .pv3-center-spacer { height: 20px; flex-shrink: 0; }
 .pv3-tags-grid { display: grid !important; grid-template-columns: repeat(5, 1fr) !important; gap: 4px !important; padding: 6px 20px !important; align-content: center !important; }
@@ -528,8 +527,8 @@ select.finput {
 
 /* ── 下段：写真1（左）＋ 説明文・会社情報（中央）＋ 写真2・QR（右） */
 .pv3-lower { display: flex; flex-direction: row; flex: 1; min-height: 0; overflow: hidden; }
-.pv3-lower-left { width: 250px; flex-shrink: 0; padding: 8px 15px 0 15px; border-right: 0.7px solid #ddd; overflow: hidden; }
-.pv3-photo1-wrap { width: 100%; height: calc(100% - 90px); overflow: hidden; }
+.pv3-lower-left { width: 250px; flex-shrink: 0; padding: 8px 15px 0 15px; overflow: hidden; }
+.pv3-photo1-wrap { width: 100%; height: calc(100% - 77px); overflow: hidden; }
 .pv3-photo1-img  { width: 100%; height: 100%; object-fit: cover; display: block; }
 .pv3-photo1-ph   { width: 100%; height: 100%; background: #e8e8e8; border: 0.5px solid #ddd; display: flex; align-items: center; justify-content: center; font-size: 7pt; color: #bbb; }
 .pv3-lower-center { flex: 1; display: flex; flex-direction: column; padding-left: 20px; overflow: hidden; min-width: 0; }
@@ -549,6 +548,24 @@ select.finput {
 .pv3-qr-box   { width: 50px; height: 50px; flex-shrink: 0; background: #f5f5f5; border: 0.5px solid #ccc; display: flex; align-items: center; justify-content: center; font-size: 5.5pt; color: #aaa; font-weight: 700; overflow: hidden; }
 .pv3-qr-box.filled { background: #fff; color: #fff; }
 .pv3-qr-label { font-size: 6.5pt; color: #555; text-align: center; white-space: nowrap; line-height: 1.3; }
+
+/* ===================== 全ページ1/3補正（余白56px分・93%スケール） ===================== */
+/* 余白padding 28px×2=56px で実幅738px になるため、左右カラムを比例縮小し中央カラムを確保する */
+.prev-page.ly3 .pv3-head       { padding: 14px 22px 4px 18px; }
+.prev-page.ly3 .pv3-hd-logo    { width: 80px; height: 38px; }
+.prev-page.ly3 .pv3-upper-left { width: 230px; }
+.prev-page.ly3 .pv3-lower-left { width: 230px; }
+.prev-page.ly3 .pv3-lower-right{ width: 185px; padding-right: 22px; }
+.prev-page.ly3 .pv3-lower-center{ padding-left: 16px; }
+.prev-page.ly3 .pv3-catch      { font-size: 10.5pt; }
+.prev-page.ly3 .pv3-desc       { font-size: 7pt; max-height: 110px; padding-right: 14px; }
+.prev-page.ly3 .pv3-info-lbl,
+.prev-page.ly3 .pv3-info-val,
+.prev-page.ly3 .pv3-info-val-multi { font-size: 6.5pt; }
+.prev-page.ly3 .pv3-tags-grid  { padding: 5px 16px !important; gap: 3px !important; }
+.prev-page.ly3 .pv3-tag        { font-size: 10px !important; padding: 2px 5px !important; }
+.prev-page.ly3 .pv3-qr-box     { width: 44px; height: 44px; }
+.prev-page.ly3 .pv3-qrs        { gap: 12px; padding-bottom: 10px; }
 
 /* ===================== トースト ===================== */
 #toast {
@@ -584,9 +601,6 @@ select.finput {
   /* タグ背景色を強制印刷 */
   .pv3-tag { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
   /* 写真周りのグレー線を除去 */
-  .pv3-upper       { border-bottom: none !important; }
-  .pv3-upper-left  { border-right: none !important; }
-  .pv3-lower-left  { border-right: none !important; }
   .pv2-main-photo { border: none !important; }
   .pv2-photo      { border: none !important; }
   .pv3-photo1-ph  { border: none !important; }
@@ -600,6 +614,12 @@ select.finput {
     height: 100vh;
     transform: none !important;
     margin-bottom: 0 !important;
+  }
+  /* 1/3レイアウト：印刷時はカードをflex伸縮させて余白内に均等配置 */
+  .prev-page.ly3 .pv-card,
+  .prev-page.ly3 .pv-empty {
+    flex: 1;
+    height: auto !important;
   }
 }
 
@@ -1131,7 +1151,7 @@ function renderDash() {
     Object.keys(grouped).sort().reverse().forEach(function(year) {
       rows += '<tr><td colspan="8" style="background:var(--navy);color:#fff;padding:8px 16px;font-size:12px;font-weight:700">' + e(year) + '</td></tr>';
       grouped[year].forEach(function(d) {
-        var target   = d.project.targetCount   || 0;
+        var target   = (d.project.beautyTarget || 0) + (d.project.barberTarget || 0);
         var approach = d.project.approachCount || 0;
         var signup   = d.count;
         var rate     = target > 0 ? Math.min(100, Math.round(signup / target * 100)) : null;
@@ -1198,7 +1218,7 @@ function dashStatsHtml(pid) {
   } else {
     var d = (window._dashMap || {})[pid];
     if (!d) return dashStatsHtml(null);
-    var target   = d.project.targetCount   || 0;
+    var target   = (d.project.beautyTarget || 0) + (d.project.barberTarget || 0);
     var approach = d.project.approachCount || 0;
     var signup   = d.count;
     var warn     = d.warnings;
@@ -1364,7 +1384,7 @@ function renderProjects() {
             wMark +
           '</div>' +
           '<div class="pcard-acts" onclick="event.stopPropagation()">' +
-            '<button class="btn btn-ghost btn-xs" onclick="openProjectModal(\'' + pid + '\',\'' + e(d.project.year) + '\',\'' + e(d.project.month) + '\',\'' + pn + '\',' + (d.project.targetCount||0) + ',' + (d.project.approachCount||0) + ')">編集</button>' +
+            '<button class="btn btn-ghost btn-xs" onclick="openProjectModal(\'' + pid + '\',\'' + e(d.project.year) + '\',\'' + e(d.project.month) + '\',\'' + pn + '\',' + (d.project.beautyTarget||0) + ',' + (d.project.barberTarget||0) + ',' + (d.project.approachCount||0) + ')">編集</button>' +
             '<button class="btn btn-ghost btn-xs" onclick="openCopyProject(\'' + pid + '\',\'' + pn + '\')">複製</button>' +
             '<button class="btn btn-danger btn-xs" onclick="delProject(\'' + pid + '\',\'' + pn + '\')">削除</button>' +
           '</div>' +
@@ -1384,7 +1404,7 @@ function renderProjects() {
   }).catch(function(err){ showErr(err); });
 }
 
-function openProjectModal(id, year, month, name, targetCount, approachCount) {
+function openProjectModal(id, year, month, name, beautyTarget, barberTarget, approachCount) {
   Promise.all([gas('getYears'), gas('getMonths')]).then(function(r) {
     var yo = r[0].map(function(y){ return '<option' + (y===year?' selected':'') + '>' + e(y) + '</option>'; }).join('');
     var mo = r[1].map(function(m){ return '<option' + (m===month?' selected':'') + '>' + e(m) + '</option>'; }).join('');
@@ -1396,10 +1416,12 @@ function openProjectModal(id, year, month, name, targetCount, approachCount) {
           '<div class="fg"><label class="flabel req">年度</label><select class="finput" id="pYear">' + yo + '</select></div>' +
           '<div class="fg"><label class="flabel req">月</label><select class="finput" id="pMonth">' + mo + '</select></div>' +
           '<div class="fg"><label class="flabel req">案件名（学校・イベント名）</label><input type="text" class="finput" id="pName" value="' + e(name||'') + '" placeholder="例：A美容専門学校"></div>' +
+          '<div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">目標サロン数</div>' +
           '<div class="grid2">' +
-            '<div class="fg"><label class="flabel">目標サロン数</label><input type="number" class="finput" id="pTarget" value="' + (targetCount||0) + '" min="0" placeholder="0"></div>' +
-            '<div class="fg"><label class="flabel">アプローチ数</label><input type="number" class="finput" id="pApproach" value="' + (approachCount||0) + '" min="0" placeholder="0"></div>' +
+            '<div class="fg"><label class="flabel">美容室</label><input type="number" class="finput" id="pBeauty" value="' + (beautyTarget||0) + '" min="0" placeholder="0"></div>' +
+            '<div class="fg"><label class="flabel">理容室</label><input type="number" class="finput" id="pBarber" value="' + (barberTarget||0) + '" min="0" placeholder="0"></div>' +
           '</div>' +
+          '<div class="fg"><label class="flabel">アプローチ数</label><input type="number" class="finput" id="pApproach" value="' + (approachCount||0) + '" min="0" placeholder="0"></div>' +
         '</div>' +
         '<div class="mfoot"><button class="btn btn-ghost" onclick="closeModal()">キャンセル</button><button class="btn btn-primary" onclick="saveProject(\'' + (id||'') + '\')">保存</button></div>' +
       '</div></div>');
@@ -1407,15 +1429,21 @@ function openProjectModal(id, year, month, name, targetCount, approachCount) {
 }
 
 function saveProject(id) {
-  var year     = document.getElementById('pYear').value;
-  var month    = document.getElementById('pMonth').value;
-  var name     = document.getElementById('pName').value.trim();
-  var target   = Number(document.getElementById('pTarget').value)   || 0;
+  var year    = document.getElementById('pYear').value;
+  var month   = document.getElementById('pMonth').value;
+  var name    = document.getElementById('pName').value.trim();
+  var beauty  = Number(document.getElementById('pBeauty').value)  || 0;
+  var barber  = Number(document.getElementById('pBarber').value)  || 0;
   var approach = Number(document.getElementById('pApproach').value) || 0;
   if (!name) { alert('案件名を入力してください'); return; }
 
-  gas('saveProject', { id: id||null, year:year, month:month, name:name, targetCount:target, approachCount:approach }).then(function() {
-    closeModal(); showToast('案件を保存しました'); renderProjects();
+  gas('saveProject', { id: id||null, year:year, month:month, name:name, beautyTarget:beauty, barberTarget:barber, approachCount:approach }).then(function() {
+    closeModal(); showToast('案件を保存しました');
+    if (ST.view === 'project-detail' && ST.projectId) {
+      renderProjectDetail(ST.projectId);
+    } else {
+      renderProjects();
+    }
   }).catch(function(err){ alert('エラー: ' + err.message); });
 }
 
@@ -1511,7 +1539,9 @@ function renderProjectDetail(pid) {
       '</div>';
     }).join('');
 
-    var targetCount   = proj ? (proj.targetCount   || 0) : 0;
+    var beautyTarget  = proj ? (proj.beautyTarget  || 0) : 0;
+    var barberTarget  = proj ? (proj.barberTarget  || 0) : 0;
+    var targetCount   = beautyTarget + barberTarget;
     var approachCount = proj ? (proj.approachCount || 0) : 0;
     var signupCount   = salons.length;
     var signupRate    = targetCount > 0 ? Math.min(100, Math.round(signupCount / targetCount * 100)) : 0;
@@ -1521,10 +1551,11 @@ function renderProjectDetail(pid) {
       '<div class="card mb16" style="padding:0">' +
         '<div class="card-head" style="padding:10px 16px">' +
           '<div class="card-title">' + ico('clipboard',13) + ' 進捗サマリー</div>' +
-          '<button class="btn btn-ghost btn-xs" onclick="openProjectModal(\'' + e(pid) + '\',\'' + e(proj ? proj.year : '') + '\',\'' + e(proj ? proj.month : '') + '\',\'' + e(proj ? proj.name : '') + '\',' + targetCount + ',' + approachCount + ')">' + ico('edit3',11) + ' 編集</button>' +
+          '<button class="btn btn-ghost btn-xs" onclick="openProjectModal(\'' + e(pid) + '\',\'' + e(proj ? proj.year : '') + '\',\'' + e(proj ? proj.month : '') + '\',\'' + e(proj ? proj.name : '') + '\',' + beautyTarget + ',' + barberTarget + ',' + approachCount + ')">' + ico('edit3',11) + ' 編集</button>' +
         '</div>' +
-        '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 2fr;gap:0;border-top:1px solid var(--border)">' +
-          kpiCell('目標サロン数', targetCount + ' 件', 'color:var(--navy)') +
+        '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 2fr;gap:0;border-top:1px solid var(--border)">' +
+          kpiCell('目標（美容室）', beautyTarget + ' 件', 'color:var(--navy)') +
+          kpiCell('目標（理容室）', barberTarget + ' 件', 'color:var(--navy)') +
           kpiCell('アプローチ数', approachCount + ' 件', 'color:var(--navy3)') +
           kpiCell('申し込み数',   signupCount   + ' 件', 'color:var(--success)') +
           '<div style="padding:14px 18px;border-left:1px solid var(--border)">' +
@@ -1761,7 +1792,12 @@ function renderSalonForm(sid, pid) {
             fld('会社名','f_co',salon.companyName,'株式会社〇〇',true) +
             fld('サロン名','f_sn',salon.salonName,'〇〇サロン',true) +
           '</div>' +
-          fld('キャッチコピー','f_catch',salon.catchphrase,'あなたの美しさを引き出す') +
+          '<div class="fg"><label class="flabel">キャッチコピー</label>' +
+            '<div class="grid2">' +
+              fld('1行目','f_catch1',(salon.catchphrase||'').split('\n')[0]||'','ヤッホー！Let\'s Enjoy Happy') +
+              fld('2行目（任意）','f_catch2',(salon.catchphrase||'').split('\n')[1]||'','') +
+            '</div>' +
+          '</div>' +
           '<div class="grid2">' +
             fld('代表者名','f_rep',salon.representative,'山田 太郎') +
             fld('設立年','f_est',salon.established,'2020','','number') +
@@ -1903,7 +1939,11 @@ function getFormData() {
   return {
     companyName:    document.getElementById('f_co').value.trim(),
     salonName:      document.getElementById('f_sn').value.trim(),
-    catchphrase:    document.getElementById('f_catch').value.trim(),
+    catchphrase:    (function() {
+      var c1 = (document.getElementById('f_catch1').value || '').trim();
+      var c2 = (document.getElementById('f_catch2').value || '').trim();
+      return c2 ? c1 + '\n' + c2 : c1;
+    })(),
     representative: document.getElementById('f_rep').value.trim(),
     established:    document.getElementById('f_est').value,
     stores:         document.getElementById('f_str').value,
@@ -2012,7 +2052,7 @@ function applySalonData(jsonStr) {
   try { s = JSON.parse(jsonStr); } catch(err) { return; }
 
   var map = {
-    f_co: 'companyName', f_sn: 'salonName', f_catch: 'catchphrase',
+    f_co: 'companyName', f_sn: 'salonName',
     f_rep: 'representative', f_est: 'established', f_str: 'stores',
     f_stf: 'staff', f_tel: 'tel', f_body: 'bodyText',
     f_ig: 'instagram', f_hp: 'hp',
@@ -2022,6 +2062,11 @@ function applySalonData(jsonStr) {
     var el = document.getElementById(elId);
     if (el) el.value = s[map[elId]] || '';
   });
+
+  // キャッチコピーを1行目/2行目に分割
+  var cp = (s.catchphrase || '').split('\n');
+  var c1 = document.getElementById('f_catch1'); if (c1) c1.value = cp[0] || '';
+  var c2 = document.getElementById('f_catch2'); if (c2) c2.value = cp[1] || '';
 
   // 住所を addr1/addr2 に分割
   var parts = (s.address || '').split('\n');
@@ -2081,7 +2126,7 @@ function applyTemplate() {
     var t = tmpls.find(function(x){ return x.id === tid; });
     if (!t) return;
     var fields = {
-      f_co:'companyName', f_sn:'salonName', f_catch:'catchphrase',
+      f_co:'companyName', f_sn:'salonName',
       f_rep:'representative', f_est:'established', f_str:'stores',
       f_stf:'staff', f_tel:'tel',
       f_body:'bodyText', f_ig:'instagram', f_hp:'hp'
@@ -2090,6 +2135,9 @@ function applyTemplate() {
       var el = document.getElementById(elId);
       if (el) el.value = t[fields[elId]] || '';
     });
+    var tcp = (t.catchphrase || '').split('\n');
+    var tc1 = document.getElementById('f_catch1'); if (tc1) tc1.value = tcp[0] || '';
+    var tc2 = document.getElementById('f_catch2'); if (tc2) tc2.value = tcp[1] || '';
     // 住所を addr1 / addr2 に分割してセット
     var addrParts = (t.address||'').split('\n');
     var a1 = document.getElementById('f_addr1'); if (a1) { a1.value = addrParts[0]||''; validateAddrInput('f_addr1'); }
@@ -2198,7 +2246,12 @@ function openTemplateForm(tid) {
             '<div class="fg"><label class="flabel">会社名</label><input class="finput" id="tn_co" value="' + e(t.companyName||'') + '"></div>' +
             '<div class="fg"><label class="flabel">サロン名</label><input class="finput" id="tn_sn" value="' + e(t.salonName||'') + '"></div>' +
           '</div>' +
-          '<div class="fg"><label class="flabel">キャッチコピー</label><input class="finput" id="tn_catch" value="' + e(t.catchphrase||'') + '"></div>' +
+          '<div class="fg"><label class="flabel">キャッチコピー</label>' +
+            '<div class="grid2">' +
+              '<div class="fg"><label class="flabel" style="font-size:11px;font-weight:400;color:var(--muted)">1行目</label><input class="finput" id="tn_catch1" value="' + e((t.catchphrase||'').split('\n')[0]||'') + '"></div>' +
+              '<div class="fg"><label class="flabel" style="font-size:11px;font-weight:400;color:var(--muted)">2行目（任意）</label><input class="finput" id="tn_catch2" value="' + e((t.catchphrase||'').split('\n')[1]||'') + '"></div>' +
+            '</div>' +
+          '</div>' +
           '<div class="grid2">' +
             '<div class="fg"><label class="flabel">代表者名</label><input class="finput" id="tn_rep" value="' + e(t.representative||'') + '"></div>' +
             '<div class="fg"><label class="flabel">設立年</label><input class="finput" type="number" id="tn_est" value="' + e(t.established||'') + '"></div>' +
@@ -2236,7 +2289,11 @@ function doSaveTemplate(tid) {
     templateName: document.getElementById('tn_name').value.trim(),
     companyName:  document.getElementById('tn_co').value.trim(),
     salonName:    document.getElementById('tn_sn').value.trim(),
-    catchphrase:  document.getElementById('tn_catch').value.trim(),
+    catchphrase:  (function() {
+      var c1 = (document.getElementById('tn_catch1').value || '').trim();
+      var c2 = (document.getElementById('tn_catch2').value || '').trim();
+      return c2 ? c1 + '\n' + c2 : c1;
+    })(),
     representative: document.getElementById('tn_rep').value.trim(),
     established:  document.getElementById('tn_est').value,
     stores:       document.getElementById('tn_str').value,
@@ -2551,26 +2608,30 @@ function buildPvCard(s, idx, layout) {
 
     // 会社情報（サロン名・代表者名・設立・店舗数・スタッフ数・住所・電話番号）
     var infoRows3 = [
-      { lbl: 'サロン名',   val: s.salonName },
-      { lbl: '代表者名',   val: s.representative },
-      { lbl: '設立',       val: s.established ? s.established + '年' : '' },
-      { lbl: '店舗数',     val: s.stores      ? s.stores      + '店舗' : '' },
-      { lbl: 'スタッフ数', val: s.staff       ? s.staff       + '名' : '' },
-      { lbl: '住所',       val: s.address },
-      { lbl: '電話番号',   val: s.tel }
-    ].filter(function(r){ return r.val; });
+      { lbl: 'サロン名', val: s.salonName },
+      { lbl: '代表者名', val: s.representative },
+      { lbl: '設立',     val: s.established ? s.established + '年' : '',
+                         twin: s.staff ? { lbl: 'スタッフ数', val: s.staff + '名' } : null },
+      { lbl: '店舗数',   val: s.stores ? s.stores + '店舗' : '' },
+      { lbl: '住所',     val: s.address },
+      { lbl: '電話番号', val: s.tel }
+    ].filter(function(r){ return r.val || (r.twin && r.twin.val); });
     var info3Html = infoRows3.map(function(r) {
-      if (r.val.indexOf('\n') !== -1) {
-        var parts = r.val.split('\n').filter(Boolean);
+      var val = r.val || '';
+      if (val.indexOf('\n') !== -1) {
+        var parts = val.split('\n').filter(Boolean);
         return '<div class="pv3-info-row pv3-info-row-wrap">' +
           '<span class="pv3-info-lbl">【' + e(r.lbl) + '】</span>' +
           '<span class="pv3-info-val-multi">' + parts.map(function(p){ return e(p); }).join('<br>') + '</span>' +
         '</div>';
       }
-      return '<div class="pv3-info-row">' +
-        '<span class="pv3-info-lbl">【' + e(r.lbl) + '】</span>' +
-        '<span class="pv3-info-val">' + e(r.val) + '</span>' +
-      '</div>';
+      var html = '<div class="pv3-info-row">';
+      if (val) html += '<span class="pv3-info-lbl">【' + e(r.lbl) + '】</span><span class="pv3-info-val">' + e(val) + '</span>';
+      if (r.twin && r.twin.val) {
+        html += '<span class="pv3-info-lbl" style="margin-left:5px">【' + e(r.twin.lbl) + '】</span>' +
+                '<span class="pv3-info-val">' + e(r.twin.val) + '</span>';
+      }
+      return html + '</div>';
     }).join('');
 
     return '<div class="pv2">' +
@@ -2647,12 +2708,6 @@ function renderCSV(pid) {
         '<div class="card-body">' +
           '<div class="alert a-info mb16">フィールド名は <strong>@フィールド名_番号</strong> 形式で出力されます。InDesignのデータ結合にそのままご利用いただけます。</div>' +
           '<div class="fg"><label class="flabel req">案件</label><select class="finput" id="csvPid" style="max-width:420px">' + opts + '</select></div>' +
-          '<div class="fg"><label class="flabel req">レイアウト</label>' +
-            '<div class="rgroup">' +
-              '<label><input type="radio" name="csvrl" value="1/2" checked><div>1/2（1行に2社分）</div></label>' +
-              '<label><input type="radio" name="csvrl" value="1/3"><div>1/3（1行に3社分）</div></label>' +
-            '</div>' +
-          '</div>' +
           '<div class="divider"></div>' +
           '<button class="btn btn-success" onclick="doExportCSV()">' + ico('download',13) + ' CSVをダウンロード</button>' +
         '</div>' +
@@ -2662,17 +2717,17 @@ function renderCSV(pid) {
 
 function doExportCSV() {
   var pid = document.getElementById('csvPid').value;
-  var rl  = document.querySelector('input[name="csvrl"]:checked');
   if (!pid) { alert('案件を選択してください'); return; }
-  var layout = rl ? rl.value : '1/2';
+  var layout = '1/3';
 
   gas('exportCSV', pid, layout).then(function(result) {
-    var blob = new Blob([result.csv], { type: 'text/csv;charset=utf-8;' });
+    var proj = ST.projects.find(function(p){ return p.id === pid; });
+    var filename = proj ? proj.year + '_' + proj.month + '_' + proj.name + '_1-3.csv' : 'salon.csv';
+    var blob = new Blob([result.csv], { type: 'text/csv;charset=utf-8' });
     var url  = URL.createObjectURL(blob);
     var a    = document.createElement('a');
     a.href   = url;
-    var proj = ST.projects.find(function(p){ return p.id === pid; });
-    a.download = proj ? proj.year + '_' + proj.month + '_' + proj.name + '_' + layout.replace('/','-') + '.csv' : 'salon.csv';
+    a.download = filename;
     document.body.appendChild(a); a.click();
     document.body.removeChild(a); URL.revokeObjectURL(url);
     showToast('CSVをダウンロードしました');

@@ -34,7 +34,7 @@ function initSheets() {
   var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
 
   var sheetDefs = [
-    { name: SH_PROJECT,  headers: ['ID','年度','月','案件名','作成日時'] },
+    { name: SH_PROJECT,  headers: ['ID','年度','月','案件名','作成日時','目標美容室数','目標理容室数','アプローチ数'] },
     { name: SH_SALON,    headers: ['ID','案件ID','会社名','サロン名','キャッチコピー','代表者名','設立年','店舗数','スタッフ数','住所','TEL','本文テキスト','タグ','写真パス1','写真パス2','ロゴパス','Instagramリンク','HPリンク','レイアウト','作成日時','更新日時','QR1ラベル','QR2ラベル','アポイント','参加','資料作成','事後アンケート','請求書発行'] },
     { name: SH_TEMPLATE, headers: ['ID','テンプレート名','会社名','サロン名','キャッチコピー','代表者名','設立年','店舗数','スタッフ数','住所','TEL','本文テキスト','タグ','写真パス1','写真パス2','ロゴパス','Instagramリンク','HPリンク','レイアウト','作成日時'] }
   ];
@@ -63,11 +63,14 @@ function getProjects() {
   var rows = _getRows(SH_PROJECT);
   return rows.map(function(r) {
     return {
-      id:        String(r[0]),
-      year:      String(r[1]),
-      month:     String(r[2]),
-      name:      String(r[3]),
-      createdAt: _fmtDate(r[4])
+      id:              String(r[0]),
+      year:            String(r[1]),
+      month:           String(r[2]),
+      name:            String(r[3]),
+      createdAt:       _fmtDate(r[4]),
+      beautyTarget:    Number(r[5]) || 0,
+      barberTarget:    Number(r[6]) || 0,
+      approachCount:   Number(r[7]) || 0
     };
   });
 }
@@ -79,14 +82,25 @@ function saveProject(data) {
   if (data.id) {
     for (var i = 1; i < all.length; i++) {
       if (String(all[i][0]) === String(data.id)) {
-        sh.getRange(i + 1, 2, 1, 3).setValues([[data.year, data.month, data.name]]);
+        sh.getRange(i + 1, 2, 1, 7).setValues([[
+          data.year, data.month, data.name,
+          all[i][4],
+          Number(data.beautyTarget)  || 0,
+          Number(data.barberTarget)  || 0,
+          Number(data.approachCount) || 0
+        ]]);
         return { success: true, id: data.id };
       }
     }
   }
 
   var id = 'P' + Date.now();
-  sh.appendRow([id, data.year, data.month, data.name, new Date()]);
+  sh.appendRow([
+    id, data.year, data.month, data.name, new Date(),
+    Number(data.beautyTarget)  || 0,
+    Number(data.barberTarget)  || 0,
+    Number(data.approachCount) || 0
+  ]);
   return { success: true, id: id };
 }
 
@@ -306,39 +320,60 @@ function getAllSalons() {
 // CSV出力（InDesign用）
 // ============================================================
 function exportCSV(projectId, layout) {
-  var salons  = getSalonsByProject(projectId);
-  var perRow  = layout === '1/3' ? 3 : 2;
-  var baseH   = ['会社名','サロン名','キャッチコピー','代表者名','設立年','店舗数','スタッフ数','住所','TEL','本文テキスト','タグ','写真パス1','写真パス2','ロゴパス','Instagramリンク','HPリンク','レイアウト'];
+  var salons = getSalonsByProject(projectId);
+  var fields = ['会社名','サロン名','キャッチコピー','代表者名','設立年','店舗数','スタッフ数','住所','TEL','本文テキスト','タグ','写真パス1','写真パス2','ロゴパス','Instagramリンク','HPリンク','レイアウト'];
 
-  var headers = [];
-  for (var n = 1; n <= perRow; n++) {
-    baseH.forEach(function(h) { headers.push('@' + h + '_' + n); });
+  // ヘッダー行
+  var hdr = [];
+  for (var n = 1; n <= 3; n++) {
+    for (var fi = 0; fi < fields.length; fi++) {
+      hdr.push('"@' + fields[fi] + '_' + n + '"');
+    }
   }
+  var lines = [hdr.join(',')];
 
-  var rows = [headers];
-
-  for (var i = 0; i < salons.length; i += perRow) {
-    var group = salons.slice(i, i + perRow);
-    var row   = [];
-    for (var j = 0; j < perRow; j++) {
-      var s = group[j];
-      if (s) {
-        row = row.concat([s.companyName, s.salonName, s.catchphrase, s.representative, s.established, s.stores, s.staff, s.address, s.tel, s.bodyText, (s.tags||[]).join('|'), s.photo1, s.photo2, s.logo, s.instagram, s.hp, s.layout]);
+  // データ行（3サロンずつ）
+  for (var i = 0; i < salons.length; i += 3) {
+    var cells = [];
+    for (var j = 0; j < 3; j++) {
+      var s = salons[i + j];
+      if (!s) {
+        for (var e = 0; e < fields.length; e++) cells.push('""');
       } else {
-        for (var k = 0; k < baseH.length; k++) row.push('');
+        cells.push(csvQ(s.companyName));
+        cells.push(csvQ(s.salonName));
+        cells.push(csvQ(s.catchphrase));
+        cells.push(csvQ(s.representative));
+        cells.push(csvQ(s.established));
+        cells.push(csvQ(s.stores));
+        cells.push(csvQ(s.staff));
+        cells.push(csvQ(s.address));
+        cells.push(csvQ(s.tel));
+        cells.push(csvQ(s.bodyText));
+        cells.push(csvQ((s.tags || []).join('|')));
+        cells.push(csvQ(s.photo1));
+        cells.push(csvQ(s.photo2));
+        cells.push(csvQ(s.logo));
+        cells.push(csvQ(s.instagram));
+        cells.push(csvQ(s.hp));
+        cells.push(csvQ(s.layout));
       }
     }
-    rows.push(row);
+    lines.push(cells.join(','));
   }
 
-  var csv = rows.map(function(r) {
-    return r.map(function(c) {
-      var s = String(c == null ? '' : c).replace(/"/g, '""');
-      return (s.indexOf(',') !== -1 || s.indexOf('\n') !== -1 || s.indexOf('"') !== -1) ? '"' + s + '"' : s;
-    }).join(',');
-  }).join('\r\n');
+  return { success: true, csv: lines.join('\r\n') };
+}
 
-  return { success: true, csv: '﻿' + csv };
+function csvQ(v) {
+  if (v === null || v === undefined) return '""';
+  if (v instanceof Date) return '""';
+  v = String(v);
+  v = v.split('\r\n').join(' ');
+  v = v.split('\r').join(' ');
+  v = v.split('\n').join(' ');
+  v = v.split('"').join('""');
+  return '"' + v + '"';
 }
 
 // ============================================================
@@ -399,7 +434,7 @@ function _rowToSalon(r) {
     id: String(r[0]), projectId: String(r[1]),
     companyName: String(r[2]||''), salonName: String(r[3]||''),
     catchphrase: String(r[4]||''), representative: String(r[5]||''),
-    established: String(r[6]||''), stores: String(r[7]||''),
+    established: r[6] instanceof Date ? String(r[6].getFullYear()) : String(r[6]||''), stores: String(r[7]||''),
     staff: String(r[8]||''), address: String(r[9]||''),
     tel: String(r[10]||''), bodyText: String(r[11]||''),
     tags: _tagsArr(r[12]),
