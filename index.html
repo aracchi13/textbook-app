@@ -444,7 +444,7 @@ select.finput {
   overflow: hidden;
 }
 .prev-page.ly2 { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; }
-.prev-page.ly3 { display: flex; flex-direction: column; padding: 24px 28px; gap: 8px; }
+.prev-page.ly3 { display: flex; flex-direction: column; padding: 24px 10px; gap: 8px; }
 .prev-page.ly3 .pv-card  { height: 353px; flex-shrink: 0; }
 .prev-page.ly3 .pv-empty { height: 353px; flex-shrink: 0; }
 .pv-card  { overflow: hidden; display: flex; flex-direction: column; height: 100%; }
@@ -517,8 +517,7 @@ select.finput {
 .pv3-upper-center { flex: 1; display: flex; flex-direction: column; padding-left: 20px; padding-right: 8px; }
 .pv3-center-spacer { height: 20px; flex-shrink: 0; }
 .pv3-tags-grid { display: grid !important; grid-template-columns: repeat(5, 1fr) !important; gap: 4px !important; padding: 6px 20px !important; align-content: center !important; }
-.pv3-tag { text-align: center !important; }
-.pv3-tag { display: inline-block !important; font-size: 11px !important; font-weight: 600 !important; color: #fff !important; border-radius: 2px !important; padding: 2px 8px !important; white-space: nowrap !important; line-height: 1.4 !important; }
+.pv3-tag { display: block !important; text-align: center !important; font-size: 11px !important; font-weight: 600 !important; color: #fff !important; border-radius: 2px !important; padding: 2px 8px !important; white-space: nowrap !important; line-height: 1.4 !important; overflow: hidden !important; text-overflow: ellipsis !important; }
 .pv3-tag.c-blue   { background: #1e3b7a; }
 .pv3-tag.c-pink   { background: #d4547a; }
 .pv3-tag.c-green  { background: #2ab5a0; }
@@ -549,23 +548,33 @@ select.finput {
 .pv3-qr-box.filled { background: #fff; color: #fff; }
 .pv3-qr-label { font-size: 6.5pt; color: #555; text-align: center; white-space: nowrap; line-height: 1.3; }
 
-/* ===================== 全ページ1/3補正（余白56px分・93%スケール） ===================== */
-/* 余白padding 28px×2=56px で実幅738px になるため、左右カラムを比例縮小し中央カラムを確保する */
+/* ===================== 全ページ1/3補正 ===================== */
 .prev-page.ly3 .pv3-head       { padding: 14px 22px 4px 18px; }
 .prev-page.ly3 .pv3-hd-logo    { width: 80px; height: 38px; }
-.prev-page.ly3 .pv3-upper-left { width: 230px; }
-.prev-page.ly3 .pv3-lower-left { width: 230px; }
 .prev-page.ly3 .pv3-lower-right{ width: 185px; padding-right: 22px; }
 .prev-page.ly3 .pv3-lower-center{ padding-left: 16px; }
-.prev-page.ly3 .pv3-catch      { font-size: 10.5pt; }
 .prev-page.ly3 .pv3-desc       { font-size: 7pt; max-height: 110px; padding-right: 14px; }
 .prev-page.ly3 .pv3-info-lbl,
 .prev-page.ly3 .pv3-info-val,
 .prev-page.ly3 .pv3-info-val-multi { font-size: 6.5pt; }
 .prev-page.ly3 .pv3-tags-grid  { padding: 5px 16px !important; gap: 3px !important; }
-.prev-page.ly3 .pv3-tag        { font-size: 10px !important; padding: 2px 5px !important; }
+.prev-page.ly3 .pv3-tag        { font-size: 10px !important; padding: 2px 5px !important; display: block !important; }
 .prev-page.ly3 .pv3-qr-box     { width: 44px; height: 44px; }
 .prev-page.ly3 .pv3-qrs        { gap: 12px; padding-bottom: 10px; }
+
+/* ===================== 画面インラインプレビュー（印刷と同期） ===================== */
+.pv-inline-card .pv3-head       { padding: 14px 22px 4px 18px; }
+.pv-inline-card .pv3-hd-logo    { width: 80px; height: 38px; }
+.pv-inline-card .pv3-lower-right{ width: 185px; padding-right: 22px; }
+.pv-inline-card .pv3-lower-center{ padding-left: 16px; }
+.pv-inline-card .pv3-desc       { font-size: 7pt; max-height: 110px; padding-right: 14px; }
+.pv-inline-card .pv3-info-lbl,
+.pv-inline-card .pv3-info-val,
+.pv-inline-card .pv3-info-val-multi { font-size: 6.5pt; }
+.pv-inline-card .pv3-tags-grid  { padding: 5px 16px !important; gap: 3px !important; }
+.pv-inline-card .pv3-tag        { font-size: 10px !important; padding: 2px 5px !important; display: block !important; }
+.pv-inline-card .pv3-qr-box     { width: 44px; height: 44px; }
+.pv-inline-card .pv3-qrs        { gap: 12px; padding-bottom: 10px; }
 
 /* ===================== トースト ===================== */
 #toast {
@@ -907,9 +916,10 @@ function renderTagCheckboxes(selectedTags, prefix) {
              '<div class="tag-cat-hd ' + cat.cls + '">' + e(cat.name) + '</div>' +
              '<div class="tags-wrap" id="tagwrap_' + cat.cls + '_' + prefix + '">' + tagsHtml + '</div>' +
              '<div class="tag-add-row">' +
-               '<input type="text" class="tag-add-inp" id="taginp_' + cat.cls + '_' + prefix + '" placeholder="タグ名を入力"' +
-                 ' style="display:none"' +
-                 ' onkeydown="if(event.key===\'Enter\'){event.preventDefault();addCustomTag(\'' + cat.cls + '\',\'' + prefix + '\');}">' +
+               '<input type="text" class="tag-add-inp" id="taginp_' + cat.cls + '_' + prefix + '" placeholder="最大8文字（半角2文字＝1文字）"' +
+                 ' style="display:none" maxlength="16"' +
+                 ' oninput="convertToHalfWidth(this)"' +
+                 ' onkeydown="if(event.key===\'Enter\' && !event.isComposing){event.preventDefault();addCustomTag(\'' + cat.cls + '\',\'' + prefix + '\');}">' +
                '<button class="btn btn-ghost btn-xs" id="tagbtn_' + cat.cls + '_' + prefix + '"' +
                  ' onclick="toggleTagInput(\'' + cat.cls + '\',\'' + prefix + '\')">＋ タグを追加</button>' +
                '<button class="btn btn-accent btn-xs" id="tagconfirm_' + cat.cls + '_' + prefix + '"' +
@@ -950,10 +960,29 @@ function cancelTagInput(cls, prefix) {
   document.getElementById('taginp_'      + cls + '_' + prefix).value = '';
 }
 
+function countTagChars(str) {
+  var count = 0;
+  for (var i = 0; i < str.length; i++) {
+    var code = str.charCodeAt(i);
+    // 半角（ASCII・半角カタカナ）は0.5文字としてカウント
+    if ((code >= 0x20 && code <= 0x7E) || (code >= 0xFF61 && code <= 0xFF9F)) {
+      count += 0.5;
+    } else {
+      count += 1;
+    }
+  }
+  return count;
+}
+
 function addCustomTag(cls, prefix) {
   var inp = document.getElementById('taginp_' + cls + '_' + prefix);
   var val = (inp.value || '').trim();
   if (!val) { inp.focus(); return; }
+
+  if (countTagChars(val) > 8) {
+    alert('タグは8文字以内で入力してください\n（半角英数字は2文字で1文字とカウント）');
+    inp.focus(); return;
+  }
 
   var custom   = getCustomTags();
   var existing = TAGS.concat(
@@ -966,6 +995,7 @@ function addCustomTag(cls, prefix) {
   if (!custom[cls]) custom[cls] = [];
   custom[cls].push(val);
   saveCustomTags(custom);
+  gas('saveGlobalCustomTags', custom).catch(function() {});
 
   var cnt = document.querySelectorAll('.tcb:checked').length;
   var id  = prefix + '_' + val.replace(/[\s\/]/g,'_');
@@ -990,6 +1020,7 @@ function delCustomTag(cls, tagVal, prefix) {
   if (custom[cls]) {
     custom[cls] = custom[cls].filter(function(t){ return t !== tagVal; });
     saveCustomTags(custom);
+    gas('saveGlobalCustomTags', custom).catch(function() {});
   }
   var id = prefix + '_' + tagVal.replace(/[\s\/]/g,'_');
   var cb = document.getElementById(id);
@@ -1222,7 +1253,7 @@ function dashStatsHtml(pid) {
     var approach = d.project.approachCount || 0;
     var signup   = d.count;
     var warn     = d.warnings;
-    label   = ico('folder',11) + ' ' + e(d.project.year + ' ' + d.project.month + ' ' + d.project.name);
+    label   = ico('folder',11) + ' ' + e(d.project.year + ' ' + d.project.month + (d.project.day||'') + ' ' + d.project.name);
     c1label = '目標サロン数'; c1val = target   ? target   + ' 件' : '-'; c1style = '';
     c2label = 'アプローチ数'; c2val = approach ? approach + ' 件' : '-'; c2style = 'color:var(--navy3)';
     c3label = '申し込み数';   c3val = signup + ' 件';                    c3style = 'color:var(--success)';
@@ -1377,14 +1408,14 @@ function renderProjects() {
         var pn  = e(d.project.name);
         var wMark = d.warnings > 0 ? '<span class="pcard-warn">' + ico('alert',14) + '</span>' : '';
         return '<div class="pcard" onclick="go(\'project-detail\',{pid:\'' + pid + '\'})">' +
-          '<div class="pcard-year">' + e(d.project.year) + ' ' + e(d.project.month) + '</div>' +
+          '<div class="pcard-year">' + e(d.project.year) + ' ' + e(d.project.month) + (d.project.day ? e(d.project.day) : '') + '</div>' +
           '<div class="pcard-name">' + pn + '</div>' +
           '<div class="pcard-meta">' +
             '<span class="pcard-count">' + ico('scissors',12) + ' ' + d.count + ' サロン</span>' +
             wMark +
           '</div>' +
           '<div class="pcard-acts" onclick="event.stopPropagation()">' +
-            '<button class="btn btn-ghost btn-xs" onclick="openProjectModal(\'' + pid + '\',\'' + e(d.project.year) + '\',\'' + e(d.project.month) + '\',\'' + pn + '\',' + (d.project.beautyTarget||0) + ',' + (d.project.barberTarget||0) + ',' + (d.project.approachCount||0) + ')">編集</button>' +
+            '<button class="btn btn-ghost btn-xs" onclick="openProjectModal(\'' + pid + '\',\'' + e(d.project.year) + '\',\'' + e(d.project.month) + '\',\'' + e(d.project.day||'') + '\',\'' + pn + '\',' + (d.project.beautyTarget||0) + ',' + (d.project.barberTarget||0) + ',' + (d.project.approachCount||0) + ')">編集</button>' +
             '<button class="btn btn-ghost btn-xs" onclick="openCopyProject(\'' + pid + '\',\'' + pn + '\')">複製</button>' +
             '<button class="btn btn-danger btn-xs" onclick="delProject(\'' + pid + '\',\'' + pn + '\')">削除</button>' +
           '</div>' +
@@ -1404,17 +1435,21 @@ function renderProjects() {
   }).catch(function(err){ showErr(err); });
 }
 
-function openProjectModal(id, year, month, name, beautyTarget, barberTarget, approachCount) {
-  Promise.all([gas('getYears'), gas('getMonths')]).then(function(r) {
+function openProjectModal(id, year, month, day, name, beautyTarget, barberTarget, approachCount) {
+  Promise.all([gas('getYears'), gas('getMonths'), gas('getDays')]).then(function(r) {
     var yo = r[0].map(function(y){ return '<option' + (y===year?' selected':'') + '>' + e(y) + '</option>'; }).join('');
     var mo = r[1].map(function(m){ return '<option' + (m===month?' selected':'') + '>' + e(m) + '</option>'; }).join('');
+    var do_ = r[2].map(function(d){ return '<option value="' + e(d) + '"' + (d===(day||'')?' selected':'') + '>' + (d||'（なし）') + '</option>'; }).join('');
 
     openModal('<div class="moverlay" onclick="if(event.target===this)closeModal()">' +
       '<div class="mbox">' +
         '<div class="mhd"><h3>' + (id ? '案件を編集' : '新規案件を作成') + '</h3><button class="mclose" onclick="closeModal()">×</button></div>' +
         '<div class="mbody">' +
           '<div class="fg"><label class="flabel req">年度</label><select class="finput" id="pYear">' + yo + '</select></div>' +
-          '<div class="fg"><label class="flabel req">月</label><select class="finput" id="pMonth">' + mo + '</select></div>' +
+          '<div class="grid2">' +
+            '<div class="fg"><label class="flabel req">月</label><select class="finput" id="pMonth">' + mo + '</select></div>' +
+            '<div class="fg"><label class="flabel">日</label><select class="finput" id="pDay">' + do_ + '</select></div>' +
+          '</div>' +
           '<div class="fg"><label class="flabel req">案件名（学校・イベント名）</label><input type="text" class="finput" id="pName" value="' + e(name||'') + '" placeholder="例：A美容専門学校"></div>' +
           '<div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">目標サロン数</div>' +
           '<div class="grid2">' +
@@ -1431,13 +1466,14 @@ function openProjectModal(id, year, month, name, beautyTarget, barberTarget, app
 function saveProject(id) {
   var year    = document.getElementById('pYear').value;
   var month   = document.getElementById('pMonth').value;
+  var day     = document.getElementById('pDay').value;
   var name    = document.getElementById('pName').value.trim();
   var beauty  = Number(document.getElementById('pBeauty').value)  || 0;
   var barber  = Number(document.getElementById('pBarber').value)  || 0;
   var approach = Number(document.getElementById('pApproach').value) || 0;
   if (!name) { alert('案件名を入力してください'); return; }
 
-  gas('saveProject', { id: id||null, year:year, month:month, name:name, beautyTarget:beauty, barberTarget:barber, approachCount:approach }).then(function() {
+  gas('saveProject', { id: id||null, year:year, month:month, day:day, name:name, beautyTarget:beauty, barberTarget:barber, approachCount:approach }).then(function() {
     closeModal(); showToast('案件を保存しました');
     if (ST.view === 'project-detail' && ST.projectId) {
       renderProjectDetail(ST.projectId);
@@ -1490,16 +1526,18 @@ function renderProjectDetail(pid) {
 
   Promise.all([gas('getProjects'), gas('getSalonsByProject', pid)]).then(function(r) {
     ST.projects = r[0];
-    var salons  = r[1];
+    var salons           = r[1];
+    var nonApproachSalons = salons.filter(function(s) { return !s.approachOnly; });
+    var approachSalons    = salons.filter(function(s) { return s.approachOnly; });
     var proj    = ST.projects.find(function(p){ return p.id === pid; });
-    var pname   = proj ? proj.year + ' ' + proj.month + ' ' + proj.name : pid;
+    var pname   = proj ? proj.year + ' ' + proj.month + (proj.day||'') + ' ' + proj.name : pid;
 
     document.getElementById('topActs').innerHTML =
       '<button class="btn btn-ghost btn-sm" onclick="go(\'preview\',{pid:\'' + e(pid) + '\'})">' + ico('eye',13) + ' プレビュー</button>' +
       '<button class="btn btn-ghost btn-sm" onclick="go(\'csv\',{pid:\'' + e(pid) + '\'})">' + ico('file',13) + ' CSV</button>' +
       '<button class="btn btn-primary btn-sm" onclick="go(\'salon-form\',{pid:\'' + e(pid) + '\'})">＋ サロン追加</button>';
 
-    var cards = salons.map(function(s) {
+    var cards = nonApproachSalons.map(function(s) {
       var missing = REQUIRED_FIELDS.filter(function(f){ return !s[f]; });
       var warnBadge = missing.length > 0
         ? '<span class="scard-warn">' + ico('alert',14) + '</span>'
@@ -1543,7 +1581,7 @@ function renderProjectDetail(pid) {
     var barberTarget  = proj ? (proj.barberTarget  || 0) : 0;
     var targetCount   = beautyTarget + barberTarget;
     var approachCount = proj ? (proj.approachCount || 0) : 0;
-    var signupCount   = salons.length;
+    var signupCount   = nonApproachSalons.length;
     var signupRate    = targetCount > 0 ? Math.min(100, Math.round(signupCount / targetCount * 100)) : 0;
     var rateColor     = signupRate >= 100 ? 'var(--success)' : signupRate >= 50 ? 'var(--warn)' : 'var(--accent)';
 
@@ -1551,7 +1589,7 @@ function renderProjectDetail(pid) {
       '<div class="card mb16" style="padding:0">' +
         '<div class="card-head" style="padding:10px 16px">' +
           '<div class="card-title">' + ico('clipboard',13) + ' 進捗サマリー</div>' +
-          '<button class="btn btn-ghost btn-xs" onclick="openProjectModal(\'' + e(pid) + '\',\'' + e(proj ? proj.year : '') + '\',\'' + e(proj ? proj.month : '') + '\',\'' + e(proj ? proj.name : '') + '\',' + beautyTarget + ',' + barberTarget + ',' + approachCount + ')">' + ico('edit3',11) + ' 編集</button>' +
+          '<button class="btn btn-ghost btn-xs" onclick="openProjectModal(\'' + e(pid) + '\',\'' + e(proj ? proj.year : '') + '\',\'' + e(proj ? proj.month : '') + '\',\'' + e(proj ? proj.day||'' : '') + '\',\'' + e(proj ? proj.name : '') + '\',' + beautyTarget + ',' + barberTarget + ',' + approachCount + ')">' + ico('edit3',11) + ' 編集</button>' +
         '</div>' +
         '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 2fr;gap:0;border-top:1px solid var(--border)">' +
           kpiCell('目標（美容室）', beautyTarget + ' 件', 'color:var(--navy)') +
@@ -1570,61 +1608,86 @@ function renderProjectDetail(pid) {
         '</div>' +
       '</div>';
 
-    var hearingHtml = '';
-    if (salons.length > 0) {
-      var HEARING_COLS = [
-        { key: 'appointmentStatus', label: 'アポイント' },
-        { key: 'attendanceStatus',  label: '参加' },
-        { key: 'documentStatus',    label: '資料作成' },
-        { key: 'surveyStatus',      label: '事後アンケート' },
-        { key: 'invoiceStatus',     label: '請求書発行' }
-      ];
-      var hrows = salons.map(function(s) {
-        var cells = HEARING_COLS.map(function(col) {
-          var val = s[col.key] || '';
-          var opts = ['', '○', '×'].map(function(v) {
-            return '<option value="' + v + '"' + (v === val ? ' selected' : '') + '>' + (v || '-') + '</option>';
-          }).join('');
-          return '<td style="text-align:center;padding:6px 8px">' +
-            '<select class="hearing-sel" data-sid="' + e(s.id) + '" data-field="' + col.key + '" ' +
-              'onchange="saveHearing(this)" ' +
-              'style="width:72px;padding:4px 6px;font-size:12px;border:1px solid var(--border);border-radius:5px;background:var(--white);cursor:pointer;appearance:none;text-align:center">' +
-            opts + '</select></td>';
+    var HEARING_COLS = [
+      { key: 'appointmentStatus', label: 'アポイント' },
+      { key: 'attendanceStatus',  label: '参加' },
+      { key: 'documentStatus',    label: '資料作成' },
+      { key: 'surveyStatus',      label: '事後アンケート' },
+      { key: 'invoiceStatus',     label: '請求書発行' }
+    ];
+
+    function makeHearingCells(s) {
+      return HEARING_COLS.map(function(col) {
+        var val = s[col.key] || '';
+        var opts = ['', '○', '×'].map(function(v) {
+          return '<option value="' + v + '"' + (v === val ? ' selected' : '') + '>' + (v || '-') + '</option>';
         }).join('');
-        return '<tr>' +
-          '<td style="padding:6px 14px;font-size:12px;white-space:nowrap">' + e(s.salonName || '（未設定）') + '</td>' +
-          cells +
-        '</tr>';
+        return '<td style="text-align:center;padding:6px 8px">' +
+          '<select class="hearing-sel" data-sid="' + e(s.id) + '" data-field="' + col.key + '" ' +
+            'onchange="saveHearing(this)" ' +
+            'style="width:72px;padding:4px 6px;font-size:12px;border:1px solid var(--border);border-radius:5px;background:var(--white);cursor:pointer;appearance:none;text-align:center">' +
+          opts + '</select></td>';
       }).join('');
-
-      var hheads = HEARING_COLS.map(function(col) {
-        return '<th style="text-align:center;white-space:nowrap">' + col.label + '</th>';
-      }).join('');
-
-      hearingHtml =
-        '<div class="card mb16 no-print">' +
-          '<div class="card-head" style="cursor:pointer;user-select:none" onclick="toggleHearing()">' +
-            '<div class="card-title">' + ico('clipboard',13) + ' アプローチ確認リスト</div>' +
-            '<span id="hearingToggleBtn" style="font-size:11px;color:var(--muted);font-weight:600">▼ 開く</span>' +
-          '</div>' +
-          '<div id="hearingBody" style="display:none;overflow-x:auto">' +
-            '<table class="tbl">' +
-              '<thead><tr><th>サロン名</th>' + hheads + '</tr></thead>' +
-              '<tbody>' + hrows + '</tbody>' +
-            '</table>' +
-          '</div>' +
-        '</div>';
     }
+
+    var regularHrows = nonApproachSalons.map(function(s) {
+      return '<tr>' +
+        '<td style="padding:6px 14px;font-size:12px;white-space:nowrap">' + e(s.salonName || '（未設定）') + '</td>' +
+        makeHearingCells(s) +
+        '<td></td>' +
+      '</tr>';
+    }).join('');
+
+    var approachHrows = approachSalons.map(function(s) {
+      return '<tr style="background:rgba(255,193,7,0.06)">' +
+        '<td style="padding:6px 14px;font-size:12px">' +
+          '<div style="font-weight:600;white-space:nowrap">' + e(s.salonName || '（未設定）') + '</div>' +
+          '<div style="margin-top:4px;display:flex;align-items:center;gap:5px">' +
+            '<span style="font-size:10px;color:var(--muted);white-space:nowrap">アプローチ日</span>' +
+            '<input type="date" value="' + e(s.subject||'') + '" data-prev="' + e(s.subject||'') + '" ' +
+              'onchange="saveApproachDate(this,\'' + e(s.id) + '\')" ' +
+              'style="font-size:11px;padding:2px 6px;border:1px solid var(--border);border-radius:4px;color:var(--text);cursor:pointer">' +
+          '</div>' +
+        '</td>' +
+        makeHearingCells(s) +
+        '<td style="text-align:center;padding:4px 8px;white-space:nowrap">' +
+          '<button class="btn btn-danger btn-xs" onclick="delApproachSalon(\'' + e(s.id) + '\',\'' + e(s.salonName) + '\')">削除</button>' +
+        '</td>' +
+      '</tr>';
+    }).join('');
+
+    var hheads = HEARING_COLS.map(function(col) {
+      return '<th style="text-align:center;white-space:nowrap">' + col.label + '</th>';
+    }).join('') + '<th></th>';
+
+    var hrows = regularHrows + approachHrows;
+    var hearingBody = hrows
+      ? '<table class="tbl"><thead><tr><th>サロン名</th>' + hheads + '</tr></thead><tbody>' + hrows + '</tbody></table>'
+      : '<div style="padding:20px;text-align:center;color:var(--muted);font-size:12px">サロンが登録されていません</div>';
+
+    var hearingHtml =
+      '<div class="card mb16 no-print">' +
+        '<div class="card-head" style="cursor:pointer;user-select:none" onclick="toggleHearing()">' +
+          '<div class="card-title">' + ico('clipboard',13) + ' アプローチ確認リスト</div>' +
+          '<div style="display:flex;align-items:center;gap:10px" onclick="event.stopPropagation()">' +
+            '<button class="btn btn-primary btn-xs" onclick="openApproachSalonModal(\'' + e(pid) + '\')">＋ アプローチサロン追加</button>' +
+            '<span id="hearingToggleBtn" style="font-size:11px;color:var(--muted);font-weight:600;cursor:pointer" onclick="toggleHearing()">▼ 開く</span>' +
+          '</div>' +
+        '</div>' +
+        '<div id="hearingBody" style="display:none;overflow-x:auto">' +
+          hearingBody +
+        '</div>' +
+      '</div>';
 
     document.getElementById('content').innerHTML =
       bc([{ label:'案件一覧', fn:"go('projects')" }, { label: pname }]) +
       kpiBar +
       hearingHtml +
-      (salons.length === 0
+      (nonApproachSalons.length === 0
         ? '<div class="empty"><div class="empty-ico">' + ico('scissors',48) + '</div><p>サロンがまだ登録されていません<br><br>' +
           '<button class="btn btn-primary" onclick="go(\'salon-form\',{pid:\'' + e(pid) + '\'})">＋ サロンを追加する</button></p></div>'
         : '<div class="salon-grid">' + cards + '</div>') +
-      (salons.length > 0
+      (nonApproachSalons.length > 0
         ? '<div class="card mt16 no-print">' +
             '<div class="card-head">' +
               '<div class="card-title">' + ico('eye',13) + ' プレビュー</div>' +
@@ -1634,9 +1697,7 @@ function renderProjectDetail(pid) {
           '</div>'
         : '');
 
-    // ヒアリングセルの初期色設定（開いた時に toggleHearing 内で行う）
-
-    if (salons.length > 0) loadInlinePreview(pid);
+    if (nonApproachSalons.length > 0) loadInlinePreview(pid);
   }).catch(function(err){ showErr(err); });
 }
 
@@ -1644,7 +1705,7 @@ function openCopySalon(sid, sname) {
   gas('getProjects').then(function(projects) {
     ST.projects = projects;
     var opts = projects.map(function(p){
-      return '<option value="' + e(p.id) + '">' + e(p.year + ' ' + p.month + ' - ' + p.name) + '</option>';
+      return '<option value="' + e(p.id) + '">' + e(p.year + ' ' + p.month + (p.day||'') + ' - ' + p.name) + '</option>';
     }).join('');
 
     openModal('<div class="moverlay" onclick="if(event.target===this)closeModal()">' +
@@ -1693,6 +1754,73 @@ function delSalon(id, name) {
   }).catch(function(err){ alert('エラー: ' + err.message); });
 }
 
+function convertToHalfWidth(el) {
+  var v = el.value;
+  var result = '';
+  for (var i = 0; i < v.length; i++) {
+    var code = v.charCodeAt(i);
+    if (code >= 0xFF01 && code <= 0xFF5E) {
+      result += String.fromCharCode(code - 0xFEE0);
+    } else if (code === 0x3000) {
+      result += ' ';
+    } else {
+      result += v[i];
+    }
+  }
+  if (result !== v) el.value = result;
+}
+
+function openApproachSalonModal(pid) {
+  openModal('<div class="moverlay" onclick="if(event.target===this)closeModal()">' +
+    '<div class="mbox">' +
+      '<div class="mhd"><h3>アプローチサロン追加</h3><button class="mclose" onclick="closeModal()">×</button></div>' +
+      '<div class="mbody">' +
+        '<p class="c-muted fs12 mb12">アプローチ確認リストにのみ表示されるサロンです。<br>英語・数字は半角で入力してください。</p>' +
+        '<div class="fg"><label class="flabel req">サロン名</label>' +
+          '<input type="text" class="finput" id="apSalonName" placeholder="サロン名を入力" oninput="convertToHalfWidth(this)"></div>' +
+      '</div>' +
+      '<div class="mfoot">' +
+        '<button class="btn btn-ghost" onclick="closeModal()">キャンセル</button>' +
+        '<button class="btn btn-primary" onclick="saveApproachSalon(\'' + e(pid) + '\')">追加する</button>' +
+      '</div>' +
+    '</div></div>');
+  setTimeout(function() { var el = document.getElementById('apSalonName'); if (el) el.focus(); }, 100);
+}
+
+function saveApproachSalon(pid) {
+  var salonName = (document.getElementById('apSalonName') || {}).value || '';
+  salonName = salonName.trim();
+  if (!salonName) { alert('サロン名を入力してください'); return; }
+  gas('saveSalon', {
+    projectId:    pid,
+    salonName:    salonName,
+    approachOnly: true,
+    layout:       '1/3'
+  }).then(function() {
+    closeModal();
+    showToast('アプローチサロンを追加しました');
+    renderProjectDetail(pid);
+  }).catch(function(err) { alert('エラー: ' + err.message); });
+}
+
+function delApproachSalon(id, name) {
+  if (!confirm('「' + name + '」をアプローチリストから削除します。よろしいですか？')) return;
+  gas('deleteSalon', id).then(function() {
+    showToast('削除しました'); renderProjectDetail(ST.projectId);
+  }).catch(function(err){ alert('エラー: ' + err.message); });
+}
+
+function saveApproachDate(input, sid) {
+  var prev = input.getAttribute('data-prev') || '';
+  input.setAttribute('data-prev', input.value);
+  gas('saveApproachDate', sid, input.value).then(function() {
+    showToast('保存しました');
+  }).catch(function(err) {
+    input.value = prev;
+    alert('エラー: ' + err.message);
+  });
+}
+
 function toggleHearing() {
   var body = document.getElementById('hearingBody');
   var btn  = document.getElementById('hearingToggleBtn');
@@ -1738,13 +1866,14 @@ function renderSalonForm(sid, pid) {
   loading('フォームを準備中...');
 
   var proms = sid
-    ? [gas('getSalon', sid), gas('getProjects'), gas('getTemplates'), gas('getAllSalons')]
-    : [Promise.resolve(null),  gas('getProjects'), gas('getTemplates'), gas('getAllSalons')];
+    ? [gas('getSalon', sid), gas('getProjects'), gas('getTemplates'), gas('getAllSalons'), gas('getGlobalCustomTags')]
+    : [Promise.resolve(null),  gas('getProjects'), gas('getTemplates'), gas('getAllSalons'), gas('getGlobalCustomTags')];
   Promise.all(proms).then(function(r) {
     var salon = r[0] || {};
     ST.projects = r[1];
     var tmpls   = r[2];
     window._allSalons = r[3] || [];
+    var gasCustomTags = r[4] || {};
     pid = pid || salon.projectId;
     var proj  = ST.projects.find(function(p){ return p.id === pid; });
     var pname = proj ? proj.name : '';
@@ -1758,6 +1887,33 @@ function renderSalonForm(sid, pid) {
           '<button class="btn btn-accent btn-sm" onclick="applyTemplate()">適用する</button>' +
         '</div>'
       : '';
+
+    // GASのグローバルカスタムタグをlocalStorageにマージ（他のPCで追加されたタグを反映）
+    if (Object.keys(gasCustomTags).length > 0) {
+      var gcLocal = getCustomTags();
+      var gcMerged = {};
+      var gcAllKeys = Object.keys(gasCustomTags).concat(Object.keys(gcLocal).filter(function(k){ return !(k in gasCustomTags); }));
+      gcAllKeys.forEach(function(key) {
+        var gTags = gasCustomTags[key] || [];
+        var lTags = gcLocal[key] || [];
+        gcMerged[key] = gTags.concat(lTags.filter(function(t){ return gTags.indexOf(t) === -1; }));
+      });
+      saveCustomTags(gcMerged);
+    }
+
+    // 保存済みカテゴリ情報からカスタムタグをlocalStorageに復元（再編集時にタグが消えないようにする）
+    if (salon.tagCategories && Object.keys(salon.tagCategories).length > 0) {
+      var custom = getCustomTags();
+      TAG_CATEGORIES.forEach(function(cat) {
+        (salon.tagCategories[cat.cls] || []).forEach(function(tag) {
+          if (cat.tags.indexOf(tag) === -1) { // 組み込みタグでない＝カスタムタグ
+            if (!custom[cat.cls]) custom[cat.cls] = [];
+            if (custom[cat.cls].indexOf(tag) === -1) custom[cat.cls].push(tag);
+          }
+        });
+      });
+      saveCustomTags(custom);
+    }
 
     var tagHtml = renderTagCheckboxes(salon.tags, 'tg');
 
@@ -1936,6 +2092,17 @@ function validateAddrInput(id) {
 function getFormData() {
   var tags = [].slice.call(document.querySelectorAll('.tcb:checked')).map(function(c){ return c.value; });
   var rl   = document.querySelector('input[name="rl"]:checked');
+
+  // カテゴリ別のタグ情報を収集（カスタムタグの色を保持するため）
+  var tagCategories = {};
+  TAG_CATEGORIES.forEach(function(cat) {
+    var wrapEl = document.getElementById('tagwrap_' + cat.cls + '_tg');
+    if (!wrapEl) return;
+    var checked = [];
+    wrapEl.querySelectorAll('.tcb:checked').forEach(function(cb) { checked.push(cb.value); });
+    if (checked.length > 0) tagCategories[cat.cls] = checked;
+  });
+
   return {
     companyName:    document.getElementById('f_co').value.trim(),
     salonName:      document.getElementById('f_sn').value.trim(),
@@ -1956,6 +2123,7 @@ function getFormData() {
     tel:            document.getElementById('f_tel').value.trim(),
     bodyText:       document.getElementById('f_body').value.trim(),
     tags:           tags,
+    tagCategories:  tagCategories,
     photo1:         document.getElementById('f_p1_url').value   || document.getElementById('f_p1_local').value,
     photo2:         document.getElementById('f_p2_url').value   || document.getElementById('f_p2_local').value,
     photo3:         '',
@@ -2075,10 +2243,26 @@ function applySalonData(jsonStr) {
   if (a1) { a1.value = parts[0] || ''; validateAddrInput('f_addr1'); }
   if (a2) { a2.value = parts[1] || ''; validateAddrInput('f_addr2'); }
 
-  // タグ
-  document.querySelectorAll('.tcb').forEach(function(cb) {
-    cb.checked = (s.tags || []).indexOf(cb.value) !== -1;
-  });
+  // タグ：カスタムタグをlocalStorageに復元してから再レンダリング
+  if (s.tagCategories && Object.keys(s.tagCategories).length > 0) {
+    var scustom = getCustomTags();
+    var schanged = false;
+    TAG_CATEGORIES.forEach(function(cat) {
+      (s.tagCategories[cat.cls] || []).forEach(function(tag) {
+        if (cat.tags.indexOf(tag) === -1) {
+          if (!scustom[cat.cls]) scustom[cat.cls] = [];
+          if (scustom[cat.cls].indexOf(tag) === -1) { scustom[cat.cls].push(tag); schanged = true; }
+        }
+      });
+    });
+    if (schanged) saveCustomTags(scustom);
+    var tagCatsEl = document.querySelector('.tag-cats');
+    if (tagCatsEl) tagCatsEl.innerHTML = renderTagCheckboxes(s.tags, 'tg');
+  } else {
+    document.querySelectorAll('.tcb').forEach(function(cb) {
+      cb.checked = (s.tags || []).indexOf(cb.value) !== -1;
+    });
+  }
   updateTagCount('tg');
 
   // 画像URL（Drive保存済みのもの）
@@ -2142,12 +2326,30 @@ function applyTemplate() {
     var addrParts = (t.address||'').split('\n');
     var a1 = document.getElementById('f_addr1'); if (a1) { a1.value = addrParts[0]||''; validateAddrInput('f_addr1'); }
     var a2 = document.getElementById('f_addr2'); if (a2) { a2.value = addrParts[1]||''; validateAddrInput('f_addr2'); }
-    document.querySelectorAll('.tcb').forEach(function(cb) {
-      cb.checked = (t.tags||[]).indexOf(cb.value) !== -1;
-    });
+    // タグ：カスタムタグをlocalStorageに復元してから再レンダリング
+    if (t.tagCategories && Object.keys(t.tagCategories).length > 0) {
+      var tcustom = getCustomTags();
+      var tchanged = false;
+      TAG_CATEGORIES.forEach(function(cat) {
+        (t.tagCategories[cat.cls] || []).forEach(function(tag) {
+          if (cat.tags.indexOf(tag) === -1) {
+            if (!tcustom[cat.cls]) tcustom[cat.cls] = [];
+            if (tcustom[cat.cls].indexOf(tag) === -1) { tcustom[cat.cls].push(tag); tchanged = true; }
+          }
+        });
+      });
+      if (tchanged) saveCustomTags(tcustom);
+      var tTagCatsEl = document.querySelector('.tag-cats');
+      if (tTagCatsEl) tTagCatsEl.innerHTML = renderTagCheckboxes(t.tags, 'tg');
+    } else {
+      document.querySelectorAll('.tcb').forEach(function(cb) {
+        cb.checked = (t.tags||[]).indexOf(cb.value) !== -1;
+      });
+    }
     document.querySelectorAll('input[name="rl"]').forEach(function(rb) {
       rb.checked = rb.value === (t.layout || '1/2');
     });
+    updateTagCount('tg');
     showToast('テンプレートを適用しました');
   });
 }
@@ -2167,7 +2369,7 @@ function previewOne() {
     '<div class="mbox" style="max-width:860px;width:95vw">' +
       '<div class="mhd"><h3>入力プレビュー（' + e(d.layout) + '）</h3><button class="mclose" onclick="closeModal()">×</button></div>' +
       '<div class="mbody" style="padding:20px; display:flex; justify-content:center; background:#6b7280; overflow:hidden;">' +
-        '<div id="pvOneCard" class="pv-card" style="' + cardStyle + '">' +
+        '<div id="pvOneCard" class="pv-card pv-inline-card" style="' + cardStyle + '">' +
           buildPvCard(d, 0, d.layout) +
         '</div>' +
       '</div>' +
@@ -2226,10 +2428,25 @@ function renderTemplates() {
 }
 
 function openTemplateForm(tid) {
-  var proms = tid ? gas('getTemplates') : Promise.resolve([]);
-  Promise.resolve(proms).then(function(tmpls) {
+  var basePromise = tid ? gas('getTemplates') : Promise.resolve([]);
+  Promise.all([basePromise, gas('getGlobalCustomTags')]).then(function(rr) {
+    var tmpls = rr[0] || [];
+    var gasCustomTags = rr[1] || {};
     var t = (tid && Array.isArray(tmpls)) ? tmpls.find(function(x){ return x.id === tid; }) : {};
     t = t || {};
+
+    // GASのグローバルカスタムタグをlocalStorageにマージ
+    if (Object.keys(gasCustomTags).length > 0) {
+      var gcLocal2 = getCustomTags();
+      var gcMerged2 = {};
+      var gcKeys2 = Object.keys(gasCustomTags).concat(Object.keys(gcLocal2).filter(function(k){ return !(k in gasCustomTags); }));
+      gcKeys2.forEach(function(key) {
+        var gT = gasCustomTags[key] || [];
+        var lT = gcLocal2[key] || [];
+        gcMerged2[key] = gT.concat(lT.filter(function(tt){ return gT.indexOf(tt) === -1; }));
+      });
+      saveCustomTags(gcMerged2);
+    }
 
     var tagHtml = renderTagCheckboxes(t.tags, 'tt');
 
@@ -2330,7 +2547,7 @@ function renderPreview(pid) {
     var opts = '<option value="">▼ 案件を選択</option>' +
       projects.map(function(p) {
         return '<option value="' + e(p.id) + '"' + (p.id===ST.prevPid?' selected':'') + '>' +
-               e(p.year + ' ' + p.month + ' - ' + p.name) + '</option>';
+               e(p.year + ' ' + p.month + (p.day||'') + ' - ' + p.name) + '</option>';
       }).join('');
 
     ST.prevLayout = '1/3';
@@ -2372,6 +2589,7 @@ function loadPreview(pid) {
   el.innerHTML = '<div class="loading"><div class="spin"></div>生成中...</div>';
 
   gas('getSalonsByProject', pid).then(function(salons) {
+    salons = (salons || []).filter(function(s) { return !s.approachOnly; });
     if (!salons || salons.length === 0) {
       el.innerHTML = '<div class="empty"><div class="empty-ico">' + ico('scissors',48) + '</div><p>サロンが登録されていません</p></div>';
       return;
@@ -2418,6 +2636,7 @@ function loadInlinePreview(pid) {
   el.innerHTML = '<div class="loading"><div class="spin"></div>生成中...</div>';
 
   gas('getSalonsByProject', pid).then(function(salons) {
+    salons = (salons || []).filter(function(s) { return !s.approachOnly; });
     if (!salons || salons.length === 0) { el.innerHTML = ''; return; }
     var cards = salons.map(function(s, i) {
       return '<div class="pv-inline-card">' + buildPvCard(s, i, '1/3') + '</div>';
@@ -2442,7 +2661,16 @@ function scaleInlinePrevPages() {
 }
 window.addEventListener('resize', scaleInlinePrevPages);
 
-function getTagColor(tag) {
+function getTagColor(tag, tagCategories) {
+  // 保存済みカテゴリ情報を優先的に使用（カスタムタグの色を正確に反映）
+  if (tagCategories) {
+    var catColorMap = { 'cat-area': 'c-blue', 'cat-job': 'c-pink', 'cat-feature': 'c-green' };
+    var catKeys = Object.keys(catColorMap);
+    for (var ci = 0; ci < catKeys.length; ci++) {
+      if ((tagCategories[catKeys[ci]] || []).indexOf(tag) !== -1) return catColorMap[catKeys[ci]];
+    }
+  }
+  // localStorageのカスタムタグを参照
   var custom = getCustomTags();
   for (var i = 0; i < TAG_CATEGORIES.length; i++) {
     var cat     = TAG_CATEGORIES[i];
@@ -2587,7 +2815,7 @@ function buildPvCard(s, idx, layout) {
     for (var ti = 0; ti < 10; ti++) {
       var tv = s.tags && s.tags[ti] ? s.tags[ti] : '';
       tagsGrid3 += tv
-        ? '<div class="pv3-tag ' + getTagColor(tv) + '">' + e(tv) + '</div>'
+        ? '<div class="pv3-tag ' + getTagColor(tv, s.tagCategories) + '">' + e(tv) + '</div>'
         : '<div class="pv3-tag empty"></div>';
     }
 
@@ -2699,7 +2927,7 @@ function renderCSV(pid) {
     var opts = '<option value="">▼ 案件を選択</option>' +
       projects.map(function(p) {
         return '<option value="' + e(p.id) + '"' + (p.id===pid?' selected':'') + '>' +
-               e(p.year + ' ' + p.month + ' - ' + p.name) + '</option>';
+               e(p.year + ' ' + p.month + (p.day||'') + ' - ' + p.name) + '</option>';
       }).join('');
 
     document.getElementById('content').innerHTML =
@@ -2722,7 +2950,7 @@ function doExportCSV() {
 
   gas('exportCSV', pid, layout).then(function(result) {
     var proj = ST.projects.find(function(p){ return p.id === pid; });
-    var filename = proj ? proj.year + '_' + proj.month + '_' + proj.name + '_1-3.csv' : 'salon.csv';
+    var filename = proj ? proj.year + '_' + proj.month + (proj.day||'') + '_' + proj.name + '_1-3.csv' : 'salon.csv';
     var blob = new Blob([result.csv], { type: 'text/csv;charset=utf-8' });
     var url  = URL.createObjectURL(blob);
     var a    = document.createElement('a');
@@ -2865,6 +3093,30 @@ function showErr(err) {
 // 起動
 // =====================================================
 window.onload = function() {
+  // 起動時の双方向タグ同期（GAS ↔ localStorage）
+  // ・他PCで追加されたタグをGASから取得してlocalに反映
+  // ・このPCのlocalにあってGASにないタグをGASに反映（過去データの移行も自動）
+  gas('getGlobalCustomTags').then(function(gasCustom) {
+    gasCustom = gasCustom || {};
+    var local = getCustomTags();
+    var merged = {};
+    var allKeys = Object.keys(gasCustom).concat(Object.keys(local).filter(function(k){ return !(k in gasCustom); }));
+    allKeys.forEach(function(key) {
+      var gasTags   = gasCustom[key] || [];
+      var localTags = local[key]    || [];
+      merged[key]   = gasTags.concat(localTags.filter(function(t){ return gasTags.indexOf(t) === -1; }));
+    });
+    saveCustomTags(merged);
+
+    // ローカルにGASへ未登録のタグがあればGASにも保存（初回・過去データの自動移行）
+    var needsSync = Object.keys(local).some(function(key) {
+      return (local[key] || []).some(function(tag) {
+        return (gasCustom[key] || []).indexOf(tag) === -1;
+      });
+    });
+    if (needsSync) gas('saveGlobalCustomTags', merged).catch(function() {});
+  }).catch(function() {});
+
   var saved;
   try {
     var raw = localStorage.getItem('_appState');

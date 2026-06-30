@@ -9,6 +9,7 @@ var SPREADSHEET_ID = '1jwJEh2Z9zpj3HwuE2IU-Tq-H5Gx60ec6N4-VaFB8HqU';
 var SH_PROJECT  = '案件';
 var SH_SALON    = 'サロン情報';
 var SH_TEMPLATE = 'テンプレート';
+var SH_SETTINGS = '設定';
 
 var HEARING_FIELDS = {
   appointmentStatus: 23,
@@ -70,7 +71,8 @@ function getProjects() {
       createdAt:       _fmtDate(r[4]),
       beautyTarget:    Number(r[5]) || 0,
       barberTarget:    Number(r[6]) || 0,
-      approachCount:   Number(r[7]) || 0
+      approachCount:   Number(r[7]) || 0,
+      day:             String(r[8]||'')
     };
   });
 }
@@ -82,12 +84,13 @@ function saveProject(data) {
   if (data.id) {
     for (var i = 1; i < all.length; i++) {
       if (String(all[i][0]) === String(data.id)) {
-        sh.getRange(i + 1, 2, 1, 7).setValues([[
+        sh.getRange(i + 1, 2, 1, 8).setValues([[
           data.year, data.month, data.name,
           all[i][4],
           Number(data.beautyTarget)  || 0,
           Number(data.barberTarget)  || 0,
-          Number(data.approachCount) || 0
+          Number(data.approachCount) || 0,
+          data.day || ''
         ]]);
         return { success: true, id: data.id };
       }
@@ -99,7 +102,8 @@ function saveProject(data) {
     id, data.year, data.month, data.name, new Date(),
     Number(data.beautyTarget)  || 0,
     Number(data.barberTarget)  || 0,
-    Number(data.approachCount) || 0
+    Number(data.approachCount) || 0,
+    data.day || ''
   ]);
   return { success: true, id: id };
 }
@@ -198,6 +202,18 @@ function saveHearingItem(salonId, field, value) {
   throw new Error('サロンが見つかりません');
 }
 
+function saveApproachDate(salonId, dateValue) {
+  var sh   = _sheet(SH_SALON);
+  var rows = sh.getDataRange().getValues();
+  for (var i = 1; i < rows.length; i++) {
+    if (String(rows[i][0]) === String(salonId)) {
+      sh.getRange(i + 1, 31).setValue(dateValue || '');
+      return { success: true };
+    }
+  }
+  throw new Error('サロンが見つかりません');
+}
+
 function deleteSalon(id) {
   var sh   = _sheet(SH_SALON);
   var rows = sh.getDataRange().getValues();
@@ -289,12 +305,13 @@ function getDashboard() {
   var required  = [2, 3, 9, 10]; // 会社名,サロン名,住所,TELのインデックス
 
   return projects.map(function(p) {
-    var salons   = salonRows.filter(function(r) { return String(r[1]) === String(p.id); });
-    var warnings = salons.filter(function(r) {
+    var salons       = salonRows.filter(function(r) { return String(r[1]) === String(p.id); });
+    var regularSalons = salons.filter(function(r) { return !_parseBool(r[29]); });
+    var warnings     = regularSalons.filter(function(r) {
       return required.some(function(idx) { return !r[idx]; });
     }).length;
 
-    return { project: p, count: salons.length, warnings: warnings };
+    return { project: p, count: regularSalons.length, warnings: warnings };
   });
 }
 
@@ -304,7 +321,7 @@ function getDashboard() {
 function getAllSalons() {
   initSheets();
   var projects = getProjects();
-  var rows = _getRows(SH_SALON);
+  var rows = _getRows(SH_SALON).filter(function(r) { return !_parseBool(r[29]); });
   return rows.map(function(r) {
     var salon = _rowToSalon(r);
     var proj = null;
@@ -320,7 +337,7 @@ function getAllSalons() {
 // CSV出力（InDesign用）
 // ============================================================
 function exportCSV(projectId, layout) {
-  var salons = getSalonsByProject(projectId);
+  var salons = getSalonsByProject(projectId).filter(function(s) { return !s.approachOnly; });
   var perRow = 3;
   var baseH  = ['会社名','サロン名','キャッチコピー','代表者名','設立年',
                  '店舗数','スタッフ数','住所','TEL','本文テキスト','タグ',
@@ -387,6 +404,12 @@ function getMonths() {
   return ['4月','5月','6月','7月','8月','9月','10月','11月','12月','1月','2月','3月'];
 }
 
+function getDays() {
+  var list = [''];
+  for (var i = 1; i <= 31; i++) list.push(i + '日');
+  return list;
+}
+
 var _ss = null;
 function _ss_() {
   if (!_ss) _ss = SpreadsheetApp.openById(SPREADSHEET_ID);
@@ -427,6 +450,15 @@ function _tagsArr(str) {
   return str ? String(str).split(',').filter(function(t){ return t; }) : [];
 }
 
+function _parseTc(v) {
+  if (!v) return {};
+  try { return JSON.parse(String(v)); } catch(e) { return {}; }
+}
+
+function _parseBool(v) {
+  return String(v).toUpperCase() === 'TRUE';
+}
+
 function _rowToSalon(r) {
   return {
     id: String(r[0]), projectId: String(r[1]),
@@ -445,7 +477,10 @@ function _rowToSalon(r) {
     attendanceStatus:  String(r[24]||''),
     documentStatus:    String(r[25]||''),
     surveyStatus:      String(r[26]||''),
-    invoiceStatus:     String(r[27]||'')
+    invoiceStatus:     String(r[27]||''),
+    tagCategories:     _parseTc(r[28]),
+    approachOnly:      _parseBool(r[29]),
+    subject:           String(r[30]||'')
   };
 }
 
@@ -462,7 +497,10 @@ function _salonToRow(d, now) {
     d.qr1Label||'', d.qr2Label||'',
     d.appointmentStatus||'', d.attendanceStatus||'',
     d.documentStatus||'',    d.surveyStatus||'',
-    d.invoiceStatus||''
+    d.invoiceStatus||'',
+    d.tagCategories ? JSON.stringify(d.tagCategories) : '',
+    d.approachOnly ? 'TRUE' : '',
+    d.subject||''
   ];
 }
 
@@ -495,6 +533,47 @@ function _templateToRow(d, now) {
     now,
     d.qr1Label||'', d.qr2Label||''
   ];
+}
+
+// ============================================================
+// グローバルカスタムタグ（全サロン共有）
+// ============================================================
+function getGlobalCustomTags() {
+  try {
+    var sh = _ss_().getSheetByName(SH_SETTINGS);
+    if (!sh) return {};
+    var data = sh.getDataRange().getValues();
+    for (var i = 0; i < data.length; i++) {
+      if (String(data[i][0]) === 'customTags') {
+        return JSON.parse(String(data[i][1] || '{}'));
+      }
+    }
+    return {};
+  } catch(e) { return {}; }
+}
+
+function saveGlobalCustomTags(tagData) {
+  try {
+    var sh = _ss_().getSheetByName(SH_SETTINGS);
+    if (!sh) {
+      sh = _ss_().insertSheet(SH_SETTINGS);
+      sh.appendRow(['key', 'value', '更新日時']);
+      sh.getRange(1, 1, 1, 3).setFontWeight('bold').setBackground('#1a2b4c').setFontColor('#ffffff');
+      sh.setFrozenRows(1);
+    }
+    var data = sh.getDataRange().getValues();
+    var jsonStr = JSON.stringify(tagData || {});
+    for (var i = 1; i < data.length; i++) {
+      if (String(data[i][0]) === 'customTags') {
+        sh.getRange(i + 1, 2, 1, 2).setValues([[jsonStr, new Date()]]);
+        return { success: true };
+      }
+    }
+    sh.appendRow(['customTags', jsonStr, new Date()]);
+    return { success: true };
+  } catch(e) {
+    return { success: false, error: e.message };
+  }
 }
 
 // ============================================================
