@@ -1164,7 +1164,7 @@ function renderDash() {
 
     var totalS = data.reduce(function(s,d){ return s + d.count; }, 0);
     var totalW = data.reduce(function(s,d){ return s + d.warnings; }, 0);
-    var totalA = data.reduce(function(s,d){ return s + (d.project.approachCount || 0); }, 0);
+    var totalA = data.reduce(function(s,d){ return s + (d.approachCount || 0); }, 0);
 
     // ホバー用にグローバルへ保存
     window._dashMap    = {};
@@ -1183,7 +1183,7 @@ function renderDash() {
       rows += '<tr><td colspan="8" style="background:var(--navy);color:#fff;padding:8px 16px;font-size:12px;font-weight:700">' + e(year) + '</td></tr>';
       grouped[year].forEach(function(d) {
         var target   = (d.project.beautyTarget || 0) + (d.project.barberTarget || 0);
-        var approach = d.project.approachCount || 0;
+        var approach = d.approachCount || 0;
         var signup   = d.count;
         var rate     = target > 0 ? Math.min(100, Math.round(signup / target * 100)) : null;
         var rateColor = rate === null ? 'var(--muted)' : rate >= 100 ? 'var(--success)' : rate >= 50 ? 'var(--warn)' : 'var(--danger)';
@@ -1250,7 +1250,7 @@ function dashStatsHtml(pid) {
     var d = (window._dashMap || {})[pid];
     if (!d) return dashStatsHtml(null);
     var target   = (d.project.beautyTarget || 0) + (d.project.barberTarget || 0);
-    var approach = d.project.approachCount || 0;
+    var approach = d.approachCount || 0;
     var signup   = d.count;
     var warn     = d.warnings;
     label   = ico('folder',11) + ' ' + e(d.project.year + ' ' + d.project.month + (d.project.day||'') + ' ' + d.project.name);
@@ -1287,10 +1287,10 @@ function stat(label, val, style) {
   '</div>';
 }
 
-function kpiCell(label, val, style) {
+function kpiCell(label, val, style, id) {
   return '<div style="padding:14px 18px;border-right:1px solid var(--border)">' +
     '<div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">' + e(label) + '</div>' +
-    '<div style="font-size:22px;font-weight:800;' + (style||'color:var(--navy)') + '">' + e(val) + '</div>' +
+    '<div ' + (id ? 'id="' + id + '" ' : '') + 'style="font-size:22px;font-weight:800;' + (style||'color:var(--navy)') + '">' + e(val) + '</div>' +
   '</div>';
 }
 
@@ -1415,7 +1415,7 @@ function renderProjects() {
             wMark +
           '</div>' +
           '<div class="pcard-acts" onclick="event.stopPropagation()">' +
-            '<button class="btn btn-ghost btn-xs" onclick="openProjectModal(\'' + pid + '\',\'' + e(d.project.year) + '\',\'' + e(d.project.month) + '\',\'' + e(d.project.day||'') + '\',\'' + pn + '\',' + (d.project.beautyTarget||0) + ',' + (d.project.barberTarget||0) + ',' + (d.project.approachCount||0) + ')">編集</button>' +
+            '<button class="btn btn-ghost btn-xs" onclick="openProjectModal(\'' + pid + '\',\'' + e(d.project.year) + '\',\'' + e(d.project.month) + '\',\'' + e(d.project.day||'') + '\',\'' + pn + '\',' + (d.project.beautyTarget||0) + ',' + (d.project.barberTarget||0) + ')">編集</button>' +
             '<button class="btn btn-ghost btn-xs" onclick="openCopyProject(\'' + pid + '\',\'' + pn + '\')">複製</button>' +
             '<button class="btn btn-danger btn-xs" onclick="delProject(\'' + pid + '\',\'' + pn + '\')">削除</button>' +
           '</div>' +
@@ -1435,7 +1435,7 @@ function renderProjects() {
   }).catch(function(err){ showErr(err); });
 }
 
-function openProjectModal(id, year, month, day, name, beautyTarget, barberTarget, approachCount) {
+function openProjectModal(id, year, month, day, name, beautyTarget, barberTarget) {
   Promise.all([gas('getYears'), gas('getMonths'), gas('getDays')]).then(function(r) {
     var yo = r[0].map(function(y){ return '<option' + (y===year?' selected':'') + '>' + e(y) + '</option>'; }).join('');
     var mo = r[1].map(function(m){ return '<option' + (m===month?' selected':'') + '>' + e(m) + '</option>'; }).join('');
@@ -1456,7 +1456,6 @@ function openProjectModal(id, year, month, day, name, beautyTarget, barberTarget
             '<div class="fg"><label class="flabel">美容室</label><input type="number" class="finput" id="pBeauty" value="' + (beautyTarget||0) + '" min="0" placeholder="0"></div>' +
             '<div class="fg"><label class="flabel">理容室</label><input type="number" class="finput" id="pBarber" value="' + (barberTarget||0) + '" min="0" placeholder="0"></div>' +
           '</div>' +
-          '<div class="fg"><label class="flabel">アプローチ数</label><input type="number" class="finput" id="pApproach" value="' + (approachCount||0) + '" min="0" placeholder="0"></div>' +
         '</div>' +
         '<div class="mfoot"><button class="btn btn-ghost" onclick="closeModal()">キャンセル</button><button class="btn btn-primary" onclick="saveProject(\'' + (id||'') + '\')">保存</button></div>' +
       '</div></div>');
@@ -1470,10 +1469,9 @@ function saveProject(id) {
   var name    = document.getElementById('pName').value.trim();
   var beauty  = Number(document.getElementById('pBeauty').value)  || 0;
   var barber  = Number(document.getElementById('pBarber').value)  || 0;
-  var approach = Number(document.getElementById('pApproach').value) || 0;
   if (!name) { alert('案件名を入力してください'); return; }
 
-  gas('saveProject', { id: id||null, year:year, month:month, day:day, name:name, beautyTarget:beauty, barberTarget:barber, approachCount:approach }).then(function() {
+  gas('saveProject', { id: id||null, year:year, month:month, day:day, name:name, beautyTarget:beauty, barberTarget:barber, approachCount:0 }).then(function() {
     closeModal(); showToast('案件を保存しました');
     if (ST.view === 'project-detail' && ST.projectId) {
       renderProjectDetail(ST.projectId);
@@ -1580,8 +1578,11 @@ function renderProjectDetail(pid) {
     var beautyTarget  = proj ? (proj.beautyTarget  || 0) : 0;
     var barberTarget  = proj ? (proj.barberTarget  || 0) : 0;
     var targetCount   = beautyTarget + barberTarget;
-    var approachCount = proj ? (proj.approachCount || 0) : 0;
-    var signupCount   = nonApproachSalons.length;
+    var approachCount = approachSalons.length;
+    var signupCount   = nonApproachSalons.length +
+      approachSalons.filter(function(s){ return s.attendanceStatus === '○'; }).length;
+    window._nonApproachCount = nonApproachSalons.length;
+    window._targetCount      = targetCount;
     var signupRate    = targetCount > 0 ? Math.min(100, Math.round(signupCount / targetCount * 100)) : 0;
     var rateColor     = signupRate >= 100 ? 'var(--success)' : signupRate >= 50 ? 'var(--warn)' : 'var(--accent)';
 
@@ -1589,20 +1590,20 @@ function renderProjectDetail(pid) {
       '<div class="card mb16" style="padding:0">' +
         '<div class="card-head" style="padding:10px 16px">' +
           '<div class="card-title">' + ico('clipboard',13) + ' 進捗サマリー</div>' +
-          '<button class="btn btn-ghost btn-xs" onclick="openProjectModal(\'' + e(pid) + '\',\'' + e(proj ? proj.year : '') + '\',\'' + e(proj ? proj.month : '') + '\',\'' + e(proj ? proj.day||'' : '') + '\',\'' + e(proj ? proj.name : '') + '\',' + beautyTarget + ',' + barberTarget + ',' + approachCount + ')">' + ico('edit3',11) + ' 編集</button>' +
+          '<button class="btn btn-ghost btn-xs" onclick="openProjectModal(\'' + e(pid) + '\',\'' + e(proj ? proj.year : '') + '\',\'' + e(proj ? proj.month : '') + '\',\'' + e(proj ? proj.day||'' : '') + '\',\'' + e(proj ? proj.name : '') + '\',' + beautyTarget + ',' + barberTarget + ')">' + ico('edit3',11) + ' 編集</button>' +
         '</div>' +
         '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 2fr;gap:0;border-top:1px solid var(--border)">' +
           kpiCell('目標（美容室）', beautyTarget + ' 件', 'color:var(--navy)') +
           kpiCell('目標（理容室）', barberTarget + ' 件', 'color:var(--navy)') +
-          kpiCell('アプローチ数', approachCount + ' 件', 'color:var(--navy3)') +
-          kpiCell('申し込み数',   signupCount   + ' 件', 'color:var(--success)') +
+          kpiCell('アプローチ数', approachCount + ' 件', 'color:var(--navy3)', 'kpi-approach') +
+          kpiCell('申し込み数',   signupCount   + ' 件', 'color:var(--success)', 'kpi-signup') +
           '<div style="padding:14px 18px;border-left:1px solid var(--border)">' +
             '<div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">申し込み達成率</div>' +
             '<div style="display:flex;align-items:center;gap:10px">' +
               '<div style="flex:1;height:8px;background:var(--border);border-radius:4px;overflow:hidden">' +
-                '<div style="width:' + signupRate + '%;height:100%;background:' + rateColor + ';border-radius:4px;transition:width .4s"></div>' +
+                '<div id="kpi-rate-bar" style="width:' + signupRate + '%;height:100%;background:' + rateColor + ';border-radius:4px;transition:width .4s"></div>' +
               '</div>' +
-              '<span style="font-size:18px;font-weight:800;color:' + rateColor + ';min-width:44px;text-align:right">' + signupRate + '%</span>' +
+              '<span id="kpi-rate-num" style="font-size:18px;font-weight:800;color:' + rateColor + ';min-width:44px;text-align:right">' + signupRate + '%</span>' +
             '</div>' +
           '</div>' +
         '</div>' +
@@ -1616,16 +1617,21 @@ function renderProjectDetail(pid) {
       { key: 'invoiceStatus',     label: '請求書発行' }
     ];
 
+    function hearingSelColor(val) {
+      return val === '○' ? 'var(--success)' : val === '×' ? 'var(--danger)' : val === '検討中' ? 'var(--warn)' : 'var(--muted)';
+    }
+
     function makeHearingCells(s) {
       return HEARING_COLS.map(function(col) {
         var val = s[col.key] || '';
-        var opts = ['', '○', '×'].map(function(v) {
+        var choices = col.key === 'attendanceStatus' ? ['', '○', '検討中', '×'] : ['', '○', '×'];
+        var opts = choices.map(function(v) {
           return '<option value="' + v + '"' + (v === val ? ' selected' : '') + '>' + (v || '-') + '</option>';
         }).join('');
         return '<td style="text-align:center;padding:6px 8px">' +
           '<select class="hearing-sel" data-sid="' + e(s.id) + '" data-field="' + col.key + '" ' +
             'onchange="saveHearing(this)" ' +
-            'style="width:72px;padding:4px 6px;font-size:12px;border:1px solid var(--border);border-radius:5px;background:var(--white);cursor:pointer;appearance:none;text-align:center">' +
+            'style="width:' + (col.key === 'attendanceStatus' ? '80px' : '72px') + ';padding:4px 6px;font-size:12px;border:1px solid var(--border);border-radius:5px;background:var(--white);cursor:pointer;appearance:none;text-align:center;color:' + hearingSelColor(val) + '">' +
           opts + '</select></td>';
       }).join('');
     }
@@ -1639,12 +1645,22 @@ function renderProjectDetail(pid) {
     }).join('');
 
     var approachHrows = approachSalons.map(function(s) {
-      return '<tr style="background:rgba(255,193,7,0.06)">' +
+      return '<tr class="approach-row" style="background:rgba(255,193,7,0.06)">' +
         '<td style="padding:6px 14px;font-size:12px">' +
-          '<div style="font-weight:600;white-space:nowrap">' + e(s.salonName || '（未設定）') + '</div>' +
+          '<div style="display:flex;align-items:center;gap:6px;flex-wrap:nowrap">' +
+            '<span style="font-weight:600;white-space:nowrap">' + e(s.salonName || '（未設定）') + '</span>' +
+            '<input type="text" value="' + e(s.salonNote||'') + '" placeholder="所在地" ' +
+              'data-prev="' + e(s.salonNote||'') + '" ' +
+              'onchange="saveSalonNote(this,\'' + e(s.id) + '\')" ' +
+              'style="font-size:11px;padding:2px 8px;border:1px solid var(--border);border-radius:4px;color:var(--text);width:120px;flex:0 0 120px">' +
+            '<input type="text" value="' + e(s.bikou||'') + '" placeholder="備考" ' +
+              'data-prev="' + e(s.bikou||'') + '" ' +
+              'onchange="saveBikou(this,\'' + e(s.id) + '\')" ' +
+              'style="font-size:11px;padding:2px 8px;border:1px solid var(--border);border-radius:4px;color:var(--text);flex:1;min-width:60px">' +
+          '</div>' +
           '<div style="margin-top:4px;display:flex;align-items:center;gap:5px">' +
             '<span style="font-size:10px;color:var(--muted);white-space:nowrap">アプローチ日</span>' +
-            '<input type="date" value="' + e(s.subject||'') + '" data-prev="' + e(s.subject||'') + '" ' +
+            '<input type="date" class="approach-date-input" data-sid="' + e(s.id) + '" value="' + e(s.subject||'') + '" data-prev="' + e(s.subject||'') + '" ' +
               'onchange="saveApproachDate(this,\'' + e(s.id) + '\')" ' +
               'style="font-size:11px;padding:2px 6px;border:1px solid var(--border);border-radius:4px;color:var(--text);cursor:pointer">' +
           '</div>' +
@@ -1671,10 +1687,10 @@ function renderProjectDetail(pid) {
           '<div class="card-title">' + ico('clipboard',13) + ' アプローチ確認リスト</div>' +
           '<div style="display:flex;align-items:center;gap:10px" onclick="event.stopPropagation()">' +
             '<button class="btn btn-primary btn-xs" onclick="openApproachSalonModal(\'' + e(pid) + '\')">＋ アプローチサロン追加</button>' +
-            '<span id="hearingToggleBtn" style="font-size:11px;color:var(--muted);font-weight:600;cursor:pointer" onclick="toggleHearing()">▼ 開く</span>' +
+            '<span id="hearingToggleBtn" style="font-size:11px;color:var(--muted);font-weight:600;cursor:pointer" onclick="toggleHearing()">▲ 閉じる</span>' +
           '</div>' +
         '</div>' +
-        '<div id="hearingBody" style="display:none;overflow-x:auto">' +
+        '<div id="hearingBody" style="overflow-x:auto">' +
           hearingBody +
         '</div>' +
       '</div>';
@@ -1698,6 +1714,14 @@ function renderProjectDetail(pid) {
         : '');
 
     if (nonApproachSalons.length > 0) loadInlinePreview(pid);
+
+    // ヒアリングセレクタの初期色付け
+    setTimeout(function() {
+      document.querySelectorAll('.hearing-sel').forEach(function(sel) {
+        sel.setAttribute('data-prev', sel.value);
+        sel.style.color = hearingColor(sel.value);
+      });
+    }, 0);
   }).catch(function(err){ showErr(err); });
 }
 
@@ -1771,35 +1795,124 @@ function convertToHalfWidth(el) {
 }
 
 function openApproachSalonModal(pid) {
-  openModal('<div class="moverlay" onclick="if(event.target===this)closeModal()">' +
-    '<div class="mbox">' +
-      '<div class="mhd"><h3>アプローチサロン追加</h3><button class="mclose" onclick="closeModal()">×</button></div>' +
-      '<div class="mbody">' +
-        '<p class="c-muted fs12 mb12">アプローチ確認リストにのみ表示されるサロンです。<br>英語・数字は半角で入力してください。</p>' +
-        '<div class="fg"><label class="flabel req">サロン名</label>' +
-          '<input type="text" class="finput" id="apSalonName" placeholder="サロン名を入力" oninput="convertToHalfWidth(this)"></div>' +
-      '</div>' +
-      '<div class="mfoot">' +
-        '<button class="btn btn-ghost" onclick="closeModal()">キャンセル</button>' +
-        '<button class="btn btn-primary" onclick="saveApproachSalon(\'' + e(pid) + '\')">追加する</button>' +
-      '</div>' +
-    '</div></div>');
-  setTimeout(function() { var el = document.getElementById('apSalonName'); if (el) el.focus(); }, 100);
+  gas('getAllApproachSalons').then(function(pastSalons) {
+    var otherSalons = (pastSalons || []).filter(function(s) { return s.projectId !== pid; });
+    window._apSearchSalons = otherSalons;
+
+    openModal('<div class="moverlay" onclick="if(event.target===this)closeModal()">' +
+      '<div class="mbox">' +
+        '<div class="mhd"><h3>アプローチサロン追加</h3><button class="mclose" onclick="closeModal()">×</button></div>' +
+        '<div class="mbody">' +
+          '<p class="c-muted fs12 mb12">アプローチ確認リストにのみ表示されるサロンです。</p>' +
+          (otherSalons.length > 0
+            ? '<div class="fg"><label class="flabel">過去のサロンから検索</label>' +
+                '<div class="ss-wrap">' +
+                  '<input type="text" class="finput" id="apSearchInput" placeholder="サロン名で検索..." ' +
+                    'oninput="filterApproachSearch(this.value)" autocomplete="off">' +
+                  '<div class="ss-results" id="apSearchResults"></div>' +
+                '</div>' +
+              '</div>'
+            : '') +
+          '<div class="fg"><label class="flabel req">サロン名</label>' +
+            '<input type="text" class="finput" id="apSalonName" placeholder="サロン名を入力" oninput="convertToHalfWidth(this)"></div>' +
+          '<div class="grid2">' +
+            '<div class="fg"><label class="flabel">所在地（任意）</label>' +
+              '<input type="text" class="finput" id="apSalonNote" placeholder="例：渋谷区・新宿"></div>' +
+            '<div class="fg"><label class="flabel">備考（任意）</label>' +
+              '<input type="text" class="finput" id="apBikou" placeholder="例：初回訪問・電話"></div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="mfoot">' +
+          '<button class="btn btn-ghost" onclick="closeModal()">キャンセル</button>' +
+          '<button class="btn btn-primary" onclick="saveApproachSalon(\'' + e(pid) + '\')">追加する</button>' +
+        '</div>' +
+      '</div></div>');
+    setTimeout(function() { var el = document.getElementById('apSalonName'); if (el) el.focus(); }, 100);
+  }).catch(function() {
+    // フォールバック：検索なしで開く
+    openModal('<div class="moverlay" onclick="if(event.target===this)closeModal()">' +
+      '<div class="mbox">' +
+        '<div class="mhd"><h3>アプローチサロン追加</h3><button class="mclose" onclick="closeModal()">×</button></div>' +
+        '<div class="mbody">' +
+          '<div class="fg"><label class="flabel req">サロン名</label>' +
+            '<input type="text" class="finput" id="apSalonName" placeholder="サロン名を入力" oninput="convertToHalfWidth(this)"></div>' +
+          '<div class="grid2">' +
+            '<div class="fg"><label class="flabel">所在地（任意）</label>' +
+              '<input type="text" class="finput" id="apSalonNote" placeholder="例：渋谷区・新宿"></div>' +
+            '<div class="fg"><label class="flabel">備考（任意）</label>' +
+              '<input type="text" class="finput" id="apBikou" placeholder="例：初回訪問・電話"></div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="mfoot">' +
+          '<button class="btn btn-ghost" onclick="closeModal()">キャンセル</button>' +
+          '<button class="btn btn-primary" onclick="saveApproachSalon(\'' + e(pid) + '\')">追加する</button>' +
+        '</div>' +
+      '</div></div>');
+    setTimeout(function() { var el = document.getElementById('apSalonName'); if (el) el.focus(); }, 100);
+  });
+}
+
+function filterApproachSearch(q) {
+  var results = document.getElementById('apSearchResults');
+  if (!results) return;
+  var salons = window._apSearchSalons || [];
+  q = (q || '').toLowerCase().trim();
+  if (!q) { results.classList.remove('open'); return; }
+
+  var filtered = salons.filter(function(s) {
+    return (s.salonName||'').toLowerCase().indexOf(q) !== -1;
+  }).slice(0, 8);
+
+  if (filtered.length === 0) {
+    results.innerHTML = '<div class="ss-empty">見つかりません</div>';
+  } else {
+    results.innerHTML = filtered.map(function(s) {
+      var sub = s.projectName || '';
+      if (s.salonNote) sub += (sub ? ' ／ ' : '') + s.salonNote;
+      return '<div class="ss-item" onmousedown="event.preventDefault();selectApproachSalon(\'' + e(s.salonName) + '\',\'' + e(s.salonNote||'') + '\',\'' + e(s.bikou||'') + '\')">' +
+        '<div class="ss-item-info">' +
+          '<div class="ss-item-name">' + e(s.salonName) + '</div>' +
+          (sub ? '<div class="ss-item-sub">' + e(sub) + '</div>' : '') +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+  results.classList.add('open');
+}
+
+function selectApproachSalon(name, note, bikou) {
+  var el = document.getElementById('apSalonName');
+  if (el) el.value = name;
+  var noteEl = document.getElementById('apSalonNote');
+  if (noteEl) noteEl.value = note || '';
+  var bikouEl = document.getElementById('apBikou');
+  if (bikouEl) bikouEl.value = bikou || '';
+  var results = document.getElementById('apSearchResults');
+  if (results) results.classList.remove('open');
 }
 
 function saveApproachSalon(pid) {
   var salonName = (document.getElementById('apSalonName') || {}).value || '';
+  var salonNote = (document.getElementById('apSalonNote') || {}).value || '';
+  var bikou     = (document.getElementById('apBikou')     || {}).value || '';
   salonName = salonName.trim();
+  salonNote = salonNote.trim();
+  bikou     = bikou.trim();
   if (!salonName) { alert('サロン名を入力してください'); return; }
   gas('saveSalon', {
     projectId:    pid,
     salonName:    salonName,
+    salonNote:    salonNote,
+    bikou:        bikou,
     approachOnly: true,
     layout:       '1/3'
   }).then(function() {
     closeModal();
     showToast('アプローチサロンを追加しました');
-    renderProjectDetail(pid);
+    flushApproachDates();
+    waitForPendingSaves(function() {
+      renderProjectDetail(pid);
+    });
   }).catch(function(err) { alert('エラー: ' + err.message); });
 }
 
@@ -1813,12 +1926,41 @@ function delApproachSalon(id, name) {
 function saveApproachDate(input, sid) {
   var prev = input.getAttribute('data-prev') || '';
   input.setAttribute('data-prev', input.value);
+  input.setAttribute('data-saving', 'true');
   gas('saveApproachDate', sid, input.value).then(function() {
+    input.removeAttribute('data-saving');
     showToast('保存しました');
   }).catch(function(err) {
+    input.removeAttribute('data-saving');
     input.value = prev;
-    alert('エラー: ' + err.message);
+    input.setAttribute('data-prev', prev);
+    showToast('保存エラー: ' + err.message, false);
   });
+}
+
+// 未保存の日付入力を強制送信する
+function flushApproachDates() {
+  document.querySelectorAll('.approach-date-input').forEach(function(input) {
+    var sid  = input.getAttribute('data-sid');
+    var val  = input.value;
+    var prev = input.getAttribute('data-prev') || '';
+    if (sid && val !== prev) {
+      saveApproachDate(input, sid);
+    }
+  });
+}
+
+// 保存中フラグが消えるまで待ってからコールバックを実行する
+function waitForPendingSaves(cb, tries) {
+  tries = tries || 0;
+  if (tries > 50) { cb(); return; }
+  var pending = document.querySelectorAll('[data-saving="true"]');
+  if (pending.length === 0) { cb(); return; }
+  setTimeout(function() { waitForPendingSaves(cb, tries + 1); }, 200);
+}
+
+function hearingColor(val) {
+  return val === '○' ? 'var(--success)' : val === '×' ? 'var(--danger)' : val === '検討中' ? 'var(--warn)' : 'var(--muted)';
 }
 
 function toggleHearing() {
@@ -1829,10 +1971,9 @@ function toggleHearing() {
   body.style.display = isOpen ? 'none' : '';
   if (btn) btn.textContent = isOpen ? '▼ 開く' : '▲ 閉じる';
   if (!isOpen) {
-    var circle = '○', cross = '×';
     body.querySelectorAll('.hearing-sel').forEach(function(sel) {
       sel.setAttribute('data-prev', sel.value);
-      sel.style.color = sel.value === circle ? 'var(--success)' : sel.value === cross ? 'var(--danger)' : 'var(--muted)';
+      sel.style.color = hearingColor(sel.value);
     });
   }
 }
@@ -1844,17 +1985,62 @@ function saveHearing(sel) {
   var prev  = sel.getAttribute('data-prev') || '';
   sel.setAttribute('data-prev', value);
 
-  var circle  = '○'; // ○
-  var cross   = '×'; // ×
-  sel.style.color =
-    value === circle ? 'var(--success)' :
-    value === cross  ? 'var(--danger)'  : 'var(--muted)';
+  sel.style.color = hearingColor(value);
 
   gas('saveHearingItem', sid, field, value).then(function() {
     showToast('保存しました');
+    if (field === 'attendanceStatus') refreshKpiCounts();
   }).catch(function(err) {
     sel.value = prev;
-    sel.style.color = prev === circle ? 'var(--success)' : prev === cross ? 'var(--danger)' : 'var(--muted)';
+    sel.style.color = hearingColor(prev);
+    showToast('保存エラー: ' + err.message, false);
+  });
+}
+
+function refreshKpiCounts() {
+  var approachRows = document.querySelectorAll('.approach-row');
+  var approachCount = approachRows.length;
+  var signupCount = (window._nonApproachCount || 0);
+  approachRows.forEach(function(row) {
+    var sel = row.querySelector('[data-field="attendanceStatus"]');
+    if (sel && sel.value === '○') signupCount++;
+  });
+
+  var aEl = document.getElementById('kpi-approach');
+  if (aEl) aEl.textContent = approachCount + ' 件';
+  var sEl = document.getElementById('kpi-signup');
+  if (sEl) sEl.textContent = signupCount + ' 件';
+
+  var targetCount = window._targetCount || 0;
+  if (targetCount > 0) {
+    var rate = Math.min(100, Math.round(signupCount / targetCount * 100));
+    var rateEl = document.getElementById('kpi-rate-bar');
+    var rateNumEl = document.getElementById('kpi-rate-num');
+    if (rateEl) rateEl.style.width = rate + '%';
+    if (rateNumEl) rateNumEl.textContent = rate + '%';
+  }
+}
+
+function saveSalonNote(input, sid) {
+  var prev = input.getAttribute('data-prev') || '';
+  input.setAttribute('data-prev', input.value);
+  gas('saveSalonNote', sid, input.value).then(function() {
+    showToast('保存しました');
+  }).catch(function(err) {
+    input.value = prev;
+    input.setAttribute('data-prev', prev);
+    showToast('保存エラー: ' + err.message, false);
+  });
+}
+
+function saveBikou(input, sid) {
+  var prev = input.getAttribute('data-prev') || '';
+  input.setAttribute('data-prev', input.value);
+  gas('saveBikou', sid, input.value).then(function() {
+    showToast('保存しました');
+  }).catch(function(err) {
+    input.value = prev;
+    input.setAttribute('data-prev', prev);
     showToast('保存エラー: ' + err.message, false);
   });
 }

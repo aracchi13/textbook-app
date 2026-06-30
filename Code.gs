@@ -190,12 +190,38 @@ function saveSalon(data) {
 function saveHearingItem(salonId, field, value) {
   var colIdx = HEARING_FIELDS[field];
   if (colIdx === undefined) throw new Error('不明なフィールド: ' + field);
-  if (value !== '○' && value !== '×' && value !== '') throw new Error('不正な値: ' + value);
+  var allowed = ['○', '×', ''];
+  if (field === 'attendanceStatus') allowed.push('検討中');
+  if (allowed.indexOf(value) === -1) throw new Error('不正な値: ' + value);
   var sh   = _sheet(SH_SALON);
   var rows = sh.getDataRange().getValues();
   for (var i = 1; i < rows.length; i++) {
     if (String(rows[i][0]) === String(salonId)) {
       sh.getRange(i + 1, colIdx + 1).setValue(value);
+      return { success: true };
+    }
+  }
+  throw new Error('サロンが見つかりません');
+}
+
+function saveSalonNote(salonId, value) {
+  var sh   = _sheet(SH_SALON);
+  var rows = sh.getDataRange().getValues();
+  for (var i = 1; i < rows.length; i++) {
+    if (String(rows[i][0]) === String(salonId)) {
+      sh.getRange(i + 1, 32).setValue(value || '');
+      return { success: true };
+    }
+  }
+  throw new Error('サロンが見つかりません');
+}
+
+function saveBikou(salonId, value) {
+  var sh   = _sheet(SH_SALON);
+  var rows = sh.getDataRange().getValues();
+  for (var i = 1; i < rows.length; i++) {
+    if (String(rows[i][0]) === String(salonId)) {
+      sh.getRange(i + 1, 33).setValue(value || '');
       return { success: true };
     }
   }
@@ -305,13 +331,20 @@ function getDashboard() {
   var required  = [2, 3, 9, 10]; // 会社名,サロン名,住所,TELのインデックス
 
   return projects.map(function(p) {
-    var salons       = salonRows.filter(function(r) { return String(r[1]) === String(p.id); });
+    var salons        = salonRows.filter(function(r) { return String(r[1]) === String(p.id); });
     var regularSalons = salons.filter(function(r) { return !_parseBool(r[29]); });
+    var approachSalons = salons.filter(function(r) { return _parseBool(r[29]); });
+    var approachParticipating = approachSalons.filter(function(r) { return String(r[24]) === '○'; });
     var warnings     = regularSalons.filter(function(r) {
       return required.some(function(idx) { return !r[idx]; });
     }).length;
 
-    return { project: p, count: regularSalons.length, warnings: warnings };
+    return {
+      project: p,
+      count: regularSalons.length + approachParticipating.length,
+      warnings: warnings,
+      approachCount: approachSalons.length
+    };
   });
 }
 
@@ -322,6 +355,24 @@ function getAllSalons() {
   initSheets();
   var projects = getProjects();
   var rows = _getRows(SH_SALON).filter(function(r) { return !_parseBool(r[29]); });
+  return rows.map(function(r) {
+    var salon = _rowToSalon(r);
+    var proj = null;
+    for (var i = 0; i < projects.length; i++) {
+      if (projects[i].id === salon.projectId) { proj = projects[i]; break; }
+    }
+    salon.projectName = proj ? proj.year + ' ' + proj.month + ' ' + proj.name : '';
+    return salon;
+  });
+}
+
+// ============================================================
+// アプローチサロン一覧（案件横断・検索用）
+// ============================================================
+function getAllApproachSalons() {
+  initSheets();
+  var projects = getProjects();
+  var rows = _getRows(SH_SALON).filter(function(r) { return _parseBool(r[29]); });
   return rows.map(function(r) {
     var salon = _rowToSalon(r);
     var proj = null;
@@ -480,7 +531,9 @@ function _rowToSalon(r) {
     invoiceStatus:     String(r[27]||''),
     tagCategories:     _parseTc(r[28]),
     approachOnly:      _parseBool(r[29]),
-    subject:           String(r[30]||'')
+    subject:           (r[30] instanceof Date ? Utilities.formatDate(r[30], 'Asia/Tokyo', 'yyyy-MM-dd') : String(r[30]||'')),
+    salonNote:         String(r[31]||''),
+    bikou:             String(r[32]||'')
   };
 }
 
@@ -500,7 +553,9 @@ function _salonToRow(d, now) {
     d.invoiceStatus||'',
     d.tagCategories ? JSON.stringify(d.tagCategories) : '',
     d.approachOnly ? 'TRUE' : '',
-    d.subject||''
+    d.subject||'',
+    d.salonNote||'',
+    d.bikou||''
   ];
 }
 
