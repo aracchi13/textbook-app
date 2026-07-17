@@ -517,7 +517,7 @@ select.finput {
 .pv3-upper-center { flex: 1; display: flex; flex-direction: column; padding-left: 20px; padding-right: 8px; }
 .pv3-center-spacer { height: 20px; flex-shrink: 0; }
 .pv3-tags-grid { display: grid !important; grid-template-columns: repeat(5, 1fr) !important; gap: 4px !important; padding: 6px 20px !important; align-content: center !important; }
-.pv3-tag { display: block !important; text-align: center !important; font-size: 11px !important; font-weight: 600 !important; color: #fff !important; border-radius: 2px !important; padding: 2px 8px !important; white-space: nowrap !important; line-height: 1.4 !important; overflow: hidden !important; text-overflow: ellipsis !important; }
+.pv3-tag { display: block !important; text-align: center !important; font-size: 11px !important; font-weight: 600 !important; color: #fff !important; border-radius: 2px !important; padding: 2px 8px !important; white-space: nowrap !important; line-height: 1.4 !important; overflow: hidden !important; }
 .pv3-tag.c-blue   { background: #1e3b7a; }
 .pv3-tag.c-pink   { background: #d4547a; }
 .pv3-tag.c-green  { background: #2ab5a0; }
@@ -557,7 +557,7 @@ select.finput {
 .prev-page.ly3 .pv3-info-lbl,
 .prev-page.ly3 .pv3-info-val,
 .prev-page.ly3 .pv3-info-val-multi { font-size: 6.5pt; }
-.prev-page.ly3 .pv3-tags-grid  { padding: 5px 16px !important; gap: 3px !important; }
+.prev-page.ly3 .pv3-tags-grid  { padding: 4px 6px !important; gap: 3px !important; }
 .prev-page.ly3 .pv3-tag        { font-size: 10px !important; padding: 2px 5px !important; display: block !important; }
 .prev-page.ly3 .pv3-qr-box     { width: 44px; height: 44px; }
 .prev-page.ly3 .pv3-qrs        { gap: 12px; padding-bottom: 10px; }
@@ -571,7 +571,7 @@ select.finput {
 .pv-inline-card .pv3-info-lbl,
 .pv-inline-card .pv3-info-val,
 .pv-inline-card .pv3-info-val-multi { font-size: 6.5pt; }
-.pv-inline-card .pv3-tags-grid  { padding: 5px 16px !important; gap: 3px !important; }
+.pv-inline-card .pv3-tags-grid  { padding: 4px 6px !important; gap: 3px !important; }
 .pv-inline-card .pv3-tag        { font-size: 10px !important; padding: 2px 5px !important; display: block !important; }
 .pv-inline-card .pv3-qr-box     { width: 44px; height: 44px; }
 .pv-inline-card .pv3-qrs        { gap: 12px; padding-bottom: 10px; }
@@ -607,8 +607,8 @@ select.finput {
   .content { padding: 0; }
   .prev-bg { background: none; padding: 0; }
   .pv-empty { border: none !important; color: transparent !important; }
-  /* タグ背景色を強制印刷 */
-  .pv3-tag { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  /* タグ背景色を強制印刷・省略なしで全文表示 */
+  .pv3-tag { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; overflow: visible !important; text-overflow: clip !important; }
   /* 写真周りのグレー線を除去 */
   .pv2-main-photo { border: none !important; }
   .pv2-photo      { border: none !important; }
