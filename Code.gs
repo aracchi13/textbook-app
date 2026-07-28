@@ -72,7 +72,8 @@ function getProjects() {
       beautyTarget:    Number(r[5]) || 0,
       barberTarget:    Number(r[6]) || 0,
       approachCount:   Number(r[7]) || 0,
-      day:             String(r[8]||'')
+      day:             String(r[8]||''),
+      completed:       _parseBool(r[9])
     };
   });
 }
@@ -106,6 +107,19 @@ function saveProject(data) {
     data.day || ''
   ]);
   return { success: true, id: id };
+}
+
+function toggleProjectCompleted(id) {
+  var sh  = _sheet(SH_PROJECT);
+  var all = sh.getDataRange().getValues();
+  for (var i = 1; i < all.length; i++) {
+    if (String(all[i][0]) === String(id)) {
+      var current = _parseBool(all[i][9]);
+      sh.getRange(i + 1, 10).setValue(!current);
+      return { success: true, completed: !current };
+    }
+  }
+  throw new Error('案件が見つかりません');
 }
 
 function deleteProject(id) {

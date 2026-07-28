@@ -1198,12 +1198,17 @@ function renderDash() {
         var w = d.warnings > 0
           ? '<span class="badge b-warn">' + ico('alert',10) + ' ' + d.warnings + '件</span>'
           : '<span class="badge b-success">' + ico('check',10) + '</span>';
-        rows += '<tr style="cursor:pointer" ' +
+        var done = d.project.completed;
+        var rowStyle = 'cursor:pointer' + (done ? ';opacity:0.55;background:#f7f8fa' : '');
+        var completedBtn = done
+          ? '<button class="btn btn-success btn-xs" onclick="toggleCompleted(\'' + d.project.id + '\')">✓ 完了済</button>'
+          : '<button class="btn btn-ghost btn-xs" onclick="toggleCompleted(\'' + d.project.id + '\')">完了にする</button>';
+        rows += '<tr style="' + rowStyle + '" ' +
           'onmouseenter="dashHover(\'' + d.project.id + '\')" ' +
           'onmouseleave="dashReset()" ' +
           'onclick="go(\'project-detail\',{pid:\'' + d.project.id + '\'})">' +
           '<td style="padding-left:28px">' + e(d.project.month) + '</td>' +
-          '<td class="fw7">' + e(d.project.name) + '</td>' +
+          '<td class="fw7">' + e(d.project.name) + (done ? ' <span style="font-size:10px;color:var(--success);font-weight:600;margin-left:4px">完了</span>' : '') + '</td>' +
           '<td style="text-align:center"><span style="font-size:13px;font-weight:700;color:var(--muted)">' + (target || '-') + '</span></td>' +
           '<td style="text-align:center"><span style="font-size:13px;font-weight:700;color:var(--navy3)">' + (approach || '-') + '</span></td>' +
           '<td style="text-align:center"><span style="font-size:13px;font-weight:700;color:var(--success)">' + signup + '</span></td>' +
@@ -1211,6 +1216,7 @@ function renderDash() {
           '<td>' + w + '</td>' +
           '<td onclick="event.stopPropagation()"><div class="acts">' +
             '<button class="btn btn-ghost btn-xs" onclick="go(\'project-detail\',{pid:\'' + d.project.id + '\'})">開く →</button>' +
+            completedBtn +
           '</div></td></tr>';
       });
     });
@@ -1278,6 +1284,12 @@ function dashHover(pid) {
 function dashReset() {
   var el = document.getElementById('dashStats');
   if (el) el.innerHTML = dashStatsHtml(null);
+}
+
+function toggleCompleted(id) {
+  gas('toggleProjectCompleted', id).then(function() {
+    renderDash();
+  }).catch(function(err){ alert('エラー: ' + err.message); });
 }
 
 function stat(label, val, style) {
