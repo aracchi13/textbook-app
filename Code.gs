@@ -73,7 +73,8 @@ function getProjects() {
       barberTarget:    Number(r[6]) || 0,
       approachCount:   Number(r[7]) || 0,
       day:             String(r[8]||''),
-      completed:       _parseBool(r[9])
+      completed:       _parseBool(r[9]),
+      surveyUrl:       String(r[10]||'')
     };
   });
 }
@@ -93,6 +94,7 @@ function saveProject(data) {
           Number(data.approachCount) || 0,
           data.day || ''
         ]]);
+        sh.getRange(i + 1, 11).setValue(data.surveyUrl || '');
         return { success: true, id: data.id };
       }
     }
@@ -104,7 +106,9 @@ function saveProject(data) {
     Number(data.beautyTarget)  || 0,
     Number(data.barberTarget)  || 0,
     Number(data.approachCount) || 0,
-    data.day || ''
+    data.day || '',
+    false,
+    data.surveyUrl || ''
   ]);
   return { success: true, id: id };
 }

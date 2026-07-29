@@ -1216,6 +1216,7 @@ function renderDash() {
           '<td>' + w + '</td>' +
           '<td onclick="event.stopPropagation()"><div class="acts">' +
             '<button class="btn btn-ghost btn-xs" onclick="go(\'project-detail\',{pid:\'' + d.project.id + '\'})">開く →</button>' +
+            (d.project.surveyUrl ? '<a class="btn btn-primary btn-xs" href="' + e(d.project.surveyUrl) + '" target="_blank" rel="noopener" onclick="event.stopPropagation()">実施後アンケート</a>' : '') +
             completedBtn +
           '</div></td></tr>';
       });
@@ -1427,7 +1428,7 @@ function renderProjects() {
             wMark +
           '</div>' +
           '<div class="pcard-acts" onclick="event.stopPropagation()">' +
-            '<button class="btn btn-ghost btn-xs" onclick="openProjectModal(\'' + pid + '\',\'' + e(d.project.year) + '\',\'' + e(d.project.month) + '\',\'' + e(d.project.day||'') + '\',\'' + pn + '\',' + (d.project.beautyTarget||0) + ',' + (d.project.barberTarget||0) + ')">編集</button>' +
+            '<button class="btn btn-ghost btn-xs" onclick="openProjectModal(\'' + pid + '\',\'' + e(d.project.year) + '\',\'' + e(d.project.month) + '\',\'' + e(d.project.day||'') + '\',\'' + pn + '\',' + (d.project.beautyTarget||0) + ',' + (d.project.barberTarget||0) + ',\'' + e(d.project.surveyUrl||'') + '\')">編集</button>' +
             '<button class="btn btn-ghost btn-xs" onclick="openCopyProject(\'' + pid + '\',\'' + pn + '\')">複製</button>' +
             '<button class="btn btn-danger btn-xs" onclick="delProject(\'' + pid + '\',\'' + pn + '\')">削除</button>' +
           '</div>' +
@@ -1447,7 +1448,7 @@ function renderProjects() {
   }).catch(function(err){ showErr(err); });
 }
 
-function openProjectModal(id, year, month, day, name, beautyTarget, barberTarget) {
+function openProjectModal(id, year, month, day, name, beautyTarget, barberTarget, surveyUrl) {
   Promise.all([gas('getYears'), gas('getMonths'), gas('getDays')]).then(function(r) {
     var yo = r[0].map(function(y){ return '<option' + (y===year?' selected':'') + '>' + e(y) + '</option>'; }).join('');
     var mo = r[1].map(function(m){ return '<option' + (m===month?' selected':'') + '>' + e(m) + '</option>'; }).join('');
@@ -1468,6 +1469,7 @@ function openProjectModal(id, year, month, day, name, beautyTarget, barberTarget
             '<div class="fg"><label class="flabel">美容室</label><input type="number" class="finput" id="pBeauty" value="' + (beautyTarget||0) + '" min="0" placeholder="0"></div>' +
             '<div class="fg"><label class="flabel">理容室</label><input type="number" class="finput" id="pBarber" value="' + (barberTarget||0) + '" min="0" placeholder="0"></div>' +
           '</div>' +
+          '<div class="fg"><label class="flabel">実施後アンケートURL</label><input type="url" class="finput" id="pSurveyUrl" value="' + e(surveyUrl||'') + '" placeholder="https://forms.gle/..."></div>' +
         '</div>' +
         '<div class="mfoot"><button class="btn btn-ghost" onclick="closeModal()">キャンセル</button><button class="btn btn-primary" onclick="saveProject(\'' + (id||'') + '\')">保存</button></div>' +
       '</div></div>');
@@ -1475,15 +1477,16 @@ function openProjectModal(id, year, month, day, name, beautyTarget, barberTarget
 }
 
 function saveProject(id) {
-  var year    = document.getElementById('pYear').value;
-  var month   = document.getElementById('pMonth').value;
-  var day     = document.getElementById('pDay').value;
-  var name    = document.getElementById('pName').value.trim();
-  var beauty  = Number(document.getElementById('pBeauty').value)  || 0;
-  var barber  = Number(document.getElementById('pBarber').value)  || 0;
+  var year      = document.getElementById('pYear').value;
+  var month     = document.getElementById('pMonth').value;
+  var day       = document.getElementById('pDay').value;
+  var name      = document.getElementById('pName').value.trim();
+  var beauty    = Number(document.getElementById('pBeauty').value)  || 0;
+  var barber    = Number(document.getElementById('pBarber').value)  || 0;
+  var surveyUrl = document.getElementById('pSurveyUrl').value.trim();
   if (!name) { alert('案件名を入力してください'); return; }
 
-  gas('saveProject', { id: id||null, year:year, month:month, day:day, name:name, beautyTarget:beauty, barberTarget:barber, approachCount:0 }).then(function() {
+  gas('saveProject', { id: id||null, year:year, month:month, day:day, name:name, beautyTarget:beauty, barberTarget:barber, approachCount:0, surveyUrl:surveyUrl }).then(function() {
     closeModal(); showToast('案件を保存しました');
     if (ST.view === 'project-detail' && ST.projectId) {
       renderProjectDetail(ST.projectId);
@@ -1545,6 +1548,7 @@ function renderProjectDetail(pid) {
     document.getElementById('topActs').innerHTML =
       '<button class="btn btn-ghost btn-sm" onclick="go(\'preview\',{pid:\'' + e(pid) + '\'})">' + ico('eye',13) + ' プレビュー</button>' +
       '<button class="btn btn-ghost btn-sm" onclick="go(\'csv\',{pid:\'' + e(pid) + '\'})">' + ico('file',13) + ' CSV</button>' +
+      (proj && proj.surveyUrl ? '<a class="btn btn-primary btn-sm" href="' + e(proj.surveyUrl) + '" target="_blank" rel="noopener">実施後アンケート</a>' : '') +
       '<button class="btn btn-primary btn-sm" onclick="go(\'salon-form\',{pid:\'' + e(pid) + '\'})">＋ サロン追加</button>';
 
     var cards = nonApproachSalons.map(function(s) {
@@ -1602,7 +1606,7 @@ function renderProjectDetail(pid) {
       '<div class="card mb16" style="padding:0">' +
         '<div class="card-head" style="padding:10px 16px">' +
           '<div class="card-title">' + ico('clipboard',13) + ' 進捗サマリー</div>' +
-          '<button class="btn btn-ghost btn-xs" onclick="openProjectModal(\'' + e(pid) + '\',\'' + e(proj ? proj.year : '') + '\',\'' + e(proj ? proj.month : '') + '\',\'' + e(proj ? proj.day||'' : '') + '\',\'' + e(proj ? proj.name : '') + '\',' + beautyTarget + ',' + barberTarget + ')">' + ico('edit3',11) + ' 編集</button>' +
+          '<button class="btn btn-ghost btn-xs" onclick="openProjectModal(\'' + e(pid) + '\',\'' + e(proj ? proj.year : '') + '\',\'' + e(proj ? proj.month : '') + '\',\'' + e(proj ? proj.day||'' : '') + '\',\'' + e(proj ? proj.name : '') + '\',' + beautyTarget + ',' + barberTarget + ',\'' + e(proj ? proj.surveyUrl||'' : '') + '\')">' + ico('edit3',11) + ' 編集</button>' +
         '</div>' +
         '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 2fr;gap:0;border-top:1px solid var(--border)">' +
           kpiCell('目標（美容室）', beautyTarget + ' 件', 'color:var(--navy)') +
