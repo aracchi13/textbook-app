@@ -1426,13 +1426,29 @@ function renderProjects() {
       var cards = grouped[year].map(function(d) {
         var pid = e(d.project.id);
         var pn  = e(d.project.name);
-        var wMark = d.warnings > 0 ? '<span class="pcard-warn">' + ico('alert',14) + '</span>' : '';
+        var wMark    = d.warnings > 0 ? '<span class="pcard-warn">' + ico('alert',14) + '</span>' : '';
+        var target   = (d.project.beautyTarget || 0) + (d.project.barberTarget || 0);
+        var approached = d.approachCount || 0;
+        var signup   = d.count || 0;
+        var rate     = target > 0 ? Math.min(100, Math.round(signup / target * 100)) : null;
+        var rateColor = rate === null ? 'var(--muted)' : rate >= 100 ? 'var(--success)' : rate >= 50 ? 'var(--warn)' : 'var(--danger)';
         return '<div class="pcard" onclick="go(\'project-detail\',{pid:\'' + pid + '\'})">' +
           '<div class="pcard-year">' + e(d.project.year) + ' ' + e(d.project.month) + (d.project.day ? e(d.project.day) : '') + '</div>' +
           '<div class="pcard-name">' + pn + '</div>' +
           '<div class="pcard-meta">' +
             '<span class="pcard-count">' + ico('scissors',12) + ' ' + d.count + ' サロン</span>' +
             wMark +
+          '</div>' +
+          '<div style="display:flex;gap:12px;margin-top:6px;flex-wrap:wrap">' +
+            '<span style="font-size:11px;color:var(--muted)">目標　<strong style="color:var(--navy)">' + (target || '-') + '</strong>' + (target ? ' 件' : '') + '</span>' +
+            '<span style="font-size:11px;color:var(--muted)">接触　<strong style="color:var(--navy3)">' + approached + '</strong> 件</span>' +
+          '</div>' +
+          '<div style="margin-top:6px;display:flex;align-items:center;gap:8px">' +
+            (rate !== null
+              ? '<div style="flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden"><div style="width:' + rate + '%;height:100%;background:' + rateColor + ';border-radius:3px"></div></div>' +
+                '<span style="font-size:11px;font-weight:700;color:' + rateColor + ';white-space:nowrap">' + rate + '%</span>'
+              : '<span style="font-size:11px;color:var(--muted)">達成率 -</span>'
+            ) +
           '</div>' +
           '<div class="pcard-acts" onclick="event.stopPropagation()">' +
             '<button class="btn btn-ghost btn-xs" onclick="openProjectModal(\'' + pid + '\',\'' + e(d.project.year) + '\',\'' + e(d.project.month) + '\',\'' + e(d.project.day||'') + '\',\'' + pn + '\',' + (d.project.beautyTarget||0) + ',' + (d.project.barberTarget||0) + ',\'' + e(d.project.surveyUrl||'') + '\')">編集</button>' +
@@ -1641,7 +1657,7 @@ function renderProjectDetail(pid) {
     ];
 
     function hearingSelColor(val) {
-      return val === '○' ? 'var(--success)' : val === '×' ? 'var(--danger)' : val === '検討中' ? 'var(--warn)' : 'var(--muted)';
+      return val === '○' ? '#1a7a3c' : val === '×' ? 'var(--danger)' : val === '検討中' ? 'var(--warn)' : 'var(--muted)';
     }
 
     function makeHearingCells(s) {
@@ -1654,13 +1670,13 @@ function renderProjectDetail(pid) {
         return '<td style="text-align:center;padding:6px 8px">' +
           '<select class="hearing-sel" data-sid="' + e(s.id) + '" data-field="' + col.key + '" ' +
             'onchange="saveHearing(this)" ' +
-            'style="width:' + (col.key === 'attendanceStatus' ? '80px' : '72px') + ';padding:4px 6px;font-size:12px;border:1px solid var(--border);border-radius:5px;background:var(--white);cursor:pointer;appearance:none;text-align:center;color:' + hearingSelColor(val) + '">' +
+            'style="width:' + (col.key === 'attendanceStatus' ? '88px' : '76px') + ';padding:4px 6px;font-size:15px;font-weight:700;border:1px solid var(--border);border-radius:5px;background:var(--white);cursor:pointer;appearance:none;text-align:center;color:' + hearingSelColor(val) + ';text-shadow:' + (val === '○' ? '0 0 1px #1a7a3c,0 0 1px #1a7a3c,0 0 1px #1a7a3c' : 'none') + '">' +
           opts + '</select></td>';
       }).join('');
     }
 
     var regularHrows = nonApproachSalons.map(function(s) {
-      return '<tr>' +
+      return '<tr data-date="">' +
         '<td style="padding:6px 14px;font-size:12px;white-space:nowrap">' + e(s.salonName || '（未設定）') + '</td>' +
         makeHearingCells(s) +
         '<td></td>' +
@@ -1668,7 +1684,7 @@ function renderProjectDetail(pid) {
     }).join('');
 
     var approachHrows = approachSalons.map(function(s) {
-      return '<tr class="approach-row" style="background:rgba(255,193,7,0.06)">' +
+      return '<tr class="approach-row" data-date="' + e(s.subject||'') + '" style="background:rgba(255,193,7,0.06)">' +
         '<td style="padding:6px 14px;font-size:12px">' +
           '<div style="display:flex;align-items:center;gap:6px;flex-wrap:nowrap">' +
             '<span style="font-weight:600;white-space:nowrap">' + e(s.salonName || '（未設定）') + '</span>' +
@@ -1696,12 +1712,13 @@ function renderProjectDetail(pid) {
     }).join('');
 
     var hheads = HEARING_COLS.map(function(col) {
-      return '<th style="text-align:center;white-space:nowrap">' + col.label + '</th>';
+      return '<th class="hearing-sort-th" data-col="' + col.key + '" onclick="sortHearingBy(\'' + col.key + '\')" style="text-align:center;white-space:nowrap;cursor:pointer;user-select:none">' +
+        col.label + '<span class="sort-ico" style="font-size:10px;color:var(--muted);margin-left:3px">⇅</span></th>';
     }).join('') + '<th></th>';
 
     var hrows = regularHrows + approachHrows;
     var hearingBody = hrows
-      ? '<table class="tbl"><thead><tr><th>サロン名</th>' + hheads + '</tr></thead><tbody>' + hrows + '</tbody></table>'
+      ? '<table class="tbl"><thead><tr><th class="hearing-sort-th" data-col="date" onclick="sortHearingBy(\'date\')" style="cursor:pointer;user-select:none">サロン名<span class="sort-ico" style="font-size:10px;color:var(--muted);margin-left:4px">日付⇅</span></th>' + hheads + '</tr></thead><tbody id="hearingTbody">' + hrows + '</tbody></table>'
       : '<div style="padding:20px;text-align:center;color:var(--muted);font-size:12px">サロンが登録されていません</div>';
 
     var hearingHtml =
@@ -1743,6 +1760,7 @@ function renderProjectDetail(pid) {
       document.querySelectorAll('.hearing-sel').forEach(function(sel) {
         sel.setAttribute('data-prev', sel.value);
         sel.style.color = hearingColor(sel.value);
+        sel.style.textShadow = sel.value === '○' ? '0 0 1px #1a7a3c,0 0 1px #1a7a3c,0 0 1px #1a7a3c' : 'none';
       });
     }, 0);
   }).catch(function(err){ showErr(err); });
@@ -1838,6 +1856,8 @@ function openApproachSalonModal(pid) {
             : '') +
           '<div class="fg"><label class="flabel req">サロン名</label>' +
             '<input type="text" class="finput" id="apSalonName" placeholder="サロン名を入力" oninput="convertToHalfWidth(this)"></div>' +
+          '<div class="fg"><label class="flabel req">接触した日</label>' +
+            '<input type="date" class="finput" id="apContactDate"></div>' +
           '<div class="grid2">' +
             '<div class="fg"><label class="flabel">所在地（任意）</label>' +
               '<input type="text" class="finput" id="apSalonNote" placeholder="例：渋谷区・新宿"></div>' +
@@ -1859,6 +1879,8 @@ function openApproachSalonModal(pid) {
         '<div class="mbody">' +
           '<div class="fg"><label class="flabel req">サロン名</label>' +
             '<input type="text" class="finput" id="apSalonName" placeholder="サロン名を入力" oninput="convertToHalfWidth(this)"></div>' +
+          '<div class="fg"><label class="flabel req">接触した日</label>' +
+            '<input type="date" class="finput" id="apContactDate"></div>' +
           '<div class="grid2">' +
             '<div class="fg"><label class="flabel">所在地（任意）</label>' +
               '<input type="text" class="finput" id="apSalonNote" placeholder="例：渋谷区・新宿"></div>' +
@@ -1915,18 +1937,21 @@ function selectApproachSalon(name, note, bikou) {
 }
 
 function saveApproachSalon(pid) {
-  var salonName = (document.getElementById('apSalonName') || {}).value || '';
-  var salonNote = (document.getElementById('apSalonNote') || {}).value || '';
-  var bikou     = (document.getElementById('apBikou')     || {}).value || '';
-  salonName = salonName.trim();
-  salonNote = salonNote.trim();
-  bikou     = bikou.trim();
-  if (!salonName) { alert('サロン名を入力してください'); return; }
+  var salonName   = (document.getElementById('apSalonName')   || {}).value || '';
+  var contactDate = (document.getElementById('apContactDate') || {}).value || '';
+  var salonNote   = (document.getElementById('apSalonNote')   || {}).value || '';
+  var bikou       = (document.getElementById('apBikou')       || {}).value || '';
+  salonName   = salonName.trim();
+  salonNote   = salonNote.trim();
+  bikou       = bikou.trim();
+  if (!salonName)   { alert('サロン名を入力してください'); return; }
+  if (!contactDate) { alert('接触した日を入力してください'); return; }
   gas('saveSalon', {
     projectId:    pid,
     salonName:    salonName,
     salonNote:    salonNote,
     bikou:        bikou,
+    subject:      contactDate,
     approachOnly: true,
     layout:       '1/3'
   }).then(function() {
@@ -1983,7 +2008,54 @@ function waitForPendingSaves(cb, tries) {
 }
 
 function hearingColor(val) {
-  return val === '○' ? 'var(--success)' : val === '×' ? 'var(--danger)' : val === '検討中' ? 'var(--warn)' : 'var(--muted)';
+  return val === '○' ? '#1a7a3c' : val === '×' ? 'var(--danger)' : val === '検討中' ? 'var(--warn)' : 'var(--muted)';
+}
+
+var _hearingSort = { col: null, asc: true };
+function sortHearingBy(colKey) {
+  var tbody = document.getElementById('hearingTbody');
+  if (!tbody) return;
+  if (_hearingSort.col === colKey) {
+    _hearingSort.asc = !_hearingSort.asc;
+  } else {
+    _hearingSort.col = colKey;
+    _hearingSort.asc = true;
+  }
+  var rows = Array.prototype.slice.call(tbody.querySelectorAll('tr'));
+  if (colKey === 'date') {
+    rows.sort(function(a, b) {
+      var da = a.getAttribute('data-date') || '';
+      var db = b.getAttribute('data-date') || '';
+      if (!da && !db) return 0;
+      if (!da) return 1;
+      if (!db) return -1;
+      var r = da < db ? -1 : da > db ? 1 : 0;
+      return _hearingSort.asc ? r : -r;
+    });
+  } else {
+    var order = { '○': 0, '検討中': 1, '×': 2, '': 3 };
+    rows.sort(function(a, b) {
+      var sa = a.querySelector('select[data-field="' + colKey + '"]');
+      var sb = b.querySelector('select[data-field="' + colKey + '"]');
+      var va = sa ? (sa.value || '') : '';
+      var vb = sb ? (sb.value || '') : '';
+      var oa = order[va] !== undefined ? order[va] : 3;
+      var ob = order[vb] !== undefined ? order[vb] : 3;
+      return _hearingSort.asc ? oa - ob : ob - oa;
+    });
+  }
+  rows.forEach(function(r) { tbody.appendChild(r); });
+  document.querySelectorAll('.hearing-sort-th').forEach(function(th) {
+    var ico = th.querySelector('.sort-ico');
+    if (!ico) return;
+    if (th.getAttribute('data-col') === colKey) {
+      ico.textContent = colKey === 'date'
+        ? (_hearingSort.asc ? ' 日付▲' : ' 日付▼')
+        : (_hearingSort.asc ? '▲' : '▼');
+    } else {
+      ico.textContent = th.getAttribute('data-col') === 'date' ? '日付⇅' : '⇅';
+    }
+  });
 }
 
 function toggleHearing() {
@@ -1997,6 +2069,7 @@ function toggleHearing() {
     body.querySelectorAll('.hearing-sel').forEach(function(sel) {
       sel.setAttribute('data-prev', sel.value);
       sel.style.color = hearingColor(sel.value);
+      sel.style.textShadow = sel.value === '○' ? '0 0 1px #1a7a3c,0 0 1px #1a7a3c,0 0 1px #1a7a3c' : 'none';
     });
   }
 }
@@ -2009,6 +2082,7 @@ function saveHearing(sel) {
   sel.setAttribute('data-prev', value);
 
   sel.style.color = hearingColor(value);
+  sel.style.textShadow = value === '○' ? '0 0 1px #1a7a3c,0 0 1px #1a7a3c,0 0 1px #1a7a3c' : 'none';
 
   gas('saveHearingItem', sid, field, value).then(function() {
     showToast('保存しました');
