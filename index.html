@@ -700,6 +700,25 @@ select.finput {
 /* ===================== SVGアイコン共通 ===================== */
 .ico-svg { vertical-align: middle; flex-shrink: 0; }
 
+/* ===================== 戻るボタン ===================== */
+.back-btn {
+  display: none;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: transparent;
+  color: var(--navy);
+  font-size: 12px;
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .15s;
+  flex-shrink: 0;
+}
+.back-btn:hover { background: var(--bg); border-color: var(--navy); }
+
 /* ===================== サロン検索 ===================== */
 .ss-wrap { position: relative; }
 .ss-results {
@@ -814,6 +833,10 @@ select.finput {
     <line x1="3" y1="6" x2="21" y2="6"/>
     <line x1="3" y1="18" x2="21" y2="18"/>
   </symbol>
+  <symbol id="ico-arrow-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="19" y1="12" x2="5" y2="12"/>
+    <polyline points="12 19 5 12 12 5"/>
+  </symbol>
 </svg>
 
 <!-- オーバーレイ（モバイル） -->
@@ -854,6 +877,7 @@ select.finput {
 <div class="main">
   <header class="topbar">
     <button class="menu-btn" onclick="toggleSb()"><svg class="ico-svg" width="22" height="22"><use href="#ico-menu"/></svg></button>
+    <button class="back-btn" id="backBtn" onclick="goBack()"><svg class="ico-svg" width="16" height="16"><use href="#ico-arrow-left"/></svg>戻る</button>
     <div class="topbar-title" id="pageTitle">ダッシュボード</div>
     <div class="topbar-actions" id="topActs"></div>
   </header>
@@ -1120,16 +1144,37 @@ function bc(parts) {
 // =====================================================
 // ナビゲーション
 // =====================================================
+var _navHistory = [];
+
 function saveState(view, params) {
   try { localStorage.setItem('_appState', JSON.stringify({ v: view, p: params || {} })); } catch(e) {}
 }
 
-function go(view, params) {
+function goBack() {
+  if (_navHistory.length === 0) return;
+  var prev = _navHistory.pop();
+  go(prev.view, prev.params, true);
+}
+
+function go(view, params, _isBack) {
   params = params || {};
+
+  if (!_isBack) {
+    if (view === 'dash') {
+      _navHistory = [];
+    } else if (ST.view && ST.view !== view) {
+      _navHistory.push({ view: ST.view, params: ST.currentParams || {} });
+    }
+  }
+
   ST.view = view;
+  ST.currentParams = params;
   closeSb();
   setNav(view);
   saveState(view, params);
+
+  var backBtn = document.getElementById('backBtn');
+  if (backBtn) backBtn.style.display = _navHistory.length > 0 ? 'inline-flex' : 'none';
 
   var titles = {
     dash: 'ダッシュボード',
