@@ -6,17 +6,17 @@
 <title>学校案件管理システム</title>
 <style>
 :root {
-  --navy:      #1a2b4c;
-  --navy2:     #0f1a2e;
+  --navy:      #1e2d45;
+  --navy2:     #141f30;
   --navy3:     #2d4a7a;
-  --accent:    #4a90d9;
+  --accent:    #4f7ef7;
   --white:     #ffffff;
-  --bg:        #f0f2f7;
+  --bg:        #f0f4f8;
   --card:      #ffffff;
-  --border:    #e2e7f0;
+  --border:    #dde5ef;
   --text:      #1e2d40;
   --muted:     #7a8fa6;
-  --success:   #2ecc71;
+  --success:   #27ae60;
   --warn:      #f39c12;
   --danger:    #e74c3c;
   --sidebar:   240px;
@@ -27,7 +27,7 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  font-family: 'Hiragino Sans', 'Hiragino Kaku Gothic Pro', 'Meiryo', 'Yu Gothic UI', sans-serif;
+  font-family: 'Hiragino Kaku Gothic ProN', 'Hiragino Kaku Gothic Pro', 'Hiragino Sans', 'Meiryo', sans-serif;
   background: var(--bg);
   color: var(--text);
   font-size: 13px;
@@ -77,8 +77,8 @@ body {
   border-left: 3px solid transparent;
   transition: all .15s;
 }
-.sb-item:hover  { background: rgba(255,255,255,.07); color: #fff; }
-.sb-item.on     { background: rgba(255,255,255,.12); color: #fff; border-left-color: var(--accent); }
+.sb-item:hover  { background: rgba(79,126,247,.18); color: #fff; border-left-color: rgba(79,126,247,.5); }
+.sb-item.on     { background: rgba(79,126,247,.22); color: #fff; border-left-color: var(--accent); }
 .sb-item .ico   { width: 18px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .sb-item .badge {
   margin-left: auto;
@@ -144,14 +144,13 @@ body {
   border: none;
   border-radius: 7px;
   font-size: 12px;
-  font-family: inherit;
+  font-family: 'Hiragino Kaku Gothic ProN', 'Hiragino Kaku Gothic Pro', 'Hiragino Sans', 'Meiryo', sans-serif;
   font-weight: 600;
   cursor: pointer;
-  transition: opacity .15s, transform .1s;
+  transition: background .18s, color .18s, box-shadow .18s, transform .1s, border-color .18s;
   white-space: nowrap;
   line-height: 1;
 }
-.btn:hover   { opacity: .82; }
 .btn:active  { transform: scale(.97); }
 .btn:disabled { opacity: .45; cursor: not-allowed; }
 .btn-primary { background: var(--navy);    color: #fff; }
@@ -160,6 +159,12 @@ body {
 .btn-danger  { background: var(--danger);  color: #fff; }
 .btn-warn    { background: var(--warn);    color: #fff; }
 .btn-ghost   { background: transparent; border: 1px solid var(--border); color: var(--text); }
+.btn-primary:hover { background: #2d4266; box-shadow: 0 3px 10px rgba(30,45,69,.3); }
+.btn-accent:hover  { background: #3564e8; box-shadow: 0 3px 10px rgba(79,126,247,.35); }
+.btn-success:hover { background: #229954; box-shadow: 0 3px 10px rgba(39,174,96,.3); }
+.btn-danger:hover  { background: #c0392b; box-shadow: 0 3px 10px rgba(231,76,60,.3); }
+.btn-warn:hover    { background: #e67e22; box-shadow: 0 3px 10px rgba(243,156,18,.3); }
+.btn-ghost:hover   { background: var(--bg); border-color: var(--navy); color: var(--navy); }
 .btn-sm      { padding: 5px 10px; font-size: 11px; }
 .btn-xs      { padding: 3px 8px; font-size: 11px; border-radius: 5px; }
 
@@ -185,10 +190,11 @@ body {
   background: var(--white);
   transition: border-color .2s, box-shadow .2s;
 }
+.finput:hover { border-color: var(--accent); }
 .finput:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(74,144,217,.14);
+  box-shadow: 0 0 0 3px rgba(79,126,247,.18);
 }
 textarea.finput { resize: vertical; min-height: 85px; }
 .finput-invalid { border-color: #e53e3e !important; }
@@ -295,7 +301,8 @@ select.finput {
   vertical-align: middle;
 }
 .tbl tbody tr:last-child td { border-bottom: none; }
-.tbl tbody tr:hover td { background: rgba(74,144,217,.04); }
+.tbl tbody tr:hover td { background: rgba(79,126,247,.06); color: var(--navy); }
+.tbl tbody tr { transition: background .15s; }
 .tbl .acts { display: flex; gap: 5px; flex-wrap: wrap; }
 
 /* ===================== 案件カード ===================== */
@@ -314,7 +321,7 @@ select.finput {
   position: relative;
   border-left: 4px solid var(--accent);
 }
-.pcard:hover { box-shadow: 0 4px 20px rgba(26,43,76,.1); transform: translateY(-2px); }
+.pcard:hover { box-shadow: 0 6px 24px rgba(30,45,69,.16); transform: translateY(-3px); background: #f5f8ff; border-left-color: var(--accent); }
 .pcard-year  { font-size: 10px; color: var(--muted); margin-bottom: 3px; }
 .pcard-name  { font-size: 14px; font-weight: 700; color: var(--navy); margin-bottom: 10px; }
 .pcard-meta  { display: flex; align-items: center; gap: 8px; }
@@ -348,7 +355,7 @@ select.finput {
   flex-direction: column;
   gap: 10px;
 }
-.scard:hover { box-shadow: 0 6px 20px rgba(26,43,76,.1); transform: translateY(-1px); }
+.scard:hover { box-shadow: 0 8px 28px rgba(30,45,69,.14); transform: translateY(-2px); background: #f5f8ff; border-top-color: var(--accent); }
 .scard-head { display: flex; flex-direction: column; gap: 4px; width: 100%; min-width: 0; }
 .scard-head-badge { display: flex; justify-content: flex-end; margin-bottom: 2px; width: 100%; min-width: 0; overflow: hidden; }
 .scard-name { font-size: 15px; font-weight: 700; color: var(--navy); word-break: break-all; line-height: 1.4; width: 100%; min-width: 0; white-space: normal; }
@@ -375,7 +382,7 @@ select.finput {
   border-left: 4px solid var(--success);
   transition: all .18s;
 }
-.tcard:hover { box-shadow: 0 4px 16px rgba(26,43,76,.08); }
+.tcard:hover { box-shadow: 0 6px 20px rgba(30,45,69,.12); background: #f5fdf9; border-left-color: #27ae60; }
 .tcard-name  { font-size: 13px; font-weight: 700; color: var(--navy); margin-bottom: 6px; }
 .tcard-sub   { font-size: 11px; color: var(--muted); margin-bottom: 12px; line-height: 1.6; }
 .tcard-acts  { display: flex; gap: 5px; }
@@ -669,7 +676,7 @@ select.finput {
 }
 .uz-zone:hover, .uz-zone.drag {
   border-color: var(--accent);
-  background: rgba(74,144,217,.06);
+  background: rgba(79,126,247,.07);
 }
 .uz-zone input[type="file"] { display: none; }
 .uz-ico  { display: flex; justify-content: center; margin-bottom: 6px; color: var(--muted); opacity: .6; }
@@ -743,7 +750,7 @@ select.finput {
   transition: background .12s;
 }
 .ss-item:last-child { border-bottom: none; }
-.ss-item:hover { background: rgba(74,144,217,.07); }
+.ss-item:hover { background: rgba(79,126,247,.08); }
 .ss-item-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .ss-item-name { font-size: 13px; font-weight: 700; color: var(--navy); }
 .ss-item-sub  { font-size: 11px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
